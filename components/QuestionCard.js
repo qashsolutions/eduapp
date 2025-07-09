@@ -7,7 +7,8 @@ export default function QuestionCard({
   difficulty,
   onAnswer, 
   onNext,
-  proficiency 
+  proficiency,
+  userId 
 }) {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showResult, setShowResult] = useState(false);

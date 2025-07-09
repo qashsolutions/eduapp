@@ -357,6 +357,7 @@ export default function Dashboard() {
               proficiency={currentQuestion.proficiency}
               onAnswer={handleAnswer}
               onNext={handleNext}
+              userId={user.id}
             />
           )}
         </div>
