@@ -5,12 +5,20 @@ import { getUser, updateUserProficiency, logQuestionAttempt } from '../../lib/db
 import { mapProficiencyToDifficulty, updateProficiency, AI_ROUTING, EDUCATIONAL_TOPICS, getRandomContext } from '../../lib/utils';
 
 // Initialize AI clients server-side only
+const openaiKey = process.env.OPENAI_API_KEY;
+const anthropicKey = process.env.ANTHROPIC_API_KEY;
+
+console.log('AI Keys configured:', {
+  openai: !!openaiKey,
+  anthropic: !!anthropicKey
+});
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: openaiKey,
 });
 
 const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+  apiKey: anthropicKey,
 });
 
 export default async function handler(req, res) {
@@ -64,6 +72,15 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
       // Validate inputs
       if (!topic) {
         return res.status(400).json({ error: 'Missing topic' });
+      }
+
+      // Check if AI keys are configured
+      const aiModel = AI_ROUTING[topic];
+      if (aiModel === 'openai' && !openaiKey) {
+        return res.status(500).json({ error: 'OpenAI API key not configured' });
+      }
+      if (aiModel === 'claude' && !anthropicKey) {
+        return res.status(500).json({ error: 'Anthropic API key not configured' });
       }
 
       // Get user data
@@ -152,13 +169,23 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
     return res.status(400).json({ error: 'Invalid action' });
 
   } catch (error) {
-    console.error('Generate API error:', error);
+    console.error('Generate API error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     
     // Return more specific error messages
+    if (error.message.includes('API key')) {
+      return res.status(500).json({ error: 'AI API key not configured' });
+    }
     if (error.message.includes('AI')) {
       return res.status(503).json({ error: 'AI service temporarily unavailable' });
     }
     
-    return res.status(500).json({ error: 'Failed to process request' });
+    return res.status(500).json({ 
+      error: 'Failed to process request',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 }
