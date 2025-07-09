@@ -1,6 +1,17 @@
-import { generateQuestion, validateQuestion } from '../../lib/ai-service';
+import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
+import { prepareQuestionGeneration, generateWithOpenAI, generateWithClaude, validateQuestion } from '../../lib/ai-service';
 import { getUser, updateUserProficiency, logQuestionAttempt } from '../../lib/db';
 import { mapProficiencyToDifficulty, updateProficiency } from '../../lib/utils';
+
+// Initialize AI clients server-side only
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
 
 export default async function handler(req, res) {
   // Handle robots.txt request
@@ -61,8 +72,16 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
       // Extract grade from user data (default to 8 if not set)
       const grade = user.grade || 8;
 
-      // Generate question
-      const question = await generateQuestion(topic, difficulty, grade);
+      // Prepare question generation
+      const { prompt, aiModel } = prepareQuestionGeneration(topic, difficulty, grade);
+      
+      // Generate question with appropriate AI
+      let question;
+      if (aiModel === 'openai') {
+        question = await generateWithOpenAI(openai, prompt);
+      } else {
+        question = await generateWithClaude(anthropic, prompt);
+      }
       
       // Validate question format
       if (!validateQuestion(question)) {
