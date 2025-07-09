@@ -14,6 +14,10 @@ const anthropic = new Anthropic({
 });
 
 export default async function handler(req, res) {
+  // Set security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  
   // Handle robots.txt request
   if (req.url === '/api/generate?robots') {
     res.setHeader('Content-Type', 'text/plain');

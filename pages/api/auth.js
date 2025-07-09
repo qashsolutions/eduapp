@@ -2,6 +2,12 @@ import { signUp, signIn, logOut } from '../../lib/firebase';
 import { createUser } from '../../lib/db';
 
 export default async function handler(req, res) {
+  // Set security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  
   const { method } = req;
 
   try {
