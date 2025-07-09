@@ -1,8 +1,8 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { generateWithOpenAI, generateWithClaude, validateQuestion, createQuestionPrompt, generateSocraticFollowup } from '../../lib/ai-service';
-import { getUser, updateUserProficiency, logQuestionAttempt } from '../../lib/db';
-import { mapProficiencyToDifficulty, updateProficiency, AI_ROUTING, EDUCATIONAL_TOPICS, getRandomContext } from '../../lib/utils';
+import { getUser, updateUserProficiency, logQuestionAttempt, getCachedQuestion, cacheQuestion, checkQuestionHash } from '../../lib/db';
+import { mapProficiencyToDifficulty, updateProficiency, AI_ROUTING, EDUCATIONAL_TOPICS, getRandomContext, generateQuestionHash } from '../../lib/utils';
 
 // Initialize AI clients server-side only
 const openaiKey = process.env.OPENAI_API_KEY;
@@ -13,13 +13,14 @@ console.log('AI Keys configured:', {
   anthropic: !!anthropicKey
 });
 
-const openai = new OpenAI({
+// Initialize clients only if keys exist
+const openai = openaiKey ? new OpenAI({
   apiKey: openaiKey,
-});
+}) : null;
 
-const anthropic = new Anthropic({
+const anthropic = anthropicKey ? new Anthropic({
   apiKey: anthropicKey,
-});
+}) : null;
 
 export default async function handler(req, res) {
   // Set security headers
@@ -105,30 +106,76 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
         return res.status(400).json({ error: 'Invalid topic' });
       }
       
-      // Generate question context
-      const context = getRandomContext(topicConfig.contexts);
-      const subtopic = topicConfig.subtopics[Math.floor(Math.random() * topicConfig.subtopics.length)];
+      // Try to get cached question first
+      let question = null;
+      let questionHash = null;
+      let attempts = 0;
+      const maxAttempts = 3;
       
-      // Create the prompt
-      const prompt = createQuestionPrompt(topic, difficulty, grade, context, subtopic);
+      // Check cache first
+      const cached = await getCachedQuestion(topic, difficulty, grade);
       
-      // Generate question with appropriate AI
-      let question;
-      if (aiModel === 'openai') {
-        question = await generateWithOpenAI(openai, prompt);
-      } else {
-        question = await generateWithClaude(anthropic, prompt);
+      if (cached && cached.question) {
+        question = cached.question;
+        // Still need to check if user has seen this exact question
+        const tempHash = generateQuestionHash(topic, '', '', difficulty, question.question);
+        const isDuplicate = await checkQuestionHash(userId, tempHash);
+        
+        if (!isDuplicate) {
+          questionHash = tempHash;
+        } else {
+          question = null; // Force generation
+        }
       }
       
-      // Validate question format
-      if (!validateQuestion(question)) {
-        throw new Error('Invalid question format received from AI');
+      // Generate new question if not cached or duplicate
+      while (!question && attempts < maxAttempts) {
+        attempts++;
+        
+        // Generate question context
+        const context = getRandomContext(topicConfig.contexts);
+        const subtopic = topicConfig.subtopics[Math.floor(Math.random() * topicConfig.subtopics.length)];
+        
+        // Create the prompt
+        const prompt = createQuestionPrompt(topic, difficulty, grade, context, subtopic);
+        
+        // Generate question with appropriate AI
+        let generatedQuestion;
+        if (aiModel === 'openai') {
+          if (!openai) throw new Error('OpenAI client not initialized');
+          generatedQuestion = await generateWithOpenAI(openai, prompt);
+        } else {
+          if (!anthropic) throw new Error('Anthropic client not initialized');
+          generatedQuestion = await generateWithClaude(anthropic, prompt);
+        }
+        
+        // Validate question format
+        if (!validateQuestion(generatedQuestion)) {
+          continue;
+        }
+        
+        // Generate hash and check for duplicates
+        const hash = generateQuestionHash(topic, subtopic, context, difficulty, generatedQuestion.question);
+        const isDuplicate = await checkQuestionHash(userId, hash);
+        
+        if (!isDuplicate) {
+          question = generatedQuestion;
+          questionHash = hash;
+          
+          // Cache the question for future use
+          await cacheQuestion(topic, difficulty, grade, question, aiModel);
+        }
+      }
+      
+      if (!question) {
+        throw new Error('Unable to generate unique question');
       }
 
       return res.status(200).json({
         question,
         difficulty,
-        currentProficiency
+        currentProficiency,
+        questionHash
       });
     }
 
@@ -178,8 +225,9 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
       // Check if answer is correct
       const { correct } = req.body;
       
-      // Log the attempt
-      await logQuestionAttempt(userId, topic, correct, timeSpent, hintsUsed || 0);
+      // Log the attempt with hash
+      const questionHash = req.body.questionHash || null;
+      await logQuestionAttempt(userId, topic, correct, timeSpent, hintsUsed || 0, questionHash);
 
       // Update proficiency
       const currentProficiency = user[topic] || 5;

@@ -130,7 +130,8 @@ export default function Dashboard() {
           answer: selectedAnswer,
           correct: correct,
           timeSpent: timeSpent,
-          hintsUsed: hintsUsed
+          hintsUsed: hintsUsed,
+          questionHash: currentQuestion?.questionHash || null
         })
       });
 
