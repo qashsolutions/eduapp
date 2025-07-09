@@ -1,4 +1,5 @@
 // Run this with: node check-env.js
+require('dotenv').config({ path: '.env.local' });
 console.log('Checking environment variables...\n');
 
 const required = [
