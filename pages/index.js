@@ -19,22 +19,32 @@ export default function Dashboard() {
   const [sessionStats, setSessionStats] = useState({ totalQuestions: 0, correctAnswers: 0 });
 
   useEffect(() => {
+    console.log('Dashboard: Setting up auth listener...');
+    
     // Subscribe to auth state changes
     const unsubscribe = onAuthChange(async (firebaseUser) => {
+      console.log('Dashboard: Auth state changed:', firebaseUser?.uid);
+      
       if (!firebaseUser) {
+        console.log('Dashboard: No user, redirecting to login...');
         router.push('/login');
         return;
       }
 
       try {
         // Get user data from Supabase using Firebase UID
+        console.log('Dashboard: Fetching user data for:', firebaseUser.uid);
         const userData = await getUser(firebaseUser.uid);
+        console.log('Dashboard: User data received:', userData);
+        
         if (userData) {
           setUser(userData);
           
           // Load session stats
           const stats = await getSessionStats(firebaseUser.uid);
           setSessionStats(stats);
+        } else {
+          console.log('Dashboard: No user data found in Supabase');
         }
       } catch (error) {
         console.error('Error loading user:', error);

@@ -8,6 +8,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
+  const [grade, setGrade] = useState(8);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -15,6 +16,8 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
+
+    console.log('Auth submission:', { isLogin, email, role });
 
     try {
       const response = await fetch('/api/auth', {
@@ -24,11 +27,13 @@ export default function Login() {
           action: isLogin ? 'login' : 'signup',
           email,
           password,
-          role: !isLogin ? role : undefined
+          role: !isLogin ? role : undefined,
+          grade: !isLogin ? grade : undefined
         })
       });
 
       const data = await response.json();
+      console.log('Auth response:', data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Authentication failed');
@@ -37,11 +42,14 @@ export default function Login() {
       // Store user ID in localStorage for quick access
       if (data.user) {
         localStorage.setItem('userId', data.user.id);
+        console.log('User ID stored:', data.user.id);
       }
       
       // Redirect to dashboard
+      console.log('Attempting redirect to dashboard...');
       router.push('/');
     } catch (error) {
+      console.error('Auth error:', error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -94,22 +102,42 @@ export default function Login() {
           </div>
 
           {!isLogin && (
-            <div className="form-group">
-              <div className="role-selector">
-                <div
-                  className={`role-card ${role === 'student' ? 'active' : ''}`}
-                  onClick={() => setRole('student')}
-                >
-                  <h3>Student</h3>
-                </div>
-                <div
-                  className={`role-card ${role === 'teacher' ? 'active' : ''}`}
-                  onClick={() => setRole('teacher')}
-                >
-                  <h3>Teacher</h3>
+            <>
+              <div className="form-group">
+                <div className="role-selector">
+                  <div
+                    className={`role-card ${role === 'student' ? 'active' : ''}`}
+                    onClick={() => setRole('student')}
+                  >
+                    <h3>Student</h3>
+                  </div>
+                  <div
+                    className={`role-card ${role === 'teacher' ? 'active' : ''}`}
+                    onClick={() => setRole('teacher')}
+                  >
+                    <h3>Teacher</h3>
+                  </div>
                 </div>
               </div>
-            </div>
+
+              {role === 'student' && (
+                <div className="form-group">
+                  <label style={{ fontSize: '0.9rem', marginBottom: '8px', display: 'block', color: 'var(--text-secondary)' }}>
+                    Select Your Grade
+                  </label>
+                  <select
+                    value={grade}
+                    onChange={(e) => setGrade(parseInt(e.target.value))}
+                    className="form-input"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {[5, 6, 7, 8, 9, 10, 11].map(g => (
+                      <option key={g} value={g}>Grade {g}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </>
           )}
 
           <button 

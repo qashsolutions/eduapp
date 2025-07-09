@@ -7,22 +7,26 @@ export default async function handler(req, res) {
   try {
     switch (method) {
       case 'POST':
-        const { action, email, password, role } = req.body;
+        const { action, email, password, role, grade } = req.body;
+        console.log('Auth API:', { action, email, role, grade });
         
         if (action === 'signup') {
           // Sign up new user with Firebase
           const { user, error } = await signUp(email, password);
           
           if (error) {
+            console.log('Firebase signup error:', error);
             return res.status(400).json({ error });
           }
           
           // Create user profile in Supabase
           if (user) {
-            const userProfile = await createUser(email, user.uid, role || 'student');
+            console.log('Creating Supabase user:', { email, uid: user.uid, role: role || 'student', grade });
+            const userProfile = await createUser(email, user.uid, role || 'student', grade);
             if (!userProfile) {
               return res.status(500).json({ error: 'Failed to create user profile' });
             }
+            console.log('User profile created:', userProfile);
           }
           
           return res.status(200).json({ 
