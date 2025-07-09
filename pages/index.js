@@ -4,7 +4,8 @@ import Head from 'next/head';
 import MoodSelector from '../components/MoodSelector';
 import ProgressBar from '../components/ProgressBar';
 import QuestionCard from '../components/QuestionCard';
-import { getCurrentUser, getUser, getSessionStats } from '../lib/db';
+import { onAuthChange } from '../lib/firebase';
+import { getUser, getSessionStats } from '../lib/db';
 import { MOOD_TOPICS, formatTopicName, getCachedProficiency } from '../lib/utils';
 
 export default function Dashboard() {
@@ -18,32 +19,33 @@ export default function Dashboard() {
   const [sessionStats, setSessionStats] = useState({ totalQuestions: 0, correctAnswers: 0 });
 
   useEffect(() => {
-    loadUser();
-  }, []);
-
-  const loadUser = async () => {
-    try {
-      const authUser = await getCurrentUser();
-      if (!authUser) {
+    // Subscribe to auth state changes
+    const unsubscribe = onAuthChange(async (firebaseUser) => {
+      if (!firebaseUser) {
         router.push('/login');
         return;
       }
 
-      const userData = await getUser(authUser.id);
-      if (userData) {
-        setUser(userData);
-        
-        // Load session stats
-        const stats = await getSessionStats(authUser.id);
-        setSessionStats(stats);
+      try {
+        // Get user data from Supabase using Firebase UID
+        const userData = await getUser(firebaseUser.uid);
+        if (userData) {
+          setUser(userData);
+          
+          // Load session stats
+          const stats = await getSessionStats(firebaseUser.uid);
+          setSessionStats(stats);
+        }
+      } catch (error) {
+        console.error('Error loading user:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading user:', error);
-      router.push('/login');
-    } finally {
-      setLoading(false);
-    }
-  };
+    });
+
+    // Cleanup subscription
+    return () => unsubscribe();
+  }, [router]);
 
   const handleTopicSelect = async (topic) => {
     setSelectedTopic(topic);

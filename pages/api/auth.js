@@ -1,4 +1,5 @@
-import { supabase, createUser } from '../../lib/db';
+import { signUp, signIn, logOut } from '../../lib/firebase';
+import { createUser } from '../../lib/db';
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -9,53 +10,52 @@ export default async function handler(req, res) {
         const { action, email, password } = req.body;
         
         if (action === 'signup') {
-          // Sign up new user
-          const { data: authData, error: authError } = await supabase.auth.signUp({
-            email,
-            password,
-          });
+          // Sign up new user with Firebase
+          const { user, error } = await signUp(email, password);
           
-          if (authError) {
-            return res.status(400).json({ error: authError.message });
+          if (error) {
+            return res.status(400).json({ error });
           }
           
-          // Create user profile
-          if (authData.user) {
-            const userProfile = await createUser(email, authData.user.id);
+          // Create user profile in Supabase
+          if (user) {
+            const userProfile = await createUser(email, user.uid);
             if (!userProfile) {
               return res.status(500).json({ error: 'Failed to create user profile' });
             }
           }
           
           return res.status(200).json({ 
-            user: authData.user,
+            user: {
+              id: user.uid,
+              email: user.email
+            },
             message: 'Account created successfully' 
           });
         }
         
         if (action === 'login') {
-          // Sign in existing user
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
+          // Sign in with Firebase
+          const { user, error } = await signIn(email, password);
           
           if (error) {
-            return res.status(400).json({ error: error.message });
+            return res.status(400).json({ error });
           }
           
           return res.status(200).json({ 
-            user: data.user,
-            session: data.session 
+            user: {
+              id: user.uid,
+              email: user.email
+            }
           });
         }
         
         if (action === 'logout') {
-          // Sign out user
-          const { error } = await supabase.auth.signOut();
+          // Sign out from Firebase
+          const { error } = await logOut();
           
           if (error) {
-            return res.status(400).json({ error: error.message });
+            return res.status(400).json({ error });
           }
           
           return res.status(200).json({ message: 'Logged out successfully' });

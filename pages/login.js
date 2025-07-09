@@ -32,6 +32,11 @@ export default function Login() {
         throw new Error(data.error || 'Authentication failed');
       }
 
+      // Store user ID in localStorage for quick access
+      if (data.user) {
+        localStorage.setItem('userId', data.user.id);
+      }
+      
       // Redirect to dashboard
       router.push('/');
     } catch (error) {

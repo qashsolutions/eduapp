@@ -51,10 +51,15 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
   try {
     const { action, userId, topic, answer, timeSpent, hintsUsed } = req.body;
 
+    // Verify that userId is provided (in production, verify the Firebase token)
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     if (action === 'generate') {
       // Validate inputs
-      if (!userId || !topic) {
-        return res.status(400).json({ error: 'Missing userId or topic' });
+      if (!topic) {
+        return res.status(400).json({ error: 'Missing topic' });
       }
 
       // Get user data
