@@ -27,7 +27,7 @@ export default function Dashboard() {
       
       if (!firebaseUser) {
         console.log('Dashboard: No user, redirecting to login...');
-        router.push('/login');
+        router.replace('/login'); // Use replace to prevent back button issues
         return;
       }
 

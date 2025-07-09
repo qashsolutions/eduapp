@@ -12,14 +12,16 @@ export default function Login() {
   const [grade, setGrade] = useState(8);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
     // Check if user is already logged in
     const unsubscribe = onAuthChange((user) => {
       if (user) {
         console.log('Login: User already authenticated, redirecting...');
-        router.push('/');
+        router.replace('/'); // Use replace instead of push
       }
+      setCheckingAuth(false); // Auth check complete
     });
 
     return () => unsubscribe();
@@ -28,6 +30,12 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    // Prevent submission if already loading
+    if (loading) {
+      console.log('Already processing auth, ignoring submission');
+      return;
+    }
     
     if (!email || !password) {
       setError('Please fill in all fields');
@@ -87,6 +95,15 @@ export default function Login() {
       setLoading(false);
     }
   };
+
+  // Show loading while checking auth state
+  if (checkingAuth) {
+    return (
+      <div className="login-container">
+        <div className="loading-text">Checking authentication...</div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -357,6 +374,13 @@ export default function Login() {
             opacity: 1; 
             transform: translateY(0); 
           }
+        }
+
+        .loading-text {
+          color: var(--accent-neon);
+          font-size: 1.2rem;
+          text-align: center;
+          animation: pulse 2s ease-in-out infinite;
         }
 
         @media (max-width: 768px) {
