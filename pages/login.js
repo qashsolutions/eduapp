@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { onAuthChange } from '../lib/firebase';
 
 export default function Login() {
   const router = useRouter();
@@ -11,6 +12,18 @@ export default function Login() {
   const [grade, setGrade] = useState(8);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const unsubscribe = onAuthChange((user) => {
+      if (user) {
+        console.log('Login: User already authenticated, redirecting...');
+        router.push('/');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,9 +58,8 @@ export default function Login() {
         console.log('User ID stored:', data.user.id);
       }
       
-      // Redirect to dashboard
-      console.log('Attempting redirect to dashboard...');
-      router.push('/');
+      // The auth state listener will handle redirect
+      console.log('Auth successful, waiting for auth state update...');
     } catch (error) {
       console.error('Auth error:', error);
       setError(error.message);
