@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { generateSocraticFollowup } from '../lib/ai-service';
 import { setCachedProficiency } from '../lib/utils';
 
 export default function QuestionCard({ 
@@ -46,14 +45,28 @@ export default function QuestionCard({
     if (!hint && !showResult) {
       setHintsUsed(hintsUsed + 1);
       try {
-        const socraticPrompt = await generateSocraticFollowup(
-          topic,
-          question.question,
-          selectedAnswer || 'not selected',
-          difficulty
-        );
-        setHint(socraticPrompt);
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'socratic',
+            userId,
+            topic,
+            question: question.question,
+            wrongAnswer: selectedAnswer || 'not selected',
+            difficulty
+          })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          setHint(data.hint);
+        } else {
+          setHint(data.fallback || "Think about what the question is really asking. Look for key words that might give you clues.");
+        }
       } catch (error) {
+        console.error('Error getting hint:', error);
         setHint("Think about what the question is really asking. Look for key words that might give you clues.");
       }
     }

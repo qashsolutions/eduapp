@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
-import { generateWithOpenAI, generateWithClaude, validateQuestion, createQuestionPrompt } from '../../lib/ai-service';
+import { generateWithOpenAI, generateWithClaude, validateQuestion, createQuestionPrompt, generateSocraticFollowup } from '../../lib/ai-service';
 import { getUser, updateUserProficiency, logQuestionAttempt } from '../../lib/db';
 import { mapProficiencyToDifficulty, updateProficiency, AI_ROUTING, EDUCATIONAL_TOPICS, getRandomContext } from '../../lib/utils';
 
@@ -130,6 +130,37 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
         difficulty,
         currentProficiency
       });
+    }
+
+    if (action === 'socratic') {
+      // Validate inputs
+      if (!userId || !topic || !req.body.question || req.body.wrongAnswer === undefined || req.body.difficulty === undefined) {
+        return res.status(400).json({ error: 'Missing required fields for Socratic hint' });
+      }
+
+      const { question, wrongAnswer, difficulty } = req.body;
+
+      // Check if AI keys are configured
+      const aiModel = AI_ROUTING[topic];
+      if (aiModel === 'openai' && !openaiKey) {
+        return res.status(500).json({ error: 'OpenAI API key not configured' });
+      }
+      if (aiModel === 'claude' && !anthropicKey) {
+        return res.status(500).json({ error: 'Anthropic API key not configured' });
+      }
+
+      // Generate Socratic hint
+      try {
+        const aiClient = aiModel === 'openai' ? openai : anthropic;
+        const hint = await generateSocraticFollowup(aiClient, topic, question, wrongAnswer, difficulty);
+        return res.status(200).json({ hint });
+      } catch (error) {
+        console.error('Error generating Socratic prompt:', error);
+        return res.status(500).json({ 
+          error: 'Failed to generate hint',
+          fallback: "Think about what the question is really asking. Look for key words that might give you clues."
+        });
+      }
     }
 
     if (action === 'submit') {
