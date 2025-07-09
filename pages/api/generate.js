@@ -98,8 +98,7 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
       // Extract grade from user data (default to 8 if not set)
       const grade = user.grade || 8;
 
-      // Get AI model and topic config
-      const aiModel = AI_ROUTING[topic];
+      // Get topic config
       const topicConfig = EDUCATIONAL_TOPICS[topic];
       
       if (!topicConfig) {
