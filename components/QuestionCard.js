@@ -13,9 +13,11 @@ export default function QuestionCard({
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [hint, setHint] = useState(null);
+  const [hints, setHints] = useState([]);
+  const [currentHintLevel, setCurrentHintLevel] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [startTime] = useState(Date.now());
+  const MAX_HINTS = 4;
 
   const handleAnswerSelect = (option) => {
     if (!showResult) {
@@ -39,12 +41,23 @@ export default function QuestionCard({
     }
     
     // Notify parent
-    onAnswer(correct, timeSpent, hintsUsed);
+    onAnswer(correct, timeSpent, hintsUsed, selectedAnswer);
   };
 
   const handleHint = async () => {
-    if (!hint && !showResult) {
-      setHintsUsed(hintsUsed + 1);
+    if (!showResult && currentHintLevel < MAX_HINTS) {
+      const nextLevel = currentHintLevel + 1;
+      
+      // If we already have this hint level, just show it
+      if (hints[nextLevel - 1]) {
+        setCurrentHintLevel(nextLevel);
+        if (nextLevel === 1) {
+          setHintsUsed(1);
+        }
+        return;
+      }
+      
+      // Otherwise, fetch a new hint
       try {
         const response = await fetch('/api/generate', {
           method: 'POST',
@@ -55,20 +68,26 @@ export default function QuestionCard({
             topic,
             question: question.question,
             wrongAnswer: selectedAnswer || 'not selected',
-            difficulty
+            difficulty,
+            hintLevel: nextLevel
           })
         });
 
         const data = await response.json();
         
         if (response.ok) {
-          setHint(data.hint);
+          const newHints = [...hints];
+          newHints[nextLevel - 1] = data.hint;
+          setHints(newHints);
+          setCurrentHintLevel(nextLevel);
+          if (nextLevel === 1) {
+            setHintsUsed(1);
+          }
         } else {
-          setHint(data.fallback || "Think about what the question is really asking. Look for key words that might give you clues.");
+          console.error('Failed to get hint:', data.error);
         }
       } catch (error) {
         console.error('Error getting hint:', error);
-        setHint("Think about what the question is really asking. Look for key words that might give you clues.");
       }
     }
   };
@@ -116,12 +135,16 @@ export default function QuestionCard({
         ))}
       </div>
 
-      {hint && (
+      {currentHintLevel > 0 && hints.length > 0 && (
         <div className="hint-section">
           <div className="hint-title">
-            💡 Think about it...
+            💡 {currentHintLevel === 1 ? 'Think about it...' : 
+                currentHintLevel === 2 ? 'Getting warmer...' :
+                currentHintLevel === 3 ? 'Almost there...' :
+                'Final clue...'}
+            <span className="hint-level">({currentHintLevel}/{MAX_HINTS})</span>
           </div>
-          <div className="hint-text">{hint}</div>
+          <div className="hint-text">{hints[currentHintLevel - 1]}</div>
         </div>
       )}
 
@@ -140,9 +163,11 @@ export default function QuestionCard({
             <button 
               className="btn btn-secondary" 
               onClick={handleHint}
-              disabled={hint !== null}
+              disabled={currentHintLevel >= MAX_HINTS}
             >
-              {hint ? 'Got it! 👍' : 'Need a hint? 💭'}
+              {currentHintLevel === 0 ? 'Need a hint? 💭' : 
+               currentHintLevel < MAX_HINTS ? 'Need more help? 🤔' : 
+               'No more hints available'}
             </button>
             <button 
               className="btn btn-primary" 
@@ -300,6 +325,13 @@ export default function QuestionCard({
           font-weight: 600;
           margin-bottom: 12px;
           color: var(--accent-neon);
+        }
+        
+        .hint-level {
+          margin-left: auto;
+          font-size: 0.875rem;
+          opacity: 0.7;
+          font-weight: normal;
         }
         
         .hint-text, .explanation-text {

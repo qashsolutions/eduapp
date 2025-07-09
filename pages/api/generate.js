@@ -138,7 +138,7 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
         return res.status(400).json({ error: 'Missing required fields for Socratic hint' });
       }
 
-      const { question, wrongAnswer, difficulty } = req.body;
+      const { question, wrongAnswer, difficulty, hintLevel = 1 } = req.body;
 
       // Check if AI keys are configured
       const aiModel = AI_ROUTING[topic];
@@ -152,7 +152,7 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
       // Generate Socratic hint
       try {
         const aiClient = aiModel === 'openai' ? openai : anthropic;
-        const hint = await generateSocraticFollowup(aiClient, topic, question, wrongAnswer, difficulty);
+        const hint = await generateSocraticFollowup(aiClient, topic, question, wrongAnswer, difficulty, hintLevel);
         return res.status(200).json({ hint });
       } catch (error) {
         console.error('Error generating Socratic prompt:', error);

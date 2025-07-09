@@ -113,7 +113,7 @@ export default function Dashboard() {
     }
   };
 
-  const handleAnswer = async (correct, timeSpent, hintsUsed) => {
+  const handleAnswer = async (correct, timeSpent, hintsUsed, selectedAnswer) => {
     try {
       const token = await auth.currentUser?.getIdToken();
       
@@ -127,6 +127,7 @@ export default function Dashboard() {
           action: 'submit',
           userId: user.id,
           topic: selectedTopic,
+          answer: selectedAnswer,
           correct: correct,
           timeSpent: timeSpent,
           hintsUsed: hintsUsed
