@@ -7,6 +7,7 @@ export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('student');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +23,8 @@ export default function Login() {
         body: JSON.stringify({
           action: isLogin ? 'login' : 'signup',
           email,
-          password
+          password,
+          role: !isLogin ? role : undefined
         })
       });
 
@@ -90,6 +92,25 @@ export default function Login() {
               className="form-input"
             />
           </div>
+
+          {!isLogin && (
+            <div className="form-group">
+              <div className="role-selector">
+                <div
+                  className={`role-card ${role === 'student' ? 'active' : ''}`}
+                  onClick={() => setRole('student')}
+                >
+                  <h3>Student</h3>
+                </div>
+                <div
+                  className={`role-card ${role === 'teacher' ? 'active' : ''}`}
+                  onClick={() => setRole('teacher')}
+                >
+                  <h3>Teacher</h3>
+                </div>
+              </div>
+            </div>
+          )}
 
           <button 
             type="submit" 
@@ -233,6 +254,38 @@ export default function Login() {
 
         .switch-btn:hover {
           color: var(--accent-blue);
+        }
+
+        .role-selector {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+          margin-top: 8px;
+        }
+
+        .role-card {
+          padding: 20px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 2px solid var(--glass-border);
+          border-radius: 12px;
+          text-align: center;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .role-card h3 {
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin: 0;
+        }
+
+        .role-card.active {
+          border-color: var(--accent-neon);
+          background: rgba(0, 255, 136, 0.1);
+        }
+
+        .role-card:hover {
+          border-color: var(--accent-blue);
         }
 
         @keyframes fadeIn {

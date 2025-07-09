@@ -4,7 +4,7 @@ import Head from 'next/head';
 import MoodSelector from '../components/MoodSelector';
 import ProgressBar from '../components/ProgressBar';
 import QuestionCard from '../components/QuestionCard';
-import { onAuthChange } from '../lib/firebase';
+import { onAuthChange, auth } from '../lib/firebase';
 import { getUser, getSessionStats } from '../lib/db';
 import { MOOD_TOPICS, formatTopicName, getCachedProficiency } from '../lib/utils';
 
@@ -52,9 +52,15 @@ export default function Dashboard() {
     setGenerating(true);
 
     try {
+      // Get Firebase token for authentication
+      const token = await auth.currentUser?.getIdToken();
+      
       const response = await fetch('/api/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
         body: JSON.stringify({
           action: 'generate',
           userId: user.id,
@@ -80,9 +86,14 @@ export default function Dashboard() {
 
   const handleAnswer = async (correct, timeSpent, hintsUsed) => {
     try {
+      const token = await auth.currentUser?.getIdToken();
+      
       const response = await fetch('/api/generate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
         body: JSON.stringify({
           action: 'submit',
           userId: user.id,

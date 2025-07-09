@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   try {
     switch (method) {
       case 'POST':
-        const { action, email, password } = req.body;
+        const { action, email, password, role } = req.body;
         
         if (action === 'signup') {
           // Sign up new user with Firebase
@@ -19,7 +19,7 @@ export default async function handler(req, res) {
           
           // Create user profile in Supabase
           if (user) {
-            const userProfile = await createUser(email, user.uid);
+            const userProfile = await createUser(email, user.uid, role || 'student');
             if (!userProfile) {
               return res.status(500).json({ error: 'Failed to create user profile' });
             }
