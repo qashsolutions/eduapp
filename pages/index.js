@@ -34,8 +34,21 @@ export default function Dashboard() {
       try {
         // Get user data from Supabase using Firebase UID
         console.log('Dashboard: Fetching user data for:', firebaseUser.uid);
-        const userData = await getUser(firebaseUser.uid);
+        let userData = await getUser(firebaseUser.uid);
         console.log('Dashboard: User data received:', userData);
+        
+        if (!userData) {
+          console.log('Dashboard: No user data found, creating profile...');
+          // Create user profile if it doesn't exist (for existing Firebase users)
+          const { createUser } = await import('../lib/db');
+          userData = await createUser(
+            firebaseUser.email,
+            firebaseUser.uid,
+            'student', // Default role
+            8 // Default grade
+          );
+          console.log('Dashboard: Created user profile:', userData);
+        }
         
         if (userData) {
           setUser(userData);
@@ -44,7 +57,7 @@ export default function Dashboard() {
           const stats = await getSessionStats(firebaseUser.uid);
           setSessionStats(stats);
         } else {
-          console.log('Dashboard: No user data found in Supabase');
+          console.error('Dashboard: Failed to load or create user profile');
         }
       } catch (error) {
         console.error('Error loading user:', error);
@@ -58,6 +71,12 @@ export default function Dashboard() {
   }, [router]);
 
   const handleTopicSelect = async (topic) => {
+    if (!user || !user.id) {
+      console.error('No user data available');
+      setGenerating(false);
+      return;
+    }
+    
     setSelectedTopic(topic);
     setGenerating(true);
 
