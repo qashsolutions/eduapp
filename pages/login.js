@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { onAuthChange } from '../lib/firebase';
+import { onAuthChange, signIn, signUp } from '../lib/firebase';
+import { createUser } from '../lib/db';
 
 export default function Login() {
   const router = useRouter();
@@ -48,46 +49,52 @@ export default function Login() {
     console.log('Auth submission:', { isLogin, email, role, grade });
 
     try {
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: isLogin ? 'login' : 'signup',
-          email,
-          password,
-          role: !isLogin ? role : undefined,
-          grade: !isLogin && role === 'student' ? grade : undefined
-        })
-      });
-
-      const data = await response.json();
-      console.log('Auth response:', data);
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Authentication failed');
+      let authResult;
+      
+      if (isLogin) {
+        // Sign in with Firebase
+        console.log('Signing in with Firebase...');
+        authResult = await signIn(email, password);
+        
+        if (authResult.error) {
+          throw new Error(authResult.error);
+        }
+      } else {
+        // Sign up with Firebase
+        console.log('Signing up with Firebase...');
+        authResult = await signUp(email, password);
+        
+        if (authResult.error) {
+          throw new Error(authResult.error);
+        }
+        
+        // Create user profile in Supabase
+        if (authResult.user) {
+          console.log('Creating user profile in Supabase...');
+          const userProfile = await createUser(
+            email, 
+            authResult.user.uid, 
+            role,
+            role === 'student' ? grade : null
+          );
+          
+          if (!userProfile) {
+            console.error('Failed to create user profile in Supabase');
+            // Continue anyway - user can still use the app
+          } else {
+            console.log('User profile created successfully');
+          }
+        }
       }
 
       // Store user ID in localStorage for quick access
-      if (data.user) {
-        localStorage.setItem('userId', data.user.id);
-        console.log('User ID stored:', data.user.id);
-      }
-      
-      // For signup, we need to sign in after account creation
-      if (!isLogin && data.user) {
-        console.log('Signing in after successful signup...');
-        try {
-          // Sign in with Firebase to establish auth session
-          const { signIn } = await import('../lib/firebase');
-          await signIn(email, password);
-          console.log('Sign in after signup successful');
-        } catch (signInError) {
-          console.error('Error signing in after signup:', signInError);
-        }
+      if (authResult.user) {
+        localStorage.setItem('userId', authResult.user.uid);
+        console.log('User authenticated:', authResult.user.uid);
       }
       
       // The auth state listener will handle redirect
-      console.log('Auth complete, waiting for auth state update...');
+      console.log('Auth complete, auth state should update automatically');
     } catch (error) {
       console.error('Auth error:', error);
       setError(error.message);
