@@ -1,8 +1,8 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
-import { prepareQuestionGeneration, generateWithOpenAI, generateWithClaude, validateQuestion } from '../../lib/ai-service';
+import { generateWithOpenAI, generateWithClaude, validateQuestion, createQuestionPrompt } from '../../lib/ai-service';
 import { getUser, updateUserProficiency, logQuestionAttempt } from '../../lib/db';
-import { mapProficiencyToDifficulty, updateProficiency } from '../../lib/utils';
+import { mapProficiencyToDifficulty, updateProficiency, AI_ROUTING, EDUCATIONAL_TOPICS, getRandomContext } from '../../lib/utils';
 
 // Initialize AI clients server-side only
 const openai = new OpenAI({
@@ -81,8 +81,20 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
       // Extract grade from user data (default to 8 if not set)
       const grade = user.grade || 8;
 
-      // Prepare question generation
-      const { prompt, aiModel } = prepareQuestionGeneration(topic, difficulty, grade);
+      // Get AI model and topic config
+      const aiModel = AI_ROUTING[topic];
+      const topicConfig = EDUCATIONAL_TOPICS[topic];
+      
+      if (!topicConfig) {
+        return res.status(400).json({ error: 'Invalid topic' });
+      }
+      
+      // Generate question context
+      const context = getRandomContext(topicConfig.contexts);
+      const subtopic = topicConfig.subtopics[Math.floor(Math.random() * topicConfig.subtopics.length)];
+      
+      // Create the prompt
+      const prompt = createQuestionPrompt(topic, difficulty, grade, context, subtopic);
       
       // Generate question with appropriate AI
       let question;
