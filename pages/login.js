@@ -10,7 +10,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
-  const [grade, setGrade] = useState(8);
+  const [grade, setGrade] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -40,6 +40,12 @@ export default function Login() {
     
     if (!email || !password) {
       setError('Please fill in all fields');
+      return;
+    }
+    
+    // Grade validation for student signup
+    if (!isLogin && role === 'student' && !grade) {
+      setError('Please select your grade');
       return;
     }
     
@@ -75,7 +81,7 @@ export default function Login() {
             email, 
             authResult.user.uid, 
             role,
-            role === 'student' ? grade : null
+            role === 'student' ? parseInt(grade) : null
           );
           
           if (!userProfile) {
@@ -183,10 +189,12 @@ export default function Login() {
                   </label>
                   <select
                     value={grade}
-                    onChange={(e) => setGrade(parseInt(e.target.value))}
+                    onChange={(e) => setGrade(e.target.value)}
                     className="form-input"
                     style={{ cursor: 'pointer' }}
+                    required
                   >
+                    <option value="">Select your grade</option>
                     {[5, 6, 7, 8, 9, 10, 11].map(g => (
                       <option key={g} value={g}>Grade {g}</option>
                     ))}
