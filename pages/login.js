@@ -48,7 +48,7 @@ export default function Login() {
           email,
           password,
           role: !isLogin ? role : undefined,
-          grade: !isLogin ? grade : undefined
+          grade: !isLogin && role === 'student' ? grade : undefined
         })
       });
 
@@ -65,8 +65,21 @@ export default function Login() {
         console.log('User ID stored:', data.user.id);
       }
       
+      // For signup, we need to sign in after account creation
+      if (!isLogin && data.user) {
+        console.log('Signing in after successful signup...');
+        try {
+          // Sign in with Firebase to establish auth session
+          const { signIn } = await import('../lib/firebase');
+          await signIn(email, password);
+          console.log('Sign in after signup successful');
+        } catch (signInError) {
+          console.error('Error signing in after signup:', signInError);
+        }
+      }
+      
       // The auth state listener will handle redirect
-      console.log('Auth successful, waiting for auth state update...');
+      console.log('Auth complete, waiting for auth state update...');
     } catch (error) {
       console.error('Auth error:', error);
       setError(error.message);
