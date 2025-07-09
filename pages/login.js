@@ -27,10 +27,17 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+    
     setError('');
     setLoading(true);
 
-    console.log('Auth submission:', { isLogin, email, role });
+    console.log('Auth submission:', { isLogin, email, role, grade });
 
     try {
       const response = await fetch('/api/auth', {
