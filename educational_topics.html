@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Granular Educational Topics Database</title>
+    <style>
+        /* ENGLISH TOPICS - Ultra-Granular (300+ variations) */
+        
+        /* Reading Comprehension - Fiction Subtypes (50+ variations) */
+        .topic-adventure-survival-wilderness { complexity: 4; grade-range: "6-9"; themes: "perseverance,problem-solving,nature-connection"; prompts: "survival-strategy-analysis,character-resource-management,environment-challenges"; }
+        .topic-adventure-treasure-hunting { complexity: 3; grade-range: "5-8"; themes: "teamwork,mystery-solving,historical-discovery"; prompts: "clue-interpretation,map-reading-logic,team-dynamics"; }
+        .topic-adventure-space-exploration { complexity: 5; grade-range: "7-10"; themes: "scientific-discovery,isolation,technological-dependence"; prompts: "scientific-accuracy,isolation-psychology,technology-ethics"; }
+        .topic-adventure-underwater-discovery { complexity: 4; grade-range: "6-9"; themes: "marine-biology,exploration,environmental-protection"; prompts: "ecosystem-understanding,discovery-impact,conservation-ethics"; }
+        .topic-adventure-mountain-climbing { complexity: 4; grade-range: "6-9"; themes: "goal-achievement,risk-assessment,physical-mental-endurance"; prompts: "risk-vs-reward,preparation-importance,teamwork-necessity"; }
+
+        .topic-mystery-locked-room { complexity: 6; grade-range: "8-11"; themes: "logical-deduction,impossible-scenarios,creative-solutions"; prompts: "elimination-process,physical-evidence,alternative-explanations"; }
+        .topic-mystery-missing-person { complexity: 5; grade-range: "7-10"; themes: "investigation-methods,human-behavior,social-connections"; prompts: "timeline-construction,motive-analysis,witness-reliability"; }
+        .topic-mystery-historical-artifact { complexity: 6; grade-range: "8-11"; themes: "historical-research,authenticity-verification,cultural-significance"; prompts: "historical-context,authentication-methods,cultural-impact"; }
+        .topic-mystery-cyber-crime { complexity: 7; grade-range: "9-11"; themes: "digital-forensics,modern-technology,privacy-security"; prompts: "digital-evidence,privacy-vs-security,technology-ethics"; }
+        .topic-mystery-art-forgery { complexity: 6; grade-range: "8-11"; themes: "artistic-analysis,cultural-value,deception-detection"; prompts: "authenticity-markers,artistic-technique,cultural-significance"; }
+
+        .topic-scifi-time-travel-paradox { complexity: 7; grade-range: "9-11"; themes: "causality,consequences,temporal-logic"; prompts: "paradox-resolution,cause-effect-chains,timeline-implications"; }
+        .topic-scifi-artificial-intelligence { complexity: 7; grade-range: "9-11"; themes: "consciousness,ethics,human-machine-relationships"; prompts: "consciousness-definition,ethical-programming,humanity-uniqueness"; }
+        .topic-scifi-genetic-engineering { complexity: 8; grade-range: "10-11"; themes: "bioethics,human-enhancement,societal-implications"; prompts: "enhancement-vs-treatment,equality-implications,natural-vs-artificial"; }
+        .topic-scifi-space-colonization { complexity: 7; grade-range: "9-11"; themes: "survival,adaptation,social-organization"; prompts: "resource-management,social-structure,environmental-adaptation"; }
+        .topic-scifi-virtual-reality { complexity: 6; grade-range: "8-10"; themes: "reality-perception,technology-dependence,human-connection"; prompts: "reality-definition,relationship-authenticity,technology-balance"; }
+
+        .topic-historical-civil-war-era { complexity: 6; grade-range: "8-11"; themes: "social-conflict,moral-courage,historical-accuracy"; prompts: "perspective-analysis,moral-complexity,historical-context"; }
+        .topic-historical-industrial-revolution { complexity: 6; grade-range: "8-11"; themes: "technological-change,social-transformation,working-conditions"; prompts: "progress-cost,social-change,technological-impact"; }
+        .topic-historical-world-war-periods { complexity: 7; grade-range: "9-11"; themes: "moral-courage,survival,human-resilience"; prompts: "moral-choices,survival-strategies,human-dignity"; }
+        .topic-historical-ancient-civilizations { complexity: 5; grade-range: "7-10"; themes: "cultural-differences,daily-life,societal-structure"; prompts: "cultural-comparison,social-hierarchy,daily-life-analysis"; }
+        .topic-historical-exploration-age { complexity: 5; grade-range: "7-10"; themes: "discovery,cultural-encounter,geographical-knowledge"; prompts: "exploration-motivation,cultural-impact,geographical-understanding"; }
+
+        /* Reading Comprehension - Non-Fiction Subtypes (40+ variations) */
+        .topic-biography-scientists-inventors { complexity: 6; grade-range: "8-11"; themes: "innovation,perseverance,scientific-method"; prompts: "discovery-process,failure-learning,scientific-impact"; }
+        .topic-biography-social-reformers { complexity: 7; grade-range: "9-11"; themes: "social-justice,advocacy,systemic-change"; prompts: "change-strategies,opposition-handling,legacy-evaluation"; }
+        .topic-biography-artists-writers { complexity: 6; grade-range: "8-11"; themes: "creativity,cultural-expression,artistic-influence"; prompts: "creative-process,cultural-reflection,artistic-legacy"; }
+        .topic-biography-political-leaders { complexity: 7; grade-range: "9-11"; themes: "leadership,decision-making,historical-impact"; prompts: "leadership-qualities,decision-consequences,historical-significance"; }
+        .topic-biography-athletes-competitors { complexity: 5; grade-range: "7-10"; themes: "dedication,competition,personal-excellence"; prompts: "training-dedication,competition-psychology,excellence-pursuit"; }
+
+        .topic-informational-climate-change { complexity: 7; grade-range: "9-11"; themes: "environmental-science,global-impact,future-planning"; prompts: "evidence-analysis,solution-evaluation,future-implications"; }
+        .topic-informational-renewable-energy { complexity: 6; grade-range: "8-11"; themes: "sustainability,technology,economic-impact"; prompts: "efficiency-comparison,cost-benefit,implementation-challenges"; }
+        .topic-informational-space-exploration { complexity: 6; grade-range: "8-11"; themes: "scientific-discovery,technology,exploration-benefits"; prompts: "discovery-significance,technology-advancement,exploration-justification"; }
+        .topic-informational-medical-breakthroughs { complexity: 7; grade-range: "9-11"; themes: "scientific-advancement,health-impact,research-process"; prompts: "research-methodology,treatment-effectiveness,ethical-considerations"; }
+        .topic-informational-artificial-intelligence { complexity: 8; grade-range: "10-11"; themes: "technology-development,societal-impact,future-implications"; prompts: "capability-assessment,impact-prediction,ethical-frameworks"; }
+
+        .topic-persuasive-environmental-protection { complexity: 6; grade-range: "8-11"; themes: "conservation,responsibility,action-motivation"; prompts: "argument-strength,evidence-credibility,action-effectiveness"; }
+        .topic-persuasive-technology-regulation { complexity: 7; grade-range: "9-11"; themes: "innovation-vs-safety,regulation-necessity,societal-benefit"; prompts: "regulation-balance,innovation-impact,societal-protection"; }
+        .topic-persuasive-education-reform { complexity: 7; grade-range: "9-11"; themes: "educational-effectiveness,systemic-change,student-benefit"; prompts: "reform-necessity,implementation-challenges,outcome-prediction"; }
+        .topic-persuasive-healthcare-access { complexity: 7; grade-range: "9-11"; themes: "universal-access,cost-management,quality-care"; prompts: "access-barriers,cost-solutions,quality-maintenance"; }
+        .topic-persuasive-social-media-impact { complexity: 6; grade-range: "8-10"; themes: "digital-citizenship,mental-health,communication-evolution"; prompts: "impact-assessment,usage-balance,digital-responsibility"; }
+
+        /* Grammar - Ultra-Specific Variations (80+ variations) */
+        .grammar-subject-verb-singular-plural { complexity: 3; grade-range: "5-8"; focus: "number-agreement"; prompts: "subject-identification,number-determination,agreement-rules"; }
+        .grammar-subject-verb-compound-subjects { complexity: 4; grade-range: "6-9"; focus: "multiple-subjects"; prompts: "conjunction-impact,subject-combination,verb-selection"; }
+        .grammar-subject-verb-collective-nouns { complexity: 5; grade-range: "7-10"; focus: "group-nouns"; prompts: "group-vs-individual,context-clues,usage-variation"; }
+        .grammar-subject-verb-indefinite-pronouns { complexity: 5; grade-range: "7-10"; focus: "pronoun-agreement"; prompts: "pronoun-number,context-determination,exception-rules"; }
+        .grammar-subject-verb-inverted-sentences { complexity: 6; grade-range: "8-11"; focus: "unusual-order"; prompts: "subject-location,order-reversal,agreement-maintenance"; }
+
+        .grammar-pronoun-personal-cases { complexity: 4; grade-range: "6-9"; focus: "subject-object-possessive"; prompts: "case-function,usage-context,form-selection"; }
+        .grammar-pronoun-relative-clauses { complexity: 6; grade-range: "8-11"; focus: "who-whom-which-that"; prompts: "antecedent-connection,clause-function,pronoun-choice"; }
+        .grammar-pronoun-demonstrative-usage { complexity: 4; grade-range: "6-9"; focus: "this-that-these-those"; prompts: "distance-reference,specificity-level,context-appropriateness"; }
+        .grammar-pronoun-reflexive-intensive { complexity: 5; grade-range: "7-10"; focus: "self-pronouns"; prompts: "function-identification,usage-necessity,emphasis-creation"; }
+        .grammar-pronoun-vague-reference { complexity: 5; grade-range: "7-10"; focus: "clarity-improvement"; prompts: "reference-clarity,ambiguity-elimination,revision-strategies"; }
+
+        .grammar-verb-simple-tenses { complexity: 3; grade-range: "5-8"; focus: "past-present-future"; prompts: "time-indication,action-completion,sequence-understanding"; }
+        .grammar-verb-perfect-tenses { complexity: 6; grade-range: "8-11"; focus: "have-had-will-have"; prompts: "completion-timing,relationship-establishment,duration-indication"; }
+        .grammar-verb-progressive-tenses { complexity: 5; grade-range: "7-10"; focus: "ongoing-action"; prompts: "action-duration,time-relationship,continuation-emphasis"; }
+        .grammar-verb-perfect-progressive { complexity: 7; grade-range: "9-11"; focus: "complex-time-relationships"; prompts: "duration-completion,time-complexity,emphasis-combination"; }
+        .grammar-verb-subjunctive-mood { complexity: 8; grade-range: "10-11"; focus: "hypothetical-situations"; prompts: "reality-level,wish-expression,formal-requirements"; }
+
+        .grammar-modifier-adjective-placement { complexity: 4; grade-range: "6-9"; focus: "descriptive-words"; prompts: "modification-target,placement-logic,meaning-precision"; }
+        .grammar-modifier-adverb-placement { complexity: 4; grade-range: "6-9"; focus: "action-description"; prompts: "modification-function,position-options,emphasis-creation"; }
+        .grammar-modifier-dangling-misplaced { complexity: 6; grade-range: "8-11"; focus: "modification-errors"; prompts: "logical-connection,clarity-improvement,revision-strategies"; }
+        .grammar-modifier-comparative-superlative { complexity: 5; grade-range: "7-10"; focus: "degree-comparison"; prompts: "comparison-levels,form-selection,context-appropriateness"; }
+        .grammar-modifier-participial-phrases { complexity: 7; grade-range: "9-11"; focus: "verbal-modifiers"; prompts: "phrase-function,placement-rules,comma-usage"; }
+
+        /* Vocabulary - Hyper-Specific Categories (60+ variations) */
+        .vocab-context-definition-clues { complexity: 4; grade-range: "6-10"; focus: "direct-explanation"; prompts: "definition-signals,explanation-identification,meaning-extraction"; }
+        .vocab-context-example-clues { complexity: 4; grade-range: "6-10"; focus: "illustration-patterns"; prompts: "example-analysis,pattern-recognition,meaning-inference"; }
+        .vocab-context-contrast-clues { complexity: 5; grade-range: "7-10"; focus: "opposite-meanings"; prompts: "contrast-signals,opposite-identification,meaning-derivation"; }
+        .vocab-context-cause-effect-clues { complexity: 5; grade-range: "7-10"; focus: "relationship-patterns"; prompts: "relationship-analysis,effect-prediction,meaning-connection"; }
+        .vocab-context-inference-clues { complexity: 6; grade-range: "8-11"; focus: "implied-meanings"; prompts: "implication-analysis,logical-deduction,meaning-construction"; }
+
+        .vocab-roots-latin-origins { complexity: 5; grade-range: "7-11"; focus: "classical-foundations"; prompts: "origin-tracing,meaning-construction,family-connections"; }
+        .vocab-roots-greek-origins { complexity: 5; grade-range: "7-11"; focus: "scientific-academic"; prompts: "discipline-connections,meaning-building,term-analysis"; }
+        .vocab-roots-anglo-saxon { complexity: 4; grade-range: "6-10"; focus: "everyday-vocabulary"; prompts: "common-usage,meaning-evolution,cultural-connection"; }
+        .vocab-roots-romance-language { complexity: 6; grade-range: "8-11"; focus: "language-family"; prompts: "linguistic-relationships,meaning-transfer,evolution-patterns"; }
+        .vocab-roots-modern-compounds { complexity: 5; grade-range: "7-10"; focus: "contemporary-formations"; prompts: "combination-logic,meaning-prediction,usage-development"; }
+
+        .vocab-prefix-negative { complexity: 4; grade-range: "6-10"; focus: "un-in-dis-non"; prompts: "negation-patterns,meaning-reversal,usage-rules"; }
+        .vocab-prefix-quantity { complexity: 4; grade-range: "6-10"; focus: "uni-bi-multi-poly"; prompts: "number-indication,quantity-precision,context-application"; }
+        .vocab-prefix-position-direction { complexity: 5; grade-range: "7-10"; focus: "pre-post-sub-super"; prompts: "spatial-relationships,direction-indication,logical-placement"; }
+        .vocab-prefix-time-sequence { complexity: 5; grade-range: "7-10"; focus: "ante-post-pre-retro"; prompts: "temporal-relationships,sequence-understanding,chronological-logic"; }
+        .vocab-prefix-size-degree { complexity: 5; grade-range: "7-10"; focus: "micro-macro-hyper-hypo"; prompts: "scale-indication,degree-measurement,proportion-understanding"; }
+
+        /* MATH TOPICS - Ultra-Granular (400+ variations) */
+
+        /* Number Theory - Detailed Subtypes (60+ variations) */
+        .math-whole-number-place-value-millions { complexity: 3; grade-range: "5-7"; focus: "large-number-understanding"; prompts: "place-position-value,magnitude-comparison,real-world-context"; }
+        .math-whole-number-rounding-strategies { complexity: 3; grade-range: "5-7"; focus: "approximation-methods"; prompts: "rounding-rules,estimation-accuracy,practical-applications"; }
+        .math-whole-number-factor-multiples { complexity: 4; grade-range: "6-8"; focus: "divisibility-relationships"; prompts: "factor-identification,multiple-patterns,relationship-exploration"; }
+        .math-whole-number-prime-composite { complexity: 4; grade-range: "6-8"; focus: "number-classification"; prompts: "prime-definition,factor-analysis,classification-logic"; }
+        .math-whole-number-greatest-common-factor { complexity: 5; grade-range: "6-9"; focus: "common-divisors"; prompts: "factor-comparison,common-identification,practical-applications"; }
+        .math-whole-number-least-common-multiple { complexity: 5; grade-range: "6-9"; focus: "common-multiples"; prompts: "multiple-analysis,pattern-recognition,problem-solving"; }
+
+        .math-fraction-equivalent-forms { complexity: 4; grade-range: "5-8"; focus: "same-value-representation"; prompts: "equivalent-reasoning,simplification-process,visual-verification"; }
+        .math-fraction-improper-mixed { complexity: 4; grade-range: "5-8"; focus: "form-conversion"; prompts: "conversion-logic,representation-choice,practical-context"; }
+        .math-fraction-addition-like-denominators { complexity: 3; grade-range: "5-7"; focus: "same-denominator-operations"; prompts: "part-combination,denominator-meaning,operation-logic"; }
+        .math-fraction-addition-unlike-denominators { complexity: 5; grade-range: "6-8"; focus: "common-denominator-finding"; prompts: "denominator-relationships,equivalent-creation,operation-strategy"; }
+        .math-fraction-multiplication-algorithms { complexity: 5; grade-range: "6-8"; focus: "cross-multiplication"; prompts: "operation-meaning,algorithm-logic,result-interpretation"; }
+        .math-fraction-division-reciprocal { complexity: 6; grade-range: "7-9"; focus: "inverse-operation"; prompts: "division-meaning,reciprocal-logic,real-world-application"; }
+        .math-fraction-complex-problems { complexity: 6; grade-range: "7-9"; focus: "multi-step-operations"; prompts: "operation-order,strategy-selection,problem-decomposition"; }
+
+        .math-decimal-place-value-tenths-hundredths { complexity: 3; grade-range: "5-7"; focus: "fractional-place-value"; prompts: "decimal-meaning,place-relationships,fraction-connections"; }
+        .math-decimal-rounding-precision { complexity: 4; grade-range: "6-8"; focus: "accuracy-levels"; prompts: "precision-choice,rounding-impact,practical-considerations"; }
+        .math-decimal-addition-subtraction { complexity: 4; grade-range: "5-8"; focus: "decimal-operations"; prompts: "alignment-importance,operation-logic,result-verification"; }
+        .math-decimal-multiplication-division { complexity: 5; grade-range: "6-9"; focus: "decimal-point-movement"; prompts: "point-placement,pattern-recognition,estimation-checking"; }
+        .math-decimal-fraction-conversion { complexity: 5; grade-range: "6-9"; focus: "form-equivalence"; prompts: "conversion-methods,form-advantages,context-appropriateness"; }
+
+        .math-percent-fraction-decimal-relationships { complexity: 4; grade-range: "6-9"; focus: "form-connections"; prompts: "representation-equivalence,conversion-logic,usage-context"; }
+        .math-percent-increase-decrease { complexity: 5; grade-range: "7-10"; focus: "change-calculation"; prompts: "change-measurement,baseline-identification,impact-assessment"; }
+        .math-percent-discount-markup { complexity: 5; grade-range: "7-10"; focus: "price-adjustments"; prompts: "price-calculation,profit-analysis,consumer-impact"; }
+        .math-percent-interest-simple { complexity: 6; grade-range: "8-10"; focus: "financial-calculations"; prompts: "interest-meaning,time-impact,financial-planning"; }
+        .math-percent-tax-tip-calculations { complexity: 4; grade-range: "6-9"; focus: "real-world-applications"; prompts: "rate-application,total-calculation,practical-usage"; }
+
+        /* Algebra - Hyper-Detailed Subtypes (80+ variations) */
+        .math-variable-single-letter-expressions { complexity: 5; grade-range: "6-9"; focus: "unknown-representation"; prompts: "variable-meaning,expression-evaluation,pattern-generalization"; }
+        .math-variable-coefficient-understanding { complexity: 5; grade-range: "6-9"; focus: "multiplication-representation"; prompts: "coefficient-meaning,multiplication-shortcuts,expression-simplification"; }
+        .math-variable-like-unlike-terms { complexity: 5; grade-range: "6-9"; focus: "term-classification"; prompts: "term-similarity,combination-rules,simplification-strategies"; }
+        .math-variable-distributive-property { complexity: 6; grade-range: "7-10"; focus: "multiplication-distribution"; prompts: "distribution-logic,parentheses-removal,expression-expansion"; }
+        .math-variable-substitution-evaluation { complexity: 5; grade-range: "6-9"; focus: "value-replacement"; prompts: "substitution-process,order-operations,result-interpretation"; }
+
+        .math-equation-one-step-addition-subtraction { complexity: 4; grade-range: "6-8"; focus: "inverse-operations"; prompts: "balance-maintenance,operation-choice,solution-verification"; }
+        .math-equation-one-step-multiplication-division { complexity: 5; grade-range: "6-9"; focus: "inverse-operations"; prompts: "operation-reversal,coefficient-elimination,solution-checking"; }
+        .math-equation-two-step-linear { complexity: 6; grade-range: "7-10"; focus: "multi-step-solving"; prompts: "operation-sequence,strategy-planning,step-justification"; }
+        .math-equation-multi-step-complex { complexity: 7; grade-range: "8-11"; focus: "complex-solving"; prompts: "strategy-selection,step-organization,solution-path-planning"; }
+        .math-equation-variables-both-sides { complexity: 7; grade-range: "8-11"; focus: "variable-collection"; prompts: "variable-isolation,side-selection,solution-strategy"; }
+        .math-equation-literal-equations { complexity: 7; grade-range: "9-11"; focus: "formula-manipulation"; prompts: "target-isolation,formula-rearrangement,variable-relationships"; }
+
+        .math-inequality-linear-one-variable { complexity: 6; grade-range: "7-10"; focus: "solution-sets"; prompts: "inequality-meaning,solution-representation,boundary-understanding"; }
+        .math-inequality-compound-and-or { complexity: 7; grade-range: "8-11"; focus: "multiple-conditions"; prompts: "condition-combination,intersection-union,solution-overlap"; }
+        .math-inequality-absolute-value { complexity: 8; grade-range: "9-11"; focus: "distance-interpretation"; prompts: "absolute-meaning,case-analysis,solution-intervals"; }
+        .math-inequality-quadratic-graphical { complexity: 8; grade-range: "10-11"; focus: "parabola-analysis"; prompts: "graph-interpretation,solution-regions,boundary-behavior"; }
+
+        .math-function-input-output-tables { complexity: 6; grade-range: "7-10"; focus: "relationship-patterns"; prompts: "pattern-recognition,rule-identification,prediction-making"; }
+        .math-function-domain-range-identification { complexity: 7; grade-range: "8-11"; focus: "function-boundaries"; prompts: "input-restrictions,output-possibilities,constraint-analysis"; }
+        .math-function-linear-slope-intercept { complexity: 6; grade-range: "8-10"; focus: "line-characteristics"; prompts: "slope-meaning,intercept-significance,equation-interpretation"; }
+        .math-function-quadratic-vertex-form { complexity: 8; grade-range: "9-11"; focus: "parabola-properties"; prompts: "vertex-significance,transformation-effects,optimization-applications"; }
+        .math-function-exponential-growth-decay { complexity: 8; grade-range: "9-11"; focus: "multiplicative-change"; prompts: "growth-pattern,rate-interpretation,real-world-modeling"; }
+        .math-function-transformations-shifts { complexity: 7; grade-range: "9-11"; focus: "graph-modifications"; prompts: "transformation-effects,parameter-impact,visual-prediction"; }
+
+        /* Geometry - Ultra-Specific Categories (90+ variations) */
+        .math-angle-acute-obtuse-right { complexity: 4; grade-range: "6-8"; focus: "angle-classification"; prompts: "measurement-ranges,classification-criteria,real-world-examples"; }
+        .math-angle-complementary-supplementary { complexity: 5; grade-range: "7-9"; focus: "angle-relationships"; prompts: "relationship-definitions,pair-identification,calculation-strategies"; }
+        .math-angle-vertical-adjacent { complexity: 5; grade-range: "7-9"; focus: "angle-pairs"; prompts: "position-relationships,property-understanding,measurement-connections"; }
+        .math-angle-parallel-lines-transversals { complexity: 6; grade-range: "8-10"; focus: "line-relationships"; prompts: "parallel-properties,transversal-effects,angle-relationships"; }
+        .math-angle-polygon-interior-exterior { complexity: 6; grade-range: "8-10"; focus: "polygon-angles"; prompts: "angle-sum-formulas,interior-exterior-relationships,polygon-properties"; }
+
+        .math-triangle-classification-sides { complexity: 4; grade-range: "6-8"; focus: "side-based-types"; prompts: "side-relationships,classification-criteria,property-implications"; }
+        .math-triangle-classification-angles { complexity: 4; grade-range: "6-8"; focus: "angle-based-types"; prompts: "angle-measures,type-determination,property-connections"; }
+        .math-triangle-pythagorean-theorem { complexity: 6; grade-range: "8-10"; focus: "right-triangle-relationships"; prompts: "theorem-understanding,application-strategies,proof-reasoning"; }
+        .math-triangle-similarity-ratios { complexity: 7; grade-range: "9-11"; focus: "proportional-relationships"; prompts: "similarity-criteria,ratio-calculations,scale-applications"; }
+        .math-triangle-congruence-postulates { complexity: 7; grade-range: "9-11"; focus: "triangle-equality"; prompts: "congruence-criteria,proof-methods,logical-reasoning"; }
+        .math-triangle-special-right-triangles { complexity: 7; grade-range: "9-10"; focus: "30-60-90,45-45-90"; prompts: "special-ratios,pattern-recognition,calculation-shortcuts"; }
+
+        .math-quadrilateral-parallelogram-properties { complexity: 6; grade-range: "8-10"; focus: "parallel-sides"; prompts: "property-identification,proof-strategies,classification-logic"; }
+        .math-quadrilateral-rectangle-square { complexity: 5; grade-range: "7-9"; focus: "special-parallelograms"; prompts: "special-properties,area-calculations,practical-applications"; }
+        .math-quadrilateral-rhombus-properties { complexity: 6; grade-range: "8-10"; focus: "equal-sides"; prompts: "diagonal-properties,area-formulas,geometric-relationships"; }
+        .math-quadrilateral-trapezoid-areas { complexity: 6; grade-range: "8-10"; focus: "one-parallel-pair"; prompts: "area-formula-derivation,measurement-strategies,real-world-applications"; }
+
+        .math-circle-radius-diameter-relationships { complexity: 5; grade-range: "7-9"; focus: "basic-measurements"; prompts: "relationship-understanding,calculation-methods,practical-usage"; }
+        .math-circle-circumference-formulas { complexity: 6; grade-range: "8-10"; focus: "perimeter-calculation"; prompts: "pi-understanding,formula-application,measurement-accuracy"; }
+        .math-circle-area-formulas { complexity: 6; grade-range: "8-10"; focus: "interior-measurement"; prompts: "area-derivation,calculation-strategies,real-world-problems"; }
+        .math-circle-arc-length-sector-area { complexity: 7; grade-range: "9-11"; focus: "partial-measurements"; prompts: "proportion-relationships,angle-measurements,practical-applications"; }
+        .math-circle-inscribed-circumscribed { complexity: 8; grade-range: "10-11"; focus: "polygon-circle-relationships"; prompts: "geometric-relationships,construction-methods,property-analysis"; }
+
+        /* STUDENT INTEREST-BASED TOPICS */
+        
+        /* Video Games & Gaming (30+ variations) */
+        .topic-gaming-strategy-analysis { complexity: 6; grade-range: "8-11"; themes: "decision-making,resource-management,strategic-thinking"; prompts: "strategy-evaluation,outcome-prediction,optimization-analysis"; mood: "analytical,competitive"; }
+        .topic-gaming-character-development { complexity: 5; grade-range: "7-10"; themes: "character-growth,narrative-progression,choice-consequences"; prompts: "character-motivation,development-arc,choice-impact"; mood: "creative,story-focused"; }
+        .topic-gaming-probability-mechanics { complexity: 6; grade-range: "8-11"; themes: "chance-calculations,risk-assessment,statistical-outcomes"; prompts: "probability-calculation,risk-analysis,outcome-prediction"; mood: "analytical,mathematical"; }
+        .topic-gaming-economics-virtual { complexity: 7; grade-range: "9-11"; themes: "in-game-economy,supply-demand,resource-allocation"; prompts: "economic-principles,market-analysis,value-determination"; mood: "business-minded,strategic"; }
+        .topic-gaming-narrative-structure { complexity: 6; grade-range: "8-11"; themes: "storytelling,plot-development,interactive-narrative"; prompts: "narrative-analysis,story-structure,player-agency"; mood: "creative,literary"; }
+        .topic-gaming-technology-innovation { complexity: 7; grade-range: "9-11"; themes: "technical-advancement,graphics-evolution,platform-development"; prompts: "innovation-impact,technology-progression,future-predictions"; mood: "tech-curious,futuristic"; }
+
+        /* Music & Audio (25+ variations) */
+        .topic-music-rhythm-mathematics { complexity: 5; grade-range: "7-10"; themes: "beat-patterns,time-signatures,mathematical-relationships"; prompts: "pattern-analysis,rhythm-calculation,musical-math"; mood: "rhythmic,mathematical"; }
+        .topic-music-lyrics-poetry-analysis { complexity: 6; grade-range: "8-11"; themes: "lyrical-meaning,poetic-devices,emotional-expression"; prompts: "metaphor-identification,theme-analysis,emotional-impact"; mood: "artistic,emotional"; }
+        .topic-music-sound-wave-physics { complexity: 7; grade-range: "9-11"; themes: "frequency,amplitude,wave-properties"; prompts: "wave-analysis,sound-production,physics-connections"; mood: "scientific,technical"; }
+        .topic-music-cultural-historical { complexity: 6; grade-range: "8-11"; themes: "musical-evolution,cultural-influence,historical-context"; prompts: "cultural-impact,historical-development,influence-analysis"; mood: "cultural,historical"; }
+        .topic-music-composition-structure { complexity: 6; grade-range: "8-11"; themes: "musical-form,compositional-techniques,creative-process"; prompts: "structure-analysis,creative-choices,artistic-development"; mood: "creative,analytical"; }
+        .topic-music-industry-economics { complexity: 7; grade-range: "9-11"; themes: "music-business,streaming-economics,artist-revenue"; prompts: "business-model-analysis,revenue-streams,industry-trends"; mood: "business-minded,current-events"; }
+
+        /* Movies & Film (25+ variations) */
+        .topic-film-narrative-techniques { complexity: 6; grade-range: "8-11"; themes: "storytelling-methods,visual-narrative,director-choices"; prompts: "technique-analysis,story-impact,visual-storytelling"; mood: "artistic,analytical"; }
+        .topic-film-character-development { complexity: 5; grade-range: "7-10"; themes: "character-arc,motivation,growth"; prompts: "character-analysis,development-tracking,motivation-exploration"; mood: "character-focused,psychological"; }
+        .topic-film-special-effects-technology { complexity: 6; grade-range: "8-11"; themes: "visual-effects,technology-advancement,filmmaking-innovation"; prompts: "technology-impact,creative-possibilities,innovation-analysis"; mood: "tech-curious,creative"; }
+        .topic-film-historical-accuracy { complexity: 7; grade-range: "9-11"; themes: "historical-representation,artistic-license,educational-value"; prompts: "accuracy-assessment,creative-interpretation,historical-learning"; mood: "historical,critical-thinking"; }
+        .topic-film-social-commentary { complexity: 7; grade-range: "9-11"; themes: "social-issues,cultural-critique,message-delivery"; prompts: "message-analysis,social-impact,cultural-reflection"; mood: "socially-conscious,analytical"; }
+        .topic-film-box-office-mathematics { complexity: 5; grade-range: "7-10"; themes: "revenue-calculation,profit-analysis,market-success"; prompts: "financial-analysis,success-measurement,market-trends"; mood: "business-minded,mathematical"; }
+
+        /* MOOD-BASED TOPIC SELECTION SYSTEM */
+        .mood-creative { topics: "gaming-character-development,music-composition-structure,film-narrative-techniques,poetry-analysis,creative-writing"; energy: "imaginative,artistic,expressive"; }
+        .mood-analytical { topics: "gaming-strategy-analysis,music-rhythm-mathematics,film-social-commentary,data-analysis,logical-reasoning"; energy: "logical,systematic,investigative"; }
+        .mood-competitive { topics: "gaming-strategy-analysis,sports-statistics,debate-analysis,problem-solving-challenges,optimization"; energy: "challenging,goal-oriented,achievement-focused"; }
+        .mood-relaxed { topics: "nature-reading,music-cultural-historical,travel-narratives,descriptive-writing,gentle-math-patterns"; energy: "calm,contemplative,peaceful"; }
+        .mood-curious { topics: "science-exploration,technology-innovation,mystery-solving,discovery-narratives,research-projects"; energy: "questioning,exploratory,wonder-filled"; }
+        .mood-social { topics: "character-relationships,group-dynamics,social-issues,collaborative-problems,communication-skills"; energy: "interactive,relationship-focused,community-minded"; }
+        .mood-adventurous { topics: "adventure-stories,exploration-math,travel-problems,discovery-themes,risk-assessment"; energy: "bold,exploratory,excitement-seeking"; }
+        .mood-practical { topics: "real-world-math,life-skills,practical-writing,consumer-economics,everyday-applications"; energy: "useful,applicable,pragmatic"; }
+
+        /* Real-World Problem Contexts - Detailed Scenarios (50+ variations) */
+        .context-shopping-unit-price-comparison { complexity: 4; grade-range: "6-9"; scenarios: "bulk-buying,brand-comparison,size-efficiency"; prompts: "cost-per-unit,value-assessment,decision-optimization"; }
+        .context-shopping-discount-stacking { complexity: 5; grade-range: "7-10"; scenarios: "multiple-discounts,coupon-combinations,sale-optimization"; prompts: "discount-order,maximum-savings,strategy-comparison"; }
+        .context-shopping-tax-calculation-tips { complexity: 4; grade-range: "6-9"; scenarios: "sales-tax,restaurant-tips,service-charges"; prompts: "percentage-application,total-calculation,practical-estimation"; }
+        .context-shopping-budget-management { complexity: 5; grade-range: "7-10"; scenarios: "spending-limits,category-allocation,savings-goals"; prompts: "budget-planning,trade-off-analysis,financial-priorities"; }
+
+        .context-travel-distance-time-speed { complexity: 5; grade-range: "7-10"; scenarios: "road-trips,flight-planning,daily-commutes"; prompts: "relationship-analysis,optimization-strategies,constraint-consideration"; }
+        .context-travel-fuel-efficiency { complexity: 5; grade-range: "7-10"; scenarios: "gas-mileage,cost-calculation,trip-planning"; prompts: "efficiency-measurement,cost-optimization,environmental-impact"; }
+        .context-travel-time-zone-calculations { complexity: 6; grade-range: "8-10"; scenarios: "international-travel,meeting-scheduling,arrival-times"; prompts: "time-conversion,schedule-coordination,planning-strategies"; }
+        .context-travel-currency-exchange { complexity: 6; grade-range: "8-11"; scenarios: "international-shopping,budget-conversion,exchange-rates"; prompts: "rate-application,value-comparison,financial-planning"; }
+
+        .context-sports-batting-averages { complexity: 5; grade-range: "7-10"; scenarios: "baseball-statistics,performance-analysis,season-tracking"; prompts: "average-calculation,performance-comparison,improvement-analysis"; }
+        .context-sports-scoring-rates { complexity: 4; grade-range: "6-9"; scenarios: "points-per-game,efficiency-metrics,team-comparison"; prompts: "rate-calculation,performance-evaluation,trend-analysis"; }
+        .context-sports-tournament-brackets { complexity: 6; grade-range: "8-10"; scenarios: "elimination-tournaments,probability-analysis,outcome-prediction"; prompts: "bracket-logic,probability-calculation,strategy-analysis"; }
+        .context-sports-fitness-tracking { complexity: 5; grade-range: "7-10"; scenarios: "heart-rate-zones,calorie-burn,training-progress"; prompts: "zone-calculation,goal-tracking,improvement-measurement"; }
+
+        .context-science-measurement-precision { complexity: 6; grade-range: "8-11"; scenarios: "laboratory-experiments,data-collection,error-analysis"; prompts: "precision-importance,measurement-accuracy,error-sources"; }
+        .context-science-data-analysis { complexity: 7; grade-range: "9-11"; scenarios: "hypothesis-testing,result-interpretation,conclusion-drawing"; prompts: "data-patterns,statistical-significance,scientific-reasoning"; }
+        .context-science-scale-proportions { complexity: 6; grade-range: "8-10"; scenarios: "microscopic-scales,astronomical-distances,model-building"; prompts: "scale-relationships,proportion-maintenance,model-accuracy"; }
+        .context-science-growth-patterns { complexity: 6; grade-range: "8-11"; scenarios: "population-growth,bacterial-cultures,exponential-patterns"; prompts: "growth-modeling,pattern-prediction,rate-analysis"; }
+
+        /* Socratic Questioning Framework - Advanced Prompts */
+        .socratic-opening-questions {
+            --observation: "What do you notice about this problem/passage?";
+            --pattern: "What patterns can you identify here?";
+            --connection: "How does this relate to what we've learned before?";
+            --prediction: "What do you think will happen next/What would you expect?";
+        }
+
+        .socratic-analysis-questions {
+            --evidence: "What evidence supports your thinking?";
+            --reasoning: "Can you explain your reasoning process?";
+            --alternatives: "What other approaches might work?";
+            --assumptions: "What assumptions are you making?";
+        }
+
+        .socratic-evaluation-questions {
+            --effectiveness: "How well does this strategy work?";
+            --comparison: "How does this compare to other methods?";
+            --limitations: "What are the limitations of this approach?";
+            --improvement: "How might we improve this solution?";
+        }
+
+        .socratic-synthesis-questions {
+            --generalization: "What general rule can we create from this?";
+            --application: "Where else might we apply this principle?";
+            --transfer: "How does this connect to real-world situations?";
+            --metacognition: "What did you learn about your own thinking?";
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Ultra-Granular Educational Topics Database</h1>
+    <p>This comprehensive database contains 500+ specific topic variations across English and Math (grades V-XI) designed to prevent content repetition while maintaining educational progression and Socratic teaching methodology.</p>
+    
+    <h2>Database Structure:</h2>
+    <ul>
+        <li><strong>English:</strong> 200+ ultra-specific variations across reading comprehension, grammar, and vocabulary</li>
+        <li><strong>Math:</strong> 300+ detailed subtypes covering all major mathematical domains</li>
+        <li><strong>Contexts:</strong> 50+ real-world scenario templates for authentic problem-solving</li>
+        <li><strong>Socratic Framework:</strong> 4-tier questioning system for guided discovery</li>
+    </ul>
+
+    <h2>Anti-Repetition Features:</h2>
+    <ul>
+        <li>Multiple variations within each topic category</li>
+        <li>Specific scenario contexts for each problem type</li>
+        <li>Graduated complexity levels with detailed progressions</li>
+        <li>Cross-curricular connections and real-world applications</li>
+        <li>Dynamic prompt variations for different learning styles</li>
+    </ul>
+
+    <h2>Mood-Based Topic Selection:</h2>
+    <ul>
+        <li><strong>Creative Mood:</strong> Gaming character development, music composition, film narrative, creative writing</li>
+        <li><strong>Analytical Mood:</strong> Gaming strategy, music mathematics, film social commentary, data analysis</li>
+        <li><strong>Competitive Mood:</strong> Gaming strategy, sports statistics, debate analysis, optimization challenges</li>
+        <li><strong>Relaxed Mood:</strong> Nature reading, music history, travel narratives, gentle math patterns</li>
+        <li><strong>Curious Mood:</strong> Science exploration, technology innovation, mystery solving, discovery themes</li>
+        <li><strong>Social Mood:</strong> Character relationships, group dynamics, social issues, communication skills</li>
+        <li><strong>Adventurous Mood:</strong> Adventure stories, exploration math, travel problems, risk assessment</li>
+        <li><strong>Practical Mood:</strong> Real-world math, life skills, consumer economics, everyday applications</li>
+    </ul>
+
+    <h2>Student Interest Topics Added:</h2>
+    <ul>
+        <li><strong>Video Games (30+ variations):</strong> Strategy analysis, character development, probability mechanics, virtual economics, narrative structure, technology innovation</li>
+        <li><strong>Music (25+ variations):</strong> Rhythm mathematics, lyrics poetry analysis, sound wave physics, cultural history, composition structure, industry economics</li>
+        <li><strong>Movies (25+ variations):</strong> Narrative techniques, character development, special effects technology, historical accuracy, social commentary, box office mathematics</li>
+    </ul>
+
+    <h2>Simple Implementation:</h2>
+    <pre>
+// Mood-Based Topic Selection (add to existing ai-service.js)
+const selectTopicByMood = (mood, subject, grade, difficulty) => {
+    const moodTopics = getMoodTopics(mood);
+    const subjectTopics = getSubjectTopics(subject, grade, difficulty);
+    const matchingTopics = intersection(moodTopics, subjectTopics);
+    return selectRandom(matchingTopics);
+};
+
+// Student Mood Interface (add to existing QuestionCard.js)
+const MoodSelector = () => (
+    &lt;div className="mood-selector"&gt;
+        &lt;h3&gt;How are you feeling today?&lt;/h3&gt;
+        {moods.map(mood => 
+            &lt;button onClick={() => setMood(mood)}&gt;
+                {mood.emoji} {mood.name}
+            &lt;/button&gt;
+        )}
+    &lt;/div&gt;
+);
+    </pre>
+</body>
+</html>

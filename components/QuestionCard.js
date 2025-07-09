@@ -1,0 +1,369 @@
+import { useState, useEffect } from 'react';
+import { generateSocraticFollowup } from '../lib/ai-service';
+import { setCachedProficiency } from '../lib/utils';
+
+export default function QuestionCard({ 
+  question, 
+  topic, 
+  difficulty,
+  onAnswer, 
+  onNext,
+  proficiency 
+}) {
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [hint, setHint] = useState(null);
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [startTime] = useState(Date.now());
+
+  const handleAnswerSelect = (option) => {
+    if (!showResult) {
+      setSelectedAnswer(option);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedAnswer) return;
+    
+    const correct = selectedAnswer === question.correct;
+    setIsCorrect(correct);
+    setShowResult(true);
+    
+    const timeSpent = Math.round((Date.now() - startTime) / 1000);
+    
+    // Update local cache immediately
+    if (correct) {
+      const newProficiency = Math.min(9, proficiency + 0.2);
+      setCachedProficiency(topic, newProficiency);
+    }
+    
+    // Notify parent
+    onAnswer(correct, timeSpent, hintsUsed);
+  };
+
+  const handleHint = async () => {
+    if (!hint && !showResult) {
+      setHintsUsed(hintsUsed + 1);
+      try {
+        const socraticPrompt = await generateSocraticFollowup(
+          topic,
+          question.question,
+          selectedAnswer || 'not selected',
+          difficulty
+        );
+        setHint(socraticPrompt);
+      } catch (error) {
+        setHint("Think about what the question is really asking. Look for key words that might give you clues.");
+      }
+    }
+  };
+
+  const handleNext = () => {
+    onNext();
+  };
+
+  const getQuestionType = () => {
+    if (topic.includes('comprehension')) return 'Reading Passage 📚';
+    if (topic.includes('grammar')) return 'Grammar Rules ✍️';
+    if (topic.includes('vocabulary')) return 'Word Power 🎯';
+    if (topic.includes('math')) return 'Math Problem 🔢';
+    return 'Question';
+  };
+
+  return (
+    <div className="question-card">
+      <div className="question-type">{getQuestionType()}</div>
+      
+      <div className="question-text">{question.question}</div>
+      
+      {question.context && (
+        <div className="question-context">{question.context}</div>
+      )}
+      
+      <div className="answers-grid">
+        {Object.entries(question.options).map(([key, value]) => (
+          <div
+            key={key}
+            className={`answer-option ${
+              selectedAnswer === key ? 'selected' : ''
+            } ${
+              showResult && key === question.correct ? 'correct' : ''
+            } ${
+              showResult && selectedAnswer === key && !isCorrect ? 'incorrect' : ''
+            }`}
+            onClick={() => handleAnswerSelect(key)}
+          >
+            <div className="answer-label">
+              <span className="answer-letter">{key}</span>
+              <span>{value}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {hint && (
+        <div className="hint-section">
+          <div className="hint-title">
+            💡 Think about it...
+          </div>
+          <div className="hint-text">{hint}</div>
+        </div>
+      )}
+
+      {showResult && (
+        <div className="explanation-section">
+          <div className="explanation-title">
+            {isCorrect ? '✨ Excellent!' : '💪 Learning moment!'}
+          </div>
+          <div className="explanation-text">{question.explanation}</div>
+        </div>
+      )}
+
+      <div className="action-buttons">
+        {!showResult && (
+          <>
+            <button 
+              className="btn btn-secondary" 
+              onClick={handleHint}
+              disabled={hint !== null}
+            >
+              {hint ? 'Got it! 👍' : 'Need a hint? 💭'}
+            </button>
+            <button 
+              className="btn btn-primary" 
+              onClick={handleSubmit}
+              disabled={!selectedAnswer}
+            >
+              Submit Answer ✨
+            </button>
+          </>
+        )}
+        {showResult && (
+          <button 
+            className="btn btn-primary" 
+            onClick={handleNext}
+          >
+            {isCorrect ? 'Next Question 🚀' : 'Try Another 💪'}
+          </button>
+        )}
+      </div>
+
+      <style jsx>{`
+        .question-card {
+          background: var(--glass-bg);
+          backdrop-filter: blur(20px);
+          border: 1px solid var(--glass-border);
+          border-radius: 24px;
+          padding: 32px;
+          margin-bottom: 24px;
+          animation: slideIn 0.5s ease-out;
+        }
+        
+        .question-type {
+          display: inline-block;
+          background: linear-gradient(135deg, var(--accent-pink), var(--accent-orange));
+          padding: 6px 16px;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          margin-bottom: 20px;
+        }
+        
+        .question-text {
+          font-size: 1.3rem;
+          font-weight: 600;
+          line-height: 1.5;
+          margin-bottom: 8px;
+        }
+        
+        .question-context {
+          color: var(--text-secondary);
+          font-size: 1rem;
+          margin-bottom: 28px;
+          line-height: 1.6;
+          padding: 16px;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 12px;
+        }
+        
+        .answers-grid {
+          display: grid;
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+        
+        .answer-option {
+          background: var(--glass-bg);
+          backdrop-filter: blur(15px);
+          border: 2px solid var(--glass-border);
+          border-radius: 16px;
+          padding: 20px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .answer-option::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(135deg, var(--accent-blue), var(--accent-neon));
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          z-index: -1;
+        }
+        
+        .answer-option:hover {
+          transform: translateY(-4px);
+          border-color: var(--accent-neon);
+          box-shadow: 0 8px 32px rgba(0, 255, 136, 0.2);
+        }
+        
+        .answer-option:hover::before {
+          opacity: 0.1;
+        }
+        
+        .answer-option.selected {
+          border-color: var(--accent-neon);
+          background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .answer-option.correct {
+          border-color: var(--correct);
+          background: rgba(0, 255, 136, 0.2);
+          animation: correctPulse 0.6s ease-out;
+        }
+        
+        .answer-option.incorrect {
+          border-color: var(--incorrect);
+          background: rgba(255, 71, 87, 0.2);
+          animation: shake 0.5s ease-out;
+        }
+        
+        .answer-label {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        
+        .answer-letter {
+          background: linear-gradient(135deg, var(--accent-neon), var(--accent-blue));
+          color: white;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 0.9rem;
+          flex-shrink: 0;
+        }
+        
+        .hint-section, .explanation-section {
+          background: rgba(0, 255, 136, 0.1);
+          border: 1px solid rgba(0, 255, 136, 0.3);
+          border-radius: 16px;
+          padding: 20px;
+          margin-bottom: 24px;
+          animation: fadeIn 0.5s ease-out;
+        }
+        
+        .explanation-section {
+          background: ${isCorrect ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 107, 53, 0.1)'};
+          border-color: ${isCorrect ? 'rgba(0, 255, 136, 0.3)' : 'rgba(255, 107, 53, 0.3)'};
+        }
+        
+        .hint-title, .explanation-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 600;
+          margin-bottom: 12px;
+          color: var(--accent-neon);
+        }
+        
+        .hint-text, .explanation-text {
+          color: var(--text-secondary);
+          line-height: 1.5;
+        }
+        
+        .action-buttons {
+          display: flex;
+          gap: 16px;
+        }
+        
+        .btn {
+          flex: 1;
+          border: none;
+          border-radius: 16px;
+          padding: 16px;
+          font-weight: 600;
+          font-size: 1rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+          background: linear-gradient(135deg, var(--accent-neon), var(--accent-blue));
+          color: white;
+        }
+        
+        .btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0, 255, 136, 0.4);
+        }
+        
+        .btn-secondary {
+          background: var(--glass-bg);
+          backdrop-filter: blur(15px);
+          border: 1px solid var(--glass-border);
+          color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+          border-color: var(--accent-neon);
+          transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          transform: none !important;
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(-20px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes correctPulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.02); }
+          100% { transform: scale(1); }
+        }
+        
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+        
+        @media (max-width: 768px) {
+          .question-card { padding: 24px; }
+          .action-buttons { flex-direction: column; }
+        }
+      `}</style>
+    </div>
+  );
+}
