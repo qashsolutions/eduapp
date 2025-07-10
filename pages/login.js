@@ -245,6 +245,7 @@ export default function Login() {
           align-items: center;
           justify-content: center;
           padding: 20px;
+          margin-bottom: 0;
         }
 
         .login-card {

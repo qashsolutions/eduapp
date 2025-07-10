@@ -227,9 +227,10 @@ export default function Dashboard() {
         </Head>
       )}
       
-      <Header />
-      
-      <div className="container">
+      <div className="page-wrapper">
+        <Header />
+        
+        <div className="container">
       {!selectedTopic ? (
         <>
           <p className="subtitle">
@@ -579,9 +580,21 @@ export default function Dashboard() {
           color: var(--text-primary);
           overflow-x: hidden;
         }
+        .page-wrapper {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .container {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
       `}</style>
-      <Footer />
-    </div>
+        </div>
+        <Footer />
+      </div>
     </>
   );
 }
