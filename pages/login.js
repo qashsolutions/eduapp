@@ -179,7 +179,7 @@ export default function Login() {
 
               {role === 'student' && (
                 <div className="form-group">
-                  <label style={{ fontSize: '0.9rem', marginBottom: '8px', display: 'block', color: 'var(--text-secondary)' }}>
+                  <label style={{ fontSize: '1.125rem', marginBottom: '12px', display: 'block', color: '#ffffff' }}>
                     Select Your Grade
                   </label>
                   <select
@@ -283,6 +283,7 @@ export default function Login() {
           font-size: 1.75rem;
           margin-bottom: 32px;
           text-align: center;
+          color: #ffffff;
         }
 
         .error-message {
@@ -305,7 +306,7 @@ export default function Login() {
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid var(--glass-border);
           border-radius: 12px;
-          color: var(--text-primary);
+          color: #ffffff;
           font-size: 1.125rem;
           transition: all 0.3s ease;
         }
@@ -317,7 +318,18 @@ export default function Login() {
         }
 
         .form-input::placeholder {
-          color: var(--text-secondary);
+          color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Style select dropdown */
+        select.form-input {
+          color: #ffffff;
+          cursor: pointer;
+        }
+        
+        select.form-input option {
+          color: #000000;
+          background: #ffffff;
         }
 
         .submit-btn {
@@ -352,7 +364,7 @@ export default function Login() {
           align-items: center;
           cursor: pointer;
           font-size: 1rem;
-          color: var(--text-secondary);
+          color: #ffffff;
         }
 
         .checkbox-input {
@@ -365,7 +377,8 @@ export default function Login() {
 
         .switch-mode {
           text-align: center;
-          color: var(--text-secondary);
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 1.125rem;
         }
 
         .switch-btn {
