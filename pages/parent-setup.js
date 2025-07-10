@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-// Removed Firebase import - now using Supabase through AuthContext
 import { createUser, supabase } from '../lib/db';
 import { useAuth } from '../lib/AuthContext';
 
@@ -61,7 +60,7 @@ export default function ParentSetup() {
     setError('');
 
     try {
-      // Create parent account in Firebase
+      // Create parent account
       const authResult = await signUp(parentEmail, parentPassword);
       if (authResult.error) throw new Error(authResult.error);
 
@@ -102,7 +101,7 @@ export default function ParentSetup() {
       // Generate a unique email for the child (not used for login)
       const childEmail = `${consent.child_first_name.toLowerCase()}_${Date.now()}@student.socraticlearning.com`;
       
-      // Create child account in Firebase
+      // Create child account
       const tempPassword = childPasscode + 'Aa1!';
       const authResult = await signUp(childEmail, tempPassword);
       if (authResult.error) throw new Error(authResult.error);

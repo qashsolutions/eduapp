@@ -144,7 +144,7 @@ export default function Login() {
             authResult.user.id, 
             isParentSignup ? 'parent' : role,
             null,
-            isParentSignup ? true : false
+            isParentSignup
           );
           
           if (!userProfile) {
@@ -276,11 +276,11 @@ export default function Login() {
                   <div className="form-group">
                     <input
                       type="password"
-                      placeholder="Password"
+                      placeholder="Password (min 8 characters)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      minLength={6}
+                      minLength={8}
                       className="form-input"
                     />
                   </div>

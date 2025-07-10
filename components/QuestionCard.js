@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { setCachedProficiency } from '../lib/utils';
-// Removed Firebase import - now using Supabase through parent component
 
 export default function QuestionCard({ 
   question, 
