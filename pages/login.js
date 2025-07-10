@@ -123,7 +123,6 @@ export default function Login() {
         <Header />
         <div className="login-container">
       <div className="login-card">
-        <h1 className="logo">Socratic Learning ✨</h1>
         <p className="tagline">Adaptive learning powered by AI</p>
 
         <form onSubmit={handleSubmit} className="login-form">
@@ -220,15 +219,12 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="switch-mode">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <button 
-            onClick={() => setIsLogin(!isLogin)}
-            className="switch-btn"
-          >
-            {isLogin ? 'Sign up' : 'Sign in'}
-          </button>
-        </div>
+        <button 
+          onClick={() => setIsLogin(!isLogin)}
+          className="switch-btn-full"
+        >
+          {isLogin ? 'Create New Account' : 'Sign In Instead'}
+        </button>
       </div>
 
       <style jsx>{`
@@ -259,21 +255,13 @@ export default function Login() {
           animation: fadeIn 0.6s ease-out;
         }
 
-        .logo {
-          font-size: 3rem;
-          font-weight: 800;
-          background: linear-gradient(90deg, var(--accent-neon), var(--accent-blue));
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          text-align: center;
-          margin-bottom: 12px;
-        }
-
         .tagline {
-          color: var(--text-secondary);
+          color: #ffffff;
           text-align: center;
           margin-bottom: 32px;
+          font-size: 1.5rem;
+          font-weight: 400;
+          letter-spacing: 0.5px;
         }
 
         .login-form {
@@ -378,24 +366,29 @@ export default function Login() {
           accent-color: var(--accent-neon);
         }
 
-        .switch-mode {
-          text-align: center;
-          color: #ffffff;
-          font-size: 1.125rem;
-          margin-top: 24px;
-        }
-
-        .switch-btn {
-          background: none;
+        .switch-btn-full {
+          width: 100%;
+          padding: 20px;
+          background: linear-gradient(135deg, var(--accent-neon), var(--accent-blue));
           border: none;
-          color: var(--accent-neon);
+          border-radius: 12px;
+          color: white;
           font-weight: 600;
+          font-size: 1.25rem;
           cursor: pointer;
-          transition: color 0.3s ease;
+          transition: all 0.3s ease;
+          margin-top: 20px;
         }
 
-        .switch-btn:hover {
-          color: var(--accent-blue);
+        .switch-btn-full:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0, 255, 136, 0.4);
+        }
+        
+        .switch-btn-full:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+          transform: none !important;
         }
 
         .role-selector {
