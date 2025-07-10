@@ -174,10 +174,21 @@ export default function Landing() {
               {/* Problem Section */}
               <section className="problem-section">
                 <div className="content-wrapper">
-                  <div className="section-content glass">
-                    {sections.problem.map((paragraph, index) => (
-                      <p key={index} className="content-paragraph">{paragraph}</p>
-                    ))}
+                  <div className="problem-grid">
+                    <div className="problem-card glass">
+                      <div className="card-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" opacity="0.8"/>
+                        </svg>
+                      </div>
+                      <h3>The Reality Check</h3>
+                      <p>What's really happening in today's classrooms - and why it's not working.</p>
+                    </div>
+                    <div className="section-content glass">
+                      {sections.problem.map((paragraph, index) => (
+                        <p key={index} className="content-paragraph">{paragraph}</p>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </section>
@@ -465,8 +476,33 @@ export default function Landing() {
         }
 
         .content-wrapper {
-          max-width: 1000px;
+          max-width: 1400px;
           margin: 0 auto;
+        }
+
+        .problem-grid {
+          display: grid;
+          grid-template-columns: 400px 1fr;
+          gap: 60px;
+          align-items: start;
+        }
+
+        .problem-card {
+          padding: 32px;
+          height: fit-content;
+        }
+
+        .problem-card h3 {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #ffffff;
+          margin-bottom: 12px;
+        }
+
+        .problem-card p {
+          font-size: 1.1rem;
+          line-height: 1.6;
+          color: #e0e0e0;
         }
 
         .section-content {
@@ -474,9 +510,9 @@ export default function Landing() {
         }
 
         .content-paragraph {
-          font-size: 1.2rem;
+          font-size: 1.5rem;
           line-height: 1.8;
-          color: var(--text-secondary);
+          color: #ffffff;
           margin-bottom: 24px;
         }
 
@@ -560,7 +596,8 @@ export default function Landing() {
         /* Responsive */
         @media (max-width: 1024px) {
           .content-grid,
-          .content-grid.reverse {
+          .content-grid.reverse,
+          .problem-grid {
             grid-template-columns: 1fr;
             gap: 40px;
           }
