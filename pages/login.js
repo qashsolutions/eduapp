@@ -245,29 +245,28 @@ export default function Login() {
           align-items: center;
           justify-content: center;
           padding: 20px;
-          margin-bottom: 0;
         }
 
         .login-card {
           width: 100%;
-          max-width: 400px;
+          max-width: 480px;
           background: var(--glass-bg);
           backdrop-filter: blur(20px);
           border: 1px solid var(--glass-border);
           border-radius: 24px;
-          padding: 40px;
+          padding: 48px;
           animation: fadeIn 0.6s ease-out;
         }
 
         .logo {
-          font-size: 2.5rem;
+          font-size: 3rem;
           font-weight: 800;
           background: linear-gradient(90deg, var(--accent-neon), var(--accent-blue));
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
           text-align: center;
-          margin-bottom: 8px;
+          margin-bottom: 12px;
         }
 
         .tagline {
@@ -281,8 +280,8 @@ export default function Login() {
         }
 
         .login-form h2 {
-          font-size: 1.5rem;
-          margin-bottom: 24px;
+          font-size: 1.75rem;
+          margin-bottom: 32px;
           text-align: center;
         }
 
@@ -302,12 +301,12 @@ export default function Login() {
 
         .form-input {
           width: 100%;
-          padding: 16px;
+          padding: 18px 20px;
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid var(--glass-border);
           border-radius: 12px;
           color: var(--text-primary);
-          font-size: 1rem;
+          font-size: 1.125rem;
           transition: all 0.3s ease;
         }
 
@@ -323,13 +322,13 @@ export default function Login() {
 
         .submit-btn {
           width: 100%;
-          padding: 16px;
+          padding: 18px;
           background: linear-gradient(135deg, var(--accent-neon), var(--accent-blue));
           border: none;
           border-radius: 12px;
           color: white;
           font-weight: 600;
-          font-size: 1rem;
+          font-size: 1.125rem;
           cursor: pointer;
           transition: all 0.3s ease;
         }
@@ -352,14 +351,14 @@ export default function Login() {
           display: flex;
           align-items: center;
           cursor: pointer;
-          font-size: 0.9rem;
+          font-size: 1rem;
           color: var(--text-secondary);
         }
 
         .checkbox-input {
-          margin-right: 8px;
-          width: 18px;
-          height: 18px;
+          margin-right: 10px;
+          width: 20px;
+          height: 20px;
           cursor: pointer;
           accent-color: var(--accent-neon);
         }
@@ -434,7 +433,17 @@ export default function Login() {
 
         @media (max-width: 768px) {
           .login-card {
-            padding: 30px 20px;
+            padding: 32px 24px;
+            max-width: 100%;
+          }
+          
+          .form-input {
+            font-size: 1rem;
+            padding: 16px;
+          }
+          
+          .submit-btn {
+            font-size: 1rem;
           }
         }
       `}</style>

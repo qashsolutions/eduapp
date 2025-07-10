@@ -17,7 +17,7 @@ export default function Footer() {
           background: var(--glass-bg);
           border-top: 1px solid var(--glass-border);
           padding: 20px 0;
-          margin-top: auto;
+          margin-top: 0;
         }
 
         .footer-content {
