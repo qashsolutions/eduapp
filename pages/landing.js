@@ -1,18 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { createClient } from '@supabase/supabase-js';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { onAuthChange } from '../lib/firebase';
 
-// Initialize Supabase client
-const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  ? createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    )
-  : null;
+// Import singleton Supabase client
+import { supabase } from '../lib/db';
 
 export default function Landing() {
   const router = useRouter();
@@ -260,7 +254,7 @@ export default function Landing() {
                     >
                       Start Learning Free
                     </button>
-                    <p className="cta-subtitle">All features free for two weeks • $8/month or $70/year</p>
+                    <p className="cta-subtitle">All features free for two weeks • $8/month or $70*/year</p>
                   </div>
                 </div>
               </section>
