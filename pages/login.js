@@ -55,7 +55,7 @@ export default function Login() {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error);
         
-        // Sign in with Firebase using the returned credentials
+        // Sign in with Supabase using the returned credentials
         const authResult = await signIn(data.email, data.tempPassword);
         if (authResult.error) throw new Error(authResult.error);
         
@@ -87,8 +87,8 @@ export default function Login() {
       let authResult;
       
       if (isLogin) {
-        // Sign in with Firebase
-        console.log('Signing in with Firebase...');
+        // Sign in with Supabase
+        console.log('Signing in with Supabase...');
         authResult = await signIn(email, password);
         
         if (authResult.error) {
@@ -128,8 +128,8 @@ export default function Login() {
           }
         }
         
-        // Sign up with Firebase (for parents/teachers only)
-        console.log('Signing up with Firebase...');
+        // Sign up with Supabase (for parents/teachers only)
+        console.log('Signing up with Supabase...');
         authResult = await signUp(email, password);
         
         if (authResult.error) {

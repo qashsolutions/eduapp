@@ -4,7 +4,7 @@ import Head from 'next/head';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useAuth } from '../lib/AuthContext';
-import { auth } from '../lib/firebase';
+// Removed Firebase import - now using Supabase through AuthContext
 import { supabase } from '../lib/db';
 
 export default function ParentDashboard() {

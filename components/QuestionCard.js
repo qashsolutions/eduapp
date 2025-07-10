@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { setCachedProficiency } from '../lib/utils';
-import { auth } from '../lib/firebase';
+// Removed Firebase import - now using Supabase through parent component
 
 export default function QuestionCard({ 
   question, 
@@ -9,7 +9,8 @@ export default function QuestionCard({
   onAnswer, 
   onNext,
   proficiency,
-  userId 
+  userId,
+  getSession 
 }) {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showResult, setShowResult] = useState(false);
@@ -60,8 +61,9 @@ export default function QuestionCard({
       
       // Otherwise, fetch a new hint
       try {
-        // Get Firebase token for authentication
-        const token = await auth.currentUser?.getIdToken();
+        // Get Supabase session token for authentication
+        const session = await getSession();
+        const token = session?.access_token;
         
         const response = await fetch('/api/generate', {
           method: 'POST',

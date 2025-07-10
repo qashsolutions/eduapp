@@ -330,6 +330,7 @@ export default function Dashboard() {
               onAnswer={handleAnswer}
               onNext={handleNext}
               userId={user.id}
+              getSession={getSession}
             />
           )}
         </div>

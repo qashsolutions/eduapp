@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { onAuthChange } from '../lib/firebase';
+// Removed Firebase import - now using Supabase through AuthContext
 
 // Import singleton Supabase client
 import { supabase } from '../lib/db';

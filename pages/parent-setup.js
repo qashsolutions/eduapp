@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { signUp } from '../lib/firebase';
+// Removed Firebase import - now using Supabase through AuthContext
 import { createUser, supabase } from '../lib/db';
+import { useAuth } from '../lib/AuthContext';
 
 export default function ParentSetup() {
   const router = useRouter();
+  const { signUp } = useAuth();
   const { session_id, consent_id } = router.query;
   const [consent, setConsent] = useState(null);
   const [parentEmail, setParentEmail] = useState('');
@@ -66,7 +68,7 @@ export default function ParentSetup() {
       // Create parent profile in Supabase
       const parentProfile = await createUser(
         parentEmail,
-        authResult.user.uid,
+        authResult.user.id,
         'parent',
         null,
         true
