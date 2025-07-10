@@ -79,8 +79,10 @@ export default function Landing() {
   useEffect(() => {
     // Redirect if already logged in
     const unsubscribe = onAuthChange((user) => {
-      if (user) {
-        router.push('/');
+      if (user && router.isReady) {
+        setTimeout(() => {
+          router.push('/');
+        }, 100);
       }
     });
     return () => unsubscribe();
