@@ -135,16 +135,6 @@ export default function Landing() {
                       ))}
                     </div>
                     
-                    <div className="hero-features">
-                      <div className="hero-feature-card glass">
-                        <div className="mini-icon">
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor" opacity="0.8"/>
-                          </svg>
-                        </div>
-                        <p>Learning tailored to your mood & interests</p>
-                      </div>
-                    </div>
                   </div>
                   
                   <div className="feature-cards-container">
@@ -175,14 +165,26 @@ export default function Landing() {
               <section className="problem-section">
                 <div className="content-wrapper">
                   <div className="problem-grid">
-                    <div className="problem-card glass">
-                      <div className="card-icon">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" opacity="0.8"/>
-                        </svg>
+                    <div className="problem-cards-stack">
+                      <div className="problem-card glass">
+                        <div className="card-icon">
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" opacity="0.8"/>
+                          </svg>
+                        </div>
+                        <h3>The Reality Check</h3>
+                        <p>What's really happening in today's classrooms - and why it's not working.</p>
                       </div>
-                      <h3>The Reality Check</h3>
-                      <p>What's really happening in today's classrooms - and why it's not working.</p>
+                      
+                      <div className="problem-card glass">
+                        <div className="card-icon">
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor" opacity="0.8"/>
+                          </svg>
+                        </div>
+                        <h3>Learning tailored to your mood & interests</h3>
+                        <p>Personalized education that adapts to how you feel and what excites you.</p>
+                      </div>
                     </div>
                     <div className="section-content glass">
                       {sections.problem.map((paragraph, index) => (
@@ -397,37 +399,6 @@ export default function Landing() {
           font-weight: 400;
         }
 
-        .hero-features {
-          margin-top: 32px;
-        }
-
-        .hero-feature-card {
-          padding: 20px;
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          margin-bottom: 16px;
-          background: rgba(255, 255, 255, 0.08);
-        }
-
-        .mini-icon {
-          width: 48px;
-          height: 48px;
-          background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          color: white;
-        }
-
-        .hero-feature-card p {
-          font-size: 1.1rem;
-          color: #ffffff;
-          margin: 0;
-          font-weight: 500;
-        }
 
         .feature-cards-container {
           display: flex;
@@ -485,6 +456,12 @@ export default function Landing() {
           grid-template-columns: 400px 1fr;
           gap: 60px;
           align-items: start;
+        }
+
+        .problem-cards-stack {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
         }
 
         .problem-card {
