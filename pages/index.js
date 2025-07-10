@@ -5,71 +5,31 @@ import Header from '../components/Header';
 import MoodSelector from '../components/MoodSelector';
 import ProgressBar from '../components/ProgressBar';
 import QuestionCard from '../components/QuestionCard';
-import { onAuthChange, auth } from '../lib/firebase';
+import { useAuth } from '../lib/AuthContext';
+import { auth } from '../lib/firebase';
 import { getUser, getSessionStats } from '../lib/db';
 import { MOOD_TOPICS, formatTopicName, getCachedProficiency } from '../lib/utils';
 
 export default function Dashboard() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [selectedMood, setSelectedMood] = useState('creative');
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [sessionStats, setSessionStats] = useState({ totalQuestions: 0, correctAnswers: 0 });
 
   useEffect(() => {
-    console.log('Dashboard: Setting up auth listener...');
-    
-    // Subscribe to auth state changes
-    const unsubscribe = onAuthChange(async (firebaseUser) => {
-      console.log('Dashboard: Auth state changed:', firebaseUser?.uid);
-      
-      if (!firebaseUser) {
-        console.log('Dashboard: No user, redirecting to landing...');
-        router.replace('/landing'); // Use replace to prevent back button issues
-        return;
-      }
-
-      try {
-        // Get user data from Supabase using Firebase UID
-        console.log('Dashboard: Fetching user data for:', firebaseUser.uid);
-        let userData = await getUser(firebaseUser.uid);
-        console.log('Dashboard: User data received:', userData);
-        
-        if (!userData) {
-          console.log('Dashboard: No user data found, creating profile...');
-          // Create user profile if it doesn't exist (for existing Firebase users)
-          const { createUser } = await import('../lib/db');
-          userData = await createUser(
-            firebaseUser.email,
-            firebaseUser.uid,
-            'student', // Default role
-            8 // Default grade
-          );
-          console.log('Dashboard: Created user profile:', userData);
-        }
-        
-        if (userData) {
-          setUser(userData);
-          
-          // Load session stats
-          const stats = await getSessionStats(firebaseUser.uid);
-          setSessionStats(stats);
-        } else {
-          console.error('Dashboard: Failed to load or create user profile');
-        }
-      } catch (error) {
-        console.error('Error loading user:', error);
-      } finally {
-        setLoading(false);
-      }
-    });
-
-    // Cleanup subscription
-    return () => unsubscribe();
-  }, [router]);
+    if (!authLoading && isAuthenticated && user) {
+      // Load session stats when user is available
+      getSessionStats(user.firebase_uid).then(stats => {
+        setSessionStats(stats);
+      }).catch(error => {
+        console.error('Error loading session stats:', error);
+      });
+    }
+  }, [user, authLoading, isAuthenticated]);
 
   const handleTopicSelect = async (topic) => {
     if (!user || !user.id) {
@@ -178,7 +138,7 @@ export default function Dashboard() {
     return user?.[topic] || 5;
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="loading-container">
         <div className="logo">LearnAI ✨</div>
@@ -190,7 +150,7 @@ export default function Dashboard() {
   return (
     <>
       <Head>
-        <title>LearnAI - Learn English & Math, Unlimited Dynamic Questions</title>
+        <title>Socratic Learning - Learn English & Math, Unlimited Dynamic Questions</title>
         <meta charSet="utf-8" />
         <meta name="description" content="Learn English & Math, unlimited dynamic questions. AI-powered adaptive learning that adjusts to your skill level. Personalized education for grades 5-11." />
         <meta name="keywords" content="learn English, learn Math, unlimited questions, dynamic questions, adaptive learning, AI education, personalized tutoring" />
@@ -261,7 +221,7 @@ export default function Dashboard() {
       {/* Dynamic meta tags for when user is in a topic */}
       {selectedTopic && (
         <Head>
-          <title>LearnAI - Learning {formatTopicName(selectedTopic)} | Level {getProficiency(selectedTopic)}</title>
+          <title>Socratic Learning - Learning {formatTopicName(selectedTopic)} | Level {getProficiency(selectedTopic)}</title>
           <meta name="description" content={`Practice ${formatTopicName(selectedTopic)} with AI-generated questions. Currently at level ${getProficiency(selectedTopic)}/9.`} />
         </Head>
       )}

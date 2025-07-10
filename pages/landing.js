@@ -20,7 +20,7 @@ export default function Landing() {
   return (
     <>
       <Head>
-        <title>LearnAI - Adaptive Learning Powered by AI | English & Math</title>
+        <title>Socratic Learning - Adaptive Learning Powered by AI | English & Math</title>
         <meta name="description" content="Personalized AI-powered learning platform for students. Master English and Math with unlimited dynamic questions that adapt to your level." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
@@ -32,10 +32,13 @@ export default function Landing() {
         <section className="hero">
           <div className="hero-content">
             <h1 className="hero-title">
-              Learn Smarter with <span className="gradient-text">AI-Powered</span> Education
+              Socratic Learning
             </h1>
+            <p className="hero-subtitle-main">
+              <span className="gradient-text">Adaptive. Infinite. Personalized.</span>
+            </p>
             <p className="hero-subtitle">
-              Adaptive learning that adjusts to your pace. Master English and Math with unlimited personalized questions.
+              Master English and Math with unlimited AI-powered questions that adjust to your pace.
             </p>
             <div className="hero-buttons">
               <button 
@@ -70,7 +73,7 @@ export default function Landing() {
 
         {/* Features Section */}
         <section className="features">
-          <h2 className="section-title">Why Choose LearnAI?</h2>
+          <h2 className="section-title">Why Choose Socratic Learning?</h2>
           
           <div className="features-grid">
             <div className="feature-card">
@@ -161,6 +164,15 @@ export default function Landing() {
             </button>
           </div>
         </section>
+
+        {/* Footer */}
+        <footer className="footer">
+          <div className="footer-content">
+            <p>© 2025 Socratic Learning Technologies<br/>
+            A unit of Qash Solutions Inc.<br/>
+            D-U-N-S® Number: 119536275</p>
+          </div>
+        </footer>
       </main>
 
       <style jsx>{`
@@ -181,11 +193,18 @@ export default function Landing() {
         }
 
         .hero-title {
-          font-size: 3.5rem;
+          font-size: 4rem;
           font-weight: 800;
           line-height: 1.2;
-          margin-bottom: 24px;
+          margin-bottom: 16px;
           color: var(--text-primary);
+        }
+
+        .hero-subtitle-main {
+          font-size: 1.5rem;
+          margin-bottom: 16px;
+          font-weight: 600;
+          letter-spacing: 0.05em;
         }
 
         .gradient-text {
@@ -416,6 +435,28 @@ export default function Landing() {
           font-size: 1.25rem;
           color: var(--text-secondary);
           margin-bottom: 32px;
+        }
+
+        /* Footer */
+        .footer {
+          background: var(--glass-bg);
+          border-top: 1px solid var(--glass-border);
+          padding: 20px 0;
+          margin-top: 80px;
+        }
+
+        .footer-content {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 20px;
+          text-align: center;
+        }
+
+        .footer-content p {
+          color: var(--text-secondary);
+          font-size: 0.85rem;
+          line-height: 1.6;
+          margin: 0;
         }
 
         /* Responsive */

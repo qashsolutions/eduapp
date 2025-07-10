@@ -1,18 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { onAuthChange, logOut } from '../lib/firebase';
+import { logOut } from '../lib/firebase';
+import { useAuth } from '../lib/AuthContext';
 
 export default function Header() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
+  const { firebaseUser: user } = useAuth();
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const unsubscribe = onAuthChange((authUser) => {
-      setUser(authUser);
-    });
-    return () => unsubscribe();
-  }, []);
 
   const handleSignOut = async () => {
     setLoading(true);
@@ -33,9 +27,12 @@ export default function Header() {
     <header className="header">
       <div className="header-container">
         <div className="logo-section">
-          <h1 className="logo" onClick={() => router.push(user ? '/' : '/landing')}>
-            LearnAI ✨
-          </h1>
+          <div onClick={() => router.push('/')} style={{ cursor: 'pointer' }}>
+            <h1 className="logo">
+              Socratic Learning ✨
+            </h1>
+            <p className="logo-subheader">Adaptive. Infinite. Personalized.</p>
+          </div>
         </div>
         
         <nav className="nav-section">
@@ -95,12 +92,19 @@ export default function Header() {
           font-size: 1.5rem;
           font-weight: 700;
           color: var(--text-primary);
-          cursor: pointer;
           margin: 0;
           transition: transform 0.2s ease;
         }
 
-        .logo:hover {
+        .logo-subheader {
+          font-size: 0.75rem;
+          color: var(--text-secondary);
+          margin: 0;
+          margin-top: -4px;
+          letter-spacing: 0.05em;
+        }
+
+        .logo-section > div:hover .logo {
           transform: scale(1.05);
         }
 

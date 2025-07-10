@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { onAuthChange, signIn, signUp } from '../lib/firebase';
+import { signIn, signUp } from '../lib/firebase';
 import { createUser } from '../lib/db';
+import { useAuth } from '../lib/AuthContext';
 
 export default function Login() {
   const router = useRouter();
+  const { authChecked, refreshUser } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,20 +16,6 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
-
-  useEffect(() => {
-    // Check if user is already logged in
-    const unsubscribe = onAuthChange((user) => {
-      if (user) {
-        console.log('Login: User already authenticated, redirecting...');
-        router.replace('/'); // Use replace instead of push
-      }
-      setCheckingAuth(false); // Auth check complete
-    });
-
-    return () => unsubscribe();
-  }, [router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -100,8 +88,10 @@ export default function Login() {
         console.log('User authenticated:', authResult.user.uid);
       }
       
-      // The auth state listener will handle redirect
-      console.log('Auth complete, auth state should update automatically');
+      // Refresh user data in context and redirect
+      console.log('Auth complete, refreshing user data...');
+      await refreshUser();
+      router.replace('/');
     } catch (error) {
       console.error('Auth error:', error);
       setError(error.message);
@@ -111,10 +101,10 @@ export default function Login() {
   };
 
   // Show loading while checking auth state
-  if (checkingAuth) {
+  if (!authChecked) {
     return (
       <div className="login-container">
-        <div className="loading-text">Checking authentication...</div>
+        <div className="loading-text">Loading...</div>
       </div>
     );
   }
@@ -122,14 +112,14 @@ export default function Login() {
   return (
     <>
       <Head>
-        <title>LearnAI - Login | Learn English & Math, Unlimited Dynamic Questions</title>
+        <title>Socratic Learning - Login | Learn English & Math, Unlimited Dynamic Questions</title>
         <meta name="description" content="Sign in to LearnAI to access unlimited dynamic questions for English and Math. Personalized AI-powered learning that adapts to your level." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="noindex, nofollow" />
       </Head>
       <div className="login-container">
       <div className="login-card">
-        <h1 className="logo">LearnAI ✨</h1>
+        <h1 className="logo">Socratic Learning ✨</h1>
         <p className="tagline">Adaptive learning powered by AI</p>
 
         <form onSubmit={handleSubmit} className="login-form">
