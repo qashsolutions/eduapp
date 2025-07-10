@@ -24,9 +24,11 @@ export default function Header() {
   const isLandingPage = router.pathname === '/landing';
   const isAuthPage = router.pathname === '/login';
   
-  // Calculate trial days left
+  // Calculate trial days left or show pending status
   useEffect(() => {
-    if (dbUser?.trial_started_at && dbUser?.account_type === 'trial') {
+    if (dbUser?.account_type === 'pending') {
+      setTrialDaysLeft('pending');
+    } else if (dbUser?.trial_started_at && dbUser?.account_type === 'trial') {
       const trialStart = new Date(dbUser.trial_started_at);
       const now = new Date();
       const daysUsed = Math.floor((now - trialStart) / (1000 * 60 * 60 * 24));
@@ -63,9 +65,14 @@ export default function Header() {
             <>
               <div className="user-info">
                 <span className="user-email">{user.email}</span>
-                {trialDaysLeft !== null && (
+                {trialDaysLeft === 'pending' && (
+                  <span className="pending-badge">
+                    Pending
+                  </span>
+                )}
+                {typeof trialDaysLeft === 'number' && (
                   <span className="trial-badge">
-                    Trial: {trialDaysLeft} days left
+                    Trial: Day {15 - trialDaysLeft} of 15
                   </span>
                 )}
               </div>
@@ -149,6 +156,16 @@ export default function Header() {
         .trial-badge {
           background: linear-gradient(135deg, #ffd700, #ff8c00);
           color: #000;
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .pending-badge {
+          background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+          color: #fff;
           padding: 4px 12px;
           border-radius: 20px;
           font-size: 0.8rem;

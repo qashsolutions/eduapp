@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /parent-dashboard
+Disallow: /parent-setup
+Disallow: /parent-verify
+
+Sitemap: https://socraticlearning.com/sitemap.xml

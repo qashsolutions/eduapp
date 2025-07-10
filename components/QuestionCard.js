@@ -197,13 +197,14 @@ export default function QuestionCard({
 
       <style jsx>{`
         .question-card {
-          background: var(--glass-bg);
+          background: rgba(30, 30, 30, 0.6);
           backdrop-filter: blur(20px);
-          border: 1px solid var(--glass-border);
+          border: 1px solid rgba(255, 255, 255, 0.15);
           border-radius: 24px;
           padding: 32px;
           margin-bottom: 24px;
           animation: slideIn 0.5s ease-out;
+          color: #ffffff;
         }
         
         .question-type {
@@ -224,12 +225,12 @@ export default function QuestionCard({
         }
         
         .question-context {
-          color: var(--text-secondary);
+          color: #e0e0e0;
           font-size: 1rem;
           margin-bottom: 28px;
           line-height: 1.6;
           padding: 16px;
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(0, 0, 0, 0.3);
           border-radius: 12px;
         }
         
@@ -240,15 +241,16 @@ export default function QuestionCard({
         }
         
         .answer-option {
-          background: var(--glass-bg);
+          background: rgba(0, 0, 0, 0.3);
           backdrop-filter: blur(15px);
-          border: 2px solid var(--glass-border);
+          border: 2px solid rgba(255, 255, 255, 0.2);
           border-radius: 16px;
           padding: 20px;
           cursor: pointer;
           transition: all 0.3s ease;
           position: relative;
           overflow: hidden;
+          color: #ffffff;
         }
         
         .answer-option::before {

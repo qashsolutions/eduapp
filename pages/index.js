@@ -39,6 +39,13 @@ export default function Dashboard() {
       return;
     }
     
+    // Check if account is pending parent approval
+    if (user.account_type === 'pending') {
+      alert('Your account is pending parent approval. Please ask your parent to check their email.');
+      setGenerating(false);
+      return;
+    }
+    
     setSelectedTopic(topic);
     setGenerating(true);
 

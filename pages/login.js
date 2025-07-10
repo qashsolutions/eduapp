@@ -13,6 +13,8 @@ export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [passcode, setPasscode] = useState('');
   const [role, setRole] = useState('student');
   const [grade, setGrade] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
@@ -20,7 +22,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [isParentSignup, setIsParentSignup] = useState(false);
   const [parentEmail, setParentEmail] = useState('');
-  const [parentName, setParentName] = useState('');
+  const [isStudentLogin, setIsStudentLogin] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,16 +39,44 @@ export default function Login() {
       return;
     }
     
-    // Grade validation for student signup
-    if (!isLogin && role === 'student' && !grade && !isParentSignup) {
-      setError('Please select your grade');
-      return;
+    // Student login validation
+    if (isStudentLogin) {
+      if (!firstName || !passcode) {
+        setError('Please enter your first name and passcode');
+        return;
+      }
+      // Handle student login with passcode
+      try {
+        const response = await fetch('/api/student-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstName, passcode })
+        });
+        
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+        
+        // Sign in with Firebase using the returned credentials
+        const authResult = await signIn(data.email, data.tempPassword);
+        if (authResult.error) throw new Error(authResult.error);
+        
+        localStorage.setItem('userId', authResult.user.uid);
+        await refreshUser();
+        router.replace('/');
+        return;
+      } catch (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
     }
     
-    // Parent info validation for student signup
-    if (!isLogin && role === 'student' && !isParentSignup && (!parentEmail || !parentName)) {
-      setError('Please provide parent information for COPPA compliance');
-      return;
+    // Student signup validation
+    if (!isLogin && role === 'student' && !isParentSignup) {
+      if (!firstName || !grade || !parentEmail) {
+        setError('Please fill in all fields');
+        return;
+      }
     }
     
     setError('');
@@ -74,16 +104,40 @@ export default function Login() {
           throw new Error(authResult.error);
         }
         
-        // Create user profile in Supabase
-        if (authResult.user) {
+        // For student signup, just store parent consent request
+        if (!isLogin && role === 'student' && !isParentSignup) {
+          // Send parent consent email
+          const response = await fetch('/api/send-parent-consent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              childFirstName: firstName,
+              childGrade: parseInt(grade),
+              parentEmail: parentEmail
+            })
+          });
+          
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'Failed to send parent consent email');
+          }
+          
+          // Show success message
+          setError('');
+          alert('Success! We\'ve sent an email to your parent/guardian for approval.');
+          setIsLogin(true);
+          return;
+        }
+        
+        // Create user profile in Supabase for parents/teachers
+        if (authResult.user && (isParentSignup || role === 'teacher')) {
           console.log('Creating user profile in Supabase...');
           const userProfile = await createUser(
             email, 
             authResult.user.uid, 
             isParentSignup ? 'parent' : role,
-            role === 'student' ? parseInt(grade) : null,
-            isParentSignup ? true : false,
-            !isParentSignup && role === 'student' ? { parentEmail, parentName } : null
+            null,
+            isParentSignup ? true : false
           );
           
           if (!userProfile) {
@@ -150,7 +204,11 @@ export default function Login() {
         <p className="tagline">Adaptive learning powered by AI</p>
 
         <form onSubmit={handleSubmit} className="login-form">
-          <h2>{isLogin ? 'Welcome back!' : (isParentSignup ? 'Parent Account Setup' : 'Create your account')}</h2>
+          <h2>
+            {isStudentLogin ? 'Student Login' : 
+             isLogin ? 'Parent/Teacher Login' : 
+             (isParentSignup ? 'Parent Account Setup' : 'Student Registration')}
+          </h2>
           
           {error && (
             <div className="error-message">
@@ -158,28 +216,71 @@ export default function Login() {
             </div>
           )}
 
-          <div className="form-group">
-            <input
-              type="email"
-              placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="form-input"
-            />
-          </div>
-
-          <div className="form-group">
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="form-input"
-            />
-          </div>
+          {isStudentLogin ? (
+            <>
+              <div className="form-group">
+                <input
+                  type="text"
+                  placeholder="Your First Name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  className="form-input"
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  type="password"
+                  placeholder="Your Passcode"
+                  value={passcode}
+                  onChange={(e) => setPasscode(e.target.value)}
+                  required
+                  className="form-input"
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              {!isLogin && role === 'student' && !isParentSignup ? (
+                <>
+                  <div className="form-group">
+                    <input
+                      type="text"
+                      placeholder="Student's First Name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                      className="form-input"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="form-group">
+                    <input
+                      type="email"
+                      placeholder="Email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="form-input"
+                    />
+                  </div>
+                </>
+              )}
+            </>
+          )}
 
           {!isLogin && !isParentSignup && (
             <>
@@ -204,7 +305,7 @@ export default function Login() {
                 <>
                   <div className="form-group">
                     <label style={{ fontSize: '1.125rem', marginBottom: '12px', display: 'block', color: '#ffffff' }}>
-                      Select Your Grade
+                      Select Grade Level
                     </label>
                     <select
                       value={grade}
@@ -213,7 +314,7 @@ export default function Login() {
                       style={{ cursor: 'pointer' }}
                       required
                     >
-                      <option value="">Select your grade</option>
+                      <option value="">Select grade</option>
                       {[5, 6, 7, 8, 9, 10, 11].map(g => (
                         <option key={g} value={g}>Grade {g}</option>
                       ))}
@@ -221,19 +322,8 @@ export default function Login() {
                   </div>
                   
                   <div className="coppa-notice">
-                    <h3>Parent/Guardian Information Required</h3>
-                    <p>As per COPPA regulations, we need your parent or guardian's consent before you can use our platform.</p>
-                  </div>
-                  
-                  <div className="form-group">
-                    <input
-                      type="text"
-                      placeholder="Parent/Guardian Full Name"
-                      value={parentName}
-                      onChange={(e) => setParentName(e.target.value)}
-                      required
-                      className="form-input"
-                    />
+                    <h3>Parent/Guardian Email Required</h3>
+                    <p>We'll send your parent an email to set up your account.</p>
                   </div>
                   
                   <div className="form-group">
@@ -268,32 +358,51 @@ export default function Login() {
             disabled={loading}
             className="submit-btn"
           >
-            {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Create Account')}
+            {loading ? 'Loading...' : 
+             (isStudentLogin ? 'Login' :
+              isLogin ? 'Sign In' : 
+              (role === 'student' && !isParentSignup ? 'Send Parent Request' : 'Create Account'))}
           </button>
         </form>
 
+        {!isStudentLogin && (
+          <>
+            <button 
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setIsParentSignup(false);
+                setRole('student');
+              }}
+              className="switch-btn-full"
+            >
+              {isLogin ? 'Student Registration' : 'Parent/Teacher Sign In'}
+            </button>
+            
+            {isLogin && (
+              <button 
+                onClick={() => {
+                  setIsLogin(false);
+                  setIsParentSignup(true);
+                  setRole('parent');
+                }}
+                className="parent-signup-btn"
+              >
+                I'm a Parent - Sign Up Here
+              </button>
+            )}
+          </>
+        )}
+        
         <button 
           onClick={() => {
-            setIsLogin(!isLogin);
-            setIsParentSignup(false);
+            setIsStudentLogin(!isStudentLogin);
+            setIsLogin(true);
+            setError('');
           }}
-          className="switch-btn-full"
+          className="student-login-btn"
         >
-          {isLogin ? 'Create New Account' : 'Sign In Instead'}
+          {isStudentLogin ? 'Back to Parent/Teacher Login' : 'Student Login →'}
         </button>
-        
-        {isLogin && (
-          <button 
-            onClick={() => {
-              setIsLogin(false);
-              setIsParentSignup(true);
-              setRole('parent');
-            }}
-            className="parent-signup-btn"
-          >
-            I'm a Parent - Sign Up Here
-          </button>
-        )}
       </div>
 
       <style jsx>{`
@@ -605,6 +714,26 @@ export default function Login() {
           background: rgba(0, 255, 136, 0.1);
           transform: translateY(-2px);
           box-shadow: 0 4px 16px rgba(0, 255, 136, 0.3);
+        }
+        
+        .student-login-btn {
+          width: 100%;
+          padding: 16px;
+          background: transparent;
+          border: 2px solid var(--accent-blue);
+          border-radius: 12px;
+          color: var(--accent-blue);
+          font-weight: 600;
+          font-size: 1.1rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-top: 16px;
+        }
+        
+        .student-login-btn:hover {
+          background: rgba(0, 127, 255, 0.1);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(0, 127, 255, 0.3);
         }
 
         @keyframes fadeIn {

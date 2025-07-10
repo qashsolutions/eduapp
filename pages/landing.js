@@ -105,9 +105,45 @@ export default function Landing() {
   return (
     <>
       <Head>
-        <title>Socratic Learning - Adaptive Learning Powered by AI | English & Math</title>
-        <meta name="description" content="Personalized AI-powered learning platform for students. Master English and Math with unlimited dynamic questions that adapt to your level." />
+        <title>Socratic Learning - AI Tutoring for Students | Personalized English & Math</title>
+        <meta name="description" content="AI-powered Socratic tutoring for students. Personalized learning in English & Math with unlimited practice questions. 14-day trial for $1." />
+        <meta name="keywords" content="AI tutor, Socratic method, personalized learning, English tutoring, Math tutoring, adaptive learning, student education" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://socraticlearning.com/" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="Socratic Learning - AI Tutoring for Students" />
+        <meta property="og:description" content="Personalized AI tutoring using the Socratic method. Help your child excel in English & Math with adaptive learning." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://socraticlearning.com/" />
+        <meta property="og:image" content="https://socraticlearning.com/og-image.png" />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Socratic Learning - AI Tutoring for Students" />
+        <meta name="twitter:description" content="Personalized AI tutoring using the Socratic method. Excel in English & Math." />
+        <meta name="twitter:image" content="https://socraticlearning.com/twitter-image.png" />
+        
+        {/* Schema.org */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "EducationalApplication",
+              "name": "Socratic Learning",
+              "description": "AI-powered tutoring platform using the Socratic method",
+              "applicationCategory": "EducationalApplication",
+              "offers": {
+                "@type": "Offer",
+                "price": "1.00",
+                "priceCurrency": "USD",
+                "description": "14-day trial"
+              }
+            })
+          }}
+        />
       </Head>
       
       <div className="page-wrapper" data-time={timeOfDay} data-season={season}>
