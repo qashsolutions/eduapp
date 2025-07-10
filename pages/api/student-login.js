@@ -37,7 +37,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Invalid first name or passcode' });
     }
 
-    // Return email and a temporary password for Firebase auth
+    // Return email and a temporary password for Supabase auth
     // In production, you might want to use a more secure method
     const tempPassword = validStudent.passcode + 'Aa1!';
 

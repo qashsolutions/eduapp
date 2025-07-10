@@ -9,7 +9,7 @@ import { supabase } from '../lib/db';
 
 export default function ParentDashboard() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, getSession } = useAuth();
   const [children, setChildren] = useState([]);
   const [showAddChild, setShowAddChild] = useState(false);
   const [childEmail, setChildEmail] = useState('');
@@ -58,8 +58,9 @@ export default function ParentDashboard() {
     setLoading(true);
 
     try {
-      // Create child account using Firebase Admin SDK (through API)
-      const token = await auth.currentUser?.getIdToken();
+      // Create child account using Supabase Auth (through API)
+      const session = await getSession();
+      const token = session?.access_token;
       
       const response = await fetch('/api/parent/add-child', {
         method: 'POST',

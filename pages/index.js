@@ -23,7 +23,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
       // Load session stats when user is available
-      getSessionStats(user.firebase_uid).then(stats => {
+      getSessionStats(user.id).then(stats => {
         setSessionStats(stats);
       }).catch(error => {
         console.error('Error loading session stats:', error);

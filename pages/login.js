@@ -159,7 +159,7 @@ export default function Login() {
       // Store user ID in localStorage for quick access
       if (authResult.user) {
         localStorage.setItem('userId', authResult.user.id);
-        console.log('User authenticated:', authResult.user.uid);
+        console.log('User authenticated:', authResult.user.id);
       }
       
       // Refresh user data in context and redirect

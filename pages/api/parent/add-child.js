@@ -3,24 +3,19 @@ import { supabase } from '../../../lib/db';
 // In-memory rate limit store
 const rateLimitStore = new Map();
 
-// Verify Firebase token
-async function verifyFirebaseToken(token) {
+// Verify Supabase token
+async function verifySupabaseToken(token) {
   if (!token) return null;
   
   try {
-    const response = await fetch(
-      `https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken: token })
-      }
-    );
+    const { data: { user }, error } = await supabase.auth.getUser(token);
     
-    if (!response.ok) return null;
+    if (error || !user) {
+      console.error('Token verification failed:', error);
+      return null;
+    }
     
-    const data = await response.json();
-    return data.users?.[0]?.localId || null;
+    return user.id;
   } catch (error) {
     console.error('Error verifying token:', error);
     return null;
@@ -40,7 +35,7 @@ export default async function handler(req, res) {
     }
     
     const token = authHeader.split('Bearer ')[1];
-    const verifiedUserId = await verifyFirebaseToken(token);
+    const verifiedUserId = await verifySupabaseToken(token);
     
     if (!verifiedUserId) {
       return res.status(401).json({ error: 'Invalid token' });
@@ -78,34 +73,32 @@ export default async function handler(req, res) {
     // Generate temporary password
     const tempPassword = Math.random().toString(36).slice(-8) + 'Aa1!';
 
-    // Create Firebase account for child
-    const createUserResponse = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: childEmail,
-          password: tempPassword,
-          returnSecureToken: true
-        })
+    // Create Supabase account for child
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: childEmail,
+      password: tempPassword,
+      options: {
+        data: {
+          role: 'student',
+          grade: childGrade,
+          parentId: parentId
+        }
       }
-    );
+    });
 
-    if (!createUserResponse.ok) {
-      const error = await createUserResponse.json();
+    if (authError) {
       return res.status(400).json({ 
-        error: error.error?.message || 'Failed to create account' 
+        error: authError.message || 'Failed to create account' 
       });
     }
 
-    const firebaseUser = await createUserResponse.json();
+    const supabaseUser = authData.user;
 
     // Create user in database
     const { data: newUser, error: dbError } = await supabase
       .from('users')
       .insert([{
-        id: firebaseUser.localId,
+        id: supabaseUser.id,
         email: childEmail,
         role: 'student',
         grade: childGrade,
@@ -137,20 +130,12 @@ export default async function handler(req, res) {
     }
 
     // Send password reset email so child can set their own password
-    const resetResponse = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          requestType: 'PASSWORD_RESET',
-          email: childEmail
-        })
-      }
-    );
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(childEmail, {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login`
+    });
 
-    if (!resetResponse.ok) {
-      console.error('Failed to send password reset email');
+    if (resetError) {
+      console.error('Failed to send password reset email:', resetError);
     }
 
     return res.status(200).json({

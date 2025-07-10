@@ -80,7 +80,7 @@ export default function ParentSetup() {
       await supabase
         .from('parent_consents')
         .update({ 
-          parent_id: authResult.user.uid,
+          parent_id: authResult.user.id,
           consent_given_at: new Date().toISOString()
         })
         .eq('id', consent_id);
@@ -118,7 +118,7 @@ export default function ParentSetup() {
       const { data: childProfile, error: childError } = await supabase
         .from('users')
         .insert([{
-          id: authResult.user.uid,
+          id: authResult.user.id,
           email: childEmail,
           first_name: consent.child_first_name.toLowerCase(),
           passcode: childPasscode,
@@ -154,7 +154,7 @@ export default function ParentSetup() {
       // Update consent with child ID
       await supabase
         .from('parent_consents')
-        .update({ child_id: authResult.user.uid })
+        .update({ child_id: authResult.user.id })
         .eq('id', consent_id);
 
       // Success - redirect to parent dashboard
