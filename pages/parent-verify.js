@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { auth } from '../lib/firebase';
 import { supabase } from '../lib/db';
 import { loadStripe } from '@stripe/stripe-js';
 
@@ -9,24 +8,51 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
 
 export default function ParentVerify() {
   const router = useRouter();
-  const { token, consent_id } = router.query;
   const [consent, setConsent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [processing, setProcessing] = useState(false);
+  const [parentEmail, setParentEmail] = useState('');
 
   useEffect(() => {
-    if (consent_id) {
-      fetchConsentDetails();
-    }
-  }, [consent_id]);
+    handleMagicLinkAuth();
+  }, [router.query]);
 
-  const fetchConsentDetails = async () => {
+  const handleMagicLinkAuth = async () => {
+    try {
+      // Get the user from the magic link session
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        setError('Invalid or expired verification link. Please request a new one.');
+        setLoading(false);
+        return;
+      }
+
+      setParentEmail(user.email);
+      
+      // Get consent_id from URL or user metadata
+      const consent_id = router.query.consent_id || user.user_metadata?.consentId;
+      
+      if (consent_id) {
+        await fetchConsentDetails(consent_id);
+      } else {
+        setError('Invalid consent link');
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Magic link auth error:', error);
+      setError('Authentication failed. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  const fetchConsentDetails = async (consentId) => {
     try {
       const { data, error } = await supabase
         .from('parent_consents')
         .select('*')
-        .eq('id', consent_id)
+        .eq('id', consentId)
         .single();
 
       if (error) throw error;
@@ -55,9 +81,10 @@ export default function ParentVerify() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          consentId: consent_id,
+          consentId: consent.id,
           childName: consent.child_first_name,
-          childGrade: consent.child_grade
+          childGrade: consent.child_grade,
+          parentEmail: parentEmail
         })
       });
 

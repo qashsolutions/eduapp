@@ -36,54 +36,22 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to store consent request' });
     }
 
-    // Send email to parent using Firebase
-    const emailResponse = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          requestType: 'EMAIL_SIGNIN',
-          email: parentEmail,
-          continueUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/parent-verify?token=${consentToken}&consent_id=${data.id}`
-        })
-      }
-    );
-
-    if (!emailResponse.ok) {
-      const errorData = await emailResponse.json();
-      console.error('Firebase email error:', errorData);
-      
-      // Try alternative approach - create parent account and send password reset
-      const tempPassword = Math.random().toString(36).slice(-12) + 'Aa1!';
-      
-      const createResponse = await fetch(
-        `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: parentEmail,
-            password: tempPassword,
-            returnSecureToken: false
-          })
+    // Send magic link email to parent using Supabase Auth
+    const { error: authError } = await supabase.auth.signInWithOtp({
+      email: parentEmail,
+      options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/parent-verify?consent_id=${data.id}`,
+        data: {
+          childName: childFirstName,
+          childGrade: childGrade,
+          consentId: data.id
         }
-      );
-
-      if (createResponse.ok) {
-        // Send password reset email
-        await fetch(
-          `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              requestType: 'PASSWORD_RESET',
-              email: parentEmail
-            })
-          }
-        );
       }
+    });
+
+    if (authError) {
+      console.error('Supabase auth error:', authError);
+      return res.status(500).json({ error: 'Failed to send parent consent email' });
     }
 
     return res.status(200).json({ 
