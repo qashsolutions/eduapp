@@ -96,14 +96,6 @@ export default function Login() {
           throw new Error(authResult.error);
         }
       } else {
-        // Sign up with Firebase
-        console.log('Signing up with Firebase...');
-        authResult = await signUp(email, password);
-        
-        if (authResult.error) {
-          throw new Error(authResult.error);
-        }
-        
         // For student signup, just store parent consent request
         if (!isLogin && role === 'student' && !isParentSignup) {
           // Send parent consent email
@@ -127,6 +119,14 @@ export default function Login() {
           alert('Success! We\'ve sent an email to your parent/guardian for approval.');
           setIsLogin(true);
           return;
+        }
+        
+        // Sign up with Firebase (for parents/teachers only)
+        console.log('Signing up with Firebase...');
+        authResult = await signUp(email, password);
+        
+        if (authResult.error) {
+          throw new Error(authResult.error);
         }
         
         // Create user profile in Supabase for parents/teachers
@@ -491,7 +491,6 @@ export default function Login() {
           align-items: center;
           justify-content: center;
           padding: 40px 20px;
-          min-height: calc(100vh - 200px); /* Account for header and footer */
           position: relative;
           z-index: 1;
         }
