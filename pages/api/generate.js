@@ -4,6 +4,70 @@ import { generateWithOpenAI, generateWithClaude, validateQuestion, createQuestio
 import { getUser, updateUserProficiency, logQuestionAttempt, getCachedQuestion, cacheQuestion, checkQuestionHash } from '../../lib/db';
 import { mapProficiencyToDifficulty, updateProficiency, AI_ROUTING, EDUCATIONAL_TOPICS, getRandomContext, generateQuestionHash } from '../../lib/utils';
 
+// Rate limiting store - tracks requests per user per minute
+const rateLimitStore = new Map();
+
+// Clean up old entries every 5 minutes to prevent memory leak
+setInterval(() => {
+  const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+  for (const [key, timestamp] of rateLimitStore.entries()) {
+    if (timestamp < fiveMinutesAgo) {
+      rateLimitStore.delete(key);
+    }
+  }
+}, 5 * 60 * 1000);
+
+// Check rate limit - 3 requests per minute per user
+function checkRateLimit(userId) {
+  const now = Date.now();
+  const minute = Math.floor(now / 60000);
+  const key = `${userId}:${minute}`;
+  
+  // Get all entries for this user in the current minute
+  const userRequests = [];
+  for (const [k, v] of rateLimitStore.entries()) {
+    if (k.startsWith(`${userId}:${minute}`)) {
+      userRequests.push(v);
+    }
+  }
+  
+  if (userRequests.length >= 3) {
+    return false;
+  }
+  
+  // Add new request timestamp
+  rateLimitStore.set(`${key}:${now}`, now);
+  return true;
+}
+
+// Verify Firebase token using REST API
+async function verifyFirebaseToken(token) {
+  if (!token) return null;
+  
+  try {
+    // Use Firebase REST API to verify token
+    const response = await fetch(
+      `https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: token })
+      }
+    );
+    
+    if (!response.ok) {
+      console.error('Firebase token verification failed:', response.status);
+      return null;
+    }
+    
+    const data = await response.json();
+    return data.users?.[0]?.localId || null;
+  } catch (error) {
+    console.error('Error verifying Firebase token:', error);
+    return null;
+  }
+}
+
 // Initialize AI clients server-side only
 const openaiKey = process.env.OPENAI_API_KEY;
 const anthropicKey = process.env.ANTHROPIC_API_KEY;
@@ -64,9 +128,32 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
   try {
     const { action, userId, topic, answer, timeSpent, hintsUsed } = req.body;
 
-    // Verify that userId is provided (in production, verify the Firebase token)
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    // Extract and verify Firebase token
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No authorization token provided' });
+    }
+    
+    const token = authHeader.split('Bearer ')[1];
+    const verifiedUserId = await verifyFirebaseToken(token);
+    
+    if (!verifiedUserId) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+    
+    // The verifiedUserId from Firebase should match the userId in request body
+    // userId in our database is the Firebase UID stored as text
+    if (verifiedUserId !== userId) {
+      console.error('Token mismatch:', { verifiedUserId, requestUserId: userId });
+      return res.status(401).json({ error: 'Token mismatch' });
+    }
+    
+    // Check rate limit
+    if (!checkRateLimit(userId)) {
+      return res.status(429).json({ 
+        error: 'Rate limit exceeded', 
+        message: 'Please wait a minute before making more requests' 
+      });
     }
 
     if (action === 'generate') {

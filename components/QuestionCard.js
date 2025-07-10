@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { setCachedProficiency } from '../lib/utils';
+import { auth } from '../lib/firebase';
 
 export default function QuestionCard({ 
   question, 
@@ -59,9 +60,15 @@ export default function QuestionCard({
       
       // Otherwise, fetch a new hint
       try {
+        // Get Firebase token for authentication
+        const token = await auth.currentUser?.getIdToken();
+        
         const response = await fetch('/api/generate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+          },
           body: JSON.stringify({
             action: 'socratic',
             userId,
