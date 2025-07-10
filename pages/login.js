@@ -491,6 +491,7 @@ export default function Login() {
           align-items: center;
           justify-content: center;
           padding: 40px 20px;
+          min-height: calc(100vh - 160px); /* Ensures footer stays at bottom */
           position: relative;
           z-index: 1;
         }
