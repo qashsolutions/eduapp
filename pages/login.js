@@ -18,6 +18,9 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isParentSignup, setIsParentSignup] = useState(false);
+  const [parentEmail, setParentEmail] = useState('');
+  const [parentName, setParentName] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,8 +38,14 @@ export default function Login() {
     }
     
     // Grade validation for student signup
-    if (!isLogin && role === 'student' && !grade) {
+    if (!isLogin && role === 'student' && !grade && !isParentSignup) {
       setError('Please select your grade');
+      return;
+    }
+    
+    // Parent info validation for student signup
+    if (!isLogin && role === 'student' && !isParentSignup && (!parentEmail || !parentName)) {
+      setError('Please provide parent information for COPPA compliance');
       return;
     }
     
@@ -71,8 +80,10 @@ export default function Login() {
           const userProfile = await createUser(
             email, 
             authResult.user.uid, 
-            role,
-            role === 'student' ? parseInt(grade) : null
+            isParentSignup ? 'parent' : role,
+            role === 'student' ? parseInt(grade) : null,
+            isParentSignup ? true : false,
+            !isParentSignup && role === 'student' ? { parentEmail, parentName } : null
           );
           
           if (!userProfile) {
@@ -93,7 +104,13 @@ export default function Login() {
       // Refresh user data in context and redirect
       console.log('Auth complete, refreshing user data...');
       await refreshUser();
-      router.replace('/');
+      
+      // Redirect parents to add children page
+      if (isParentSignup) {
+        router.replace('/parent-dashboard');
+      } else {
+        router.replace('/');
+      }
     } catch (error) {
       console.error('Auth error:', error);
       setError(error.message);
@@ -122,11 +139,18 @@ export default function Login() {
       <div className="page-wrapper">
         <Header />
         <div className="login-container">
+          {/* Floating radial gradients */}
+          <div className="gradient-orbs">
+            <div className="orb orb-1"></div>
+            <div className="orb orb-2"></div>
+            <div className="orb orb-3"></div>
+            <div className="orb orb-4"></div>
+          </div>
       <div className="login-card">
         <p className="tagline">Adaptive learning powered by AI</p>
 
         <form onSubmit={handleSubmit} className="login-form">
-          <h2>{isLogin ? 'Welcome back!' : 'Create your account'}</h2>
+          <h2>{isLogin ? 'Welcome back!' : (isParentSignup ? 'Parent Account Setup' : 'Create your account')}</h2>
           
           {error && (
             <div className="error-message">
@@ -157,7 +181,7 @@ export default function Login() {
             />
           </div>
 
-          {!isLogin && (
+          {!isLogin && !isParentSignup && (
             <>
               <div className="form-group">
                 <div className="role-selector">
@@ -177,23 +201,52 @@ export default function Login() {
               </div>
 
               {role === 'student' && (
-                <div className="form-group">
-                  <label style={{ fontSize: '1.125rem', marginBottom: '12px', display: 'block', color: '#ffffff' }}>
-                    Select Your Grade
-                  </label>
-                  <select
-                    value={grade}
-                    onChange={(e) => setGrade(e.target.value)}
-                    className="form-input"
-                    style={{ cursor: 'pointer' }}
-                    required
-                  >
-                    <option value="">Select your grade</option>
-                    {[5, 6, 7, 8, 9, 10, 11].map(g => (
-                      <option key={g} value={g}>Grade {g}</option>
-                    ))}
-                  </select>
-                </div>
+                <>
+                  <div className="form-group">
+                    <label style={{ fontSize: '1.125rem', marginBottom: '12px', display: 'block', color: '#ffffff' }}>
+                      Select Your Grade
+                    </label>
+                    <select
+                      value={grade}
+                      onChange={(e) => setGrade(e.target.value)}
+                      className="form-input"
+                      style={{ cursor: 'pointer' }}
+                      required
+                    >
+                      <option value="">Select your grade</option>
+                      {[5, 6, 7, 8, 9, 10, 11].map(g => (
+                        <option key={g} value={g}>Grade {g}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="coppa-notice">
+                    <h3>Parent/Guardian Information Required</h3>
+                    <p>As per COPPA regulations, we need your parent or guardian's consent before you can use our platform.</p>
+                  </div>
+                  
+                  <div className="form-group">
+                    <input
+                      type="text"
+                      placeholder="Parent/Guardian Full Name"
+                      value={parentName}
+                      onChange={(e) => setParentName(e.target.value)}
+                      required
+                      className="form-input"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <input
+                      type="email"
+                      placeholder="Parent/Guardian Email"
+                      value={parentEmail}
+                      onChange={(e) => setParentEmail(e.target.value)}
+                      required
+                      className="form-input"
+                    />
+                  </div>
+                </>
               )}
             </>
           )}
@@ -220,11 +273,27 @@ export default function Login() {
         </form>
 
         <button 
-          onClick={() => setIsLogin(!isLogin)}
+          onClick={() => {
+            setIsLogin(!isLogin);
+            setIsParentSignup(false);
+          }}
           className="switch-btn-full"
         >
           {isLogin ? 'Create New Account' : 'Sign In Instead'}
         </button>
+        
+        {isLogin && (
+          <button 
+            onClick={() => {
+              setIsLogin(false);
+              setIsParentSignup(true);
+              setRole('parent');
+            }}
+            className="parent-signup-btn"
+          >
+            I'm a Parent - Sign Up Here
+          </button>
+        )}
       </div>
 
       <style jsx>{`
@@ -233,6 +302,78 @@ export default function Login() {
           display: flex;
           flex-direction: column;
           background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, #2a1a4a 100%);
+          position: relative;
+          overflow: hidden;
+        }
+        
+        /* Floating radial gradients */
+        .gradient-orbs {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 0;
+        }
+        
+        .orb {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(80px);
+          opacity: 0.6;
+          animation: float-orb 20s infinite ease-in-out;
+        }
+        
+        .orb-1 {
+          width: 400px;
+          height: 400px;
+          background: radial-gradient(circle at center, var(--accent-neon), transparent);
+          top: -200px;
+          left: -200px;
+          animation-duration: 25s;
+        }
+        
+        .orb-2 {
+          width: 300px;
+          height: 300px;
+          background: radial-gradient(circle at center, var(--accent-blue), transparent);
+          bottom: -150px;
+          right: -150px;
+          animation-duration: 30s;
+          animation-delay: -5s;
+        }
+        
+        .orb-3 {
+          width: 350px;
+          height: 350px;
+          background: radial-gradient(circle at center, #ff6b9d, transparent);
+          top: 50%;
+          left: -175px;
+          animation-duration: 35s;
+          animation-delay: -10s;
+        }
+        
+        .orb-4 {
+          width: 250px;
+          height: 250px;
+          background: radial-gradient(circle at center, #feca57, transparent);
+          top: 20%;
+          right: -125px;
+          animation-duration: 20s;
+          animation-delay: -15s;
+        }
+        
+        @keyframes float-orb {
+          0%, 100% {
+            transform: translate(0, 0) rotate(0deg) scale(1);
+          }
+          33% {
+            transform: translate(50px, -50px) rotate(120deg) scale(1.1);
+          }
+          66% {
+            transform: translate(-30px, 30px) rotate(240deg) scale(0.9);
+          }
         }
 
         .login-container {
@@ -242,6 +383,8 @@ export default function Login() {
           justify-content: center;
           padding: 40px 20px;
           min-height: calc(100vh - 200px); /* Account for header and footer */
+          position: relative;
+          z-index: 1;
         }
 
         .login-card {
@@ -422,6 +565,46 @@ export default function Login() {
 
         .role-card:hover {
           border-color: var(--accent-blue);
+        }
+        
+        .coppa-notice {
+          background: rgba(255, 204, 0, 0.1);
+          border: 1px solid rgba(255, 204, 0, 0.3);
+          border-radius: 12px;
+          padding: 16px;
+          margin: 20px 0;
+        }
+        
+        .coppa-notice h3 {
+          color: #ffcc00;
+          font-size: 1.1rem;
+          margin-bottom: 8px;
+        }
+        
+        .coppa-notice p {
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 0.9rem;
+          line-height: 1.5;
+        }
+        
+        .parent-signup-btn {
+          width: 100%;
+          padding: 16px;
+          background: transparent;
+          border: 2px solid var(--accent-neon);
+          border-radius: 12px;
+          color: var(--accent-neon);
+          font-weight: 600;
+          font-size: 1.1rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-top: 16px;
+        }
+        
+        .parent-signup-btn:hover {
+          background: rgba(0, 255, 136, 0.1);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(0, 255, 136, 0.3);
         }
 
         @keyframes fadeIn {

@@ -5,8 +5,9 @@ import { useAuth } from '../lib/AuthContext';
 
 export default function Header() {
   const router = useRouter();
-  const { firebaseUser: user } = useAuth();
+  const { firebaseUser: user, user: dbUser } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [trialDaysLeft, setTrialDaysLeft] = useState(null);
 
   const handleSignOut = async () => {
     setLoading(true);
@@ -22,6 +23,17 @@ export default function Header() {
 
   const isLandingPage = router.pathname === '/landing';
   const isAuthPage = router.pathname === '/login';
+  
+  // Calculate trial days left
+  useEffect(() => {
+    if (dbUser?.trial_started_at && dbUser?.account_type === 'trial') {
+      const trialStart = new Date(dbUser.trial_started_at);
+      const now = new Date();
+      const daysUsed = Math.floor((now - trialStart) / (1000 * 60 * 60 * 24));
+      const daysLeft = Math.max(0, 15 - daysUsed);
+      setTrialDaysLeft(daysLeft);
+    }
+  }, [dbUser]);
 
   return (
     <header className="header">
@@ -49,7 +61,14 @@ export default function Header() {
           
           {user && (
             <>
-              <span className="user-email">{user.email}</span>
+              <div className="user-info">
+                <span className="user-email">{user.email}</span>
+                {trialDaysLeft !== null && (
+                  <span className="trial-badge">
+                    Trial: {trialDaysLeft} days left
+                  </span>
+                )}
+              </div>
               <button 
                 className="btn btn-secondary"
                 onClick={handleSignOut}
@@ -116,9 +135,30 @@ export default function Header() {
           gap: 16px;
         }
 
+        .user-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        
         .user-email {
           color: var(--text-secondary);
           font-size: 0.9rem;
+        }
+        
+        .trial-badge {
+          background: linear-gradient(135deg, #ffd700, #ff8c00);
+          color: #000;
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.8; }
         }
 
         .btn {
