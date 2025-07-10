@@ -31,7 +31,9 @@ export default function Header() {
             <h1 className="logo">
               Socratic Learning ✨
             </h1>
-            <p className="logo-subheader">Adaptive. Infinite. Personalized.</p>
+            <p className="logo-subheader">
+              <span className="gradient-text">Adaptive. Infinite. Personalized.</span>
+            </p>
           </div>
         </div>
         
@@ -106,6 +108,14 @@ export default function Header() {
 
         .logo-section > div:hover .logo {
           transform: scale(1.05);
+        }
+
+        .gradient-text {
+          background: linear-gradient(135deg, #00ff88, #0088ff);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          font-weight: 600;
         }
 
         .nav-section {
