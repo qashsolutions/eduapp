@@ -130,10 +130,39 @@ export default function Login() {
         
         // Sign up with Supabase (for parents/teachers only)
         console.log('Signing up with Supabase...');
+        console.log('Signup params:', { 
+          email, 
+          passwordLength: password?.length,
+          isParentSignup,
+          role 
+        });
+        
         authResult = await signUp(email, password);
         
+        console.log('Signup result:', {
+          hasUser: !!authResult.user,
+          userId: authResult.user?.id,
+          hasError: !!authResult.error,
+          error: authResult.error
+        });
+        
         if (authResult.error) {
-          throw new Error(authResult.error);
+          console.error('=== SIGNUP FAILED ===');
+          console.error('Error:', authResult.error);
+          
+          // Parse error message for better user feedback
+          const errorMsg = authResult.error.toString().toLowerCase();
+          if (errorMsg.includes('already registered') || errorMsg.includes('user already exists')) {
+            throw new Error('This email is already registered. Please sign in instead.');
+          } else if (errorMsg.includes('invalid email')) {
+            throw new Error('Please enter a valid email address.');
+          } else if (errorMsg.includes('password')) {
+            throw new Error('Password must be at least 8 characters long.');
+          } else if (errorMsg.includes('rate limit')) {
+            throw new Error('Too many attempts. Please try again in a few minutes.');
+          } else {
+            throw new Error(`Signup failed: ${authResult.error}`);
+          }
         }
         
         // Create user profile in Supabase for parents/teachers
