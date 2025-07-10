@@ -14,8 +14,8 @@ export default function Footer() {
 
       <style jsx>{`
         .footer {
-          background: var(--glass-bg);
-          border-top: 1px solid var(--glass-border);
+          background: rgba(10, 10, 15, 0.8);
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
           padding: 20px 0;
           margin-top: 0;
         }

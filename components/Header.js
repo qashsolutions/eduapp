@@ -64,9 +64,9 @@ export default function Header() {
 
       <style jsx>{`
         .header {
-          background: var(--glass-bg);
+          background: rgba(10, 10, 15, 0.8);
           backdrop-filter: blur(20px);
-          border-bottom: 1px solid var(--glass-border);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           position: sticky;
           top: 0;
           z-index: 1000;
