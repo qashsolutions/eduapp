@@ -3,7 +3,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer-content">
         <div className="footer-left">
-          <p>© 2025 Socratic Learning Technologies<br/>
+          <p>© 2025 <a href="https://www.socratic-thinking.com" target="_blank" rel="noopener noreferrer">socratic-thinking.com</a><br/>
           A unit of Qash Solutions Inc.<br/>
           D-U-N-S® Number: 119536275</p>
         </div>
@@ -35,6 +35,17 @@ export default function Footer() {
           font-size: 0.85rem;
           line-height: 1.6;
           margin: 0;
+        }
+
+        .footer-left a {
+          color: var(--text-secondary);
+          text-decoration: none;
+          transition: color 0.3s ease;
+        }
+
+        .footer-left a:hover {
+          color: var(--accent-primary);
+          text-decoration: underline;
         }
 
         .footer-right {
