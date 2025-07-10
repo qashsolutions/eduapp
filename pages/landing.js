@@ -374,10 +374,12 @@ export default function Landing() {
 
         .shape {
           position: absolute;
-          background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-          opacity: 0.1;
-          filter: blur(40px);
+          background: radial-gradient(circle at center, var(--accent-primary), var(--accent-secondary));
+          opacity: 0.5;
+          filter: blur(30px);
           animation: float 20s infinite ease-in-out;
+          box-shadow: 0 0 120px var(--accent-primary), 0 0 60px var(--accent-secondary);
+          mix-blend-mode: screen;
         }
 
         .shape.circle {
@@ -458,28 +460,31 @@ export default function Landing() {
 
         .particle {
           position: absolute;
-          width: 4px;
-          height: 4px;
-          background: var(--accent-primary);
+          width: 10px;
+          height: 10px;
+          background: radial-gradient(circle, var(--accent-primary), transparent);
           border-radius: 50%;
-          opacity: 0.6;
+          opacity: 1;
           transition: transform 0.3s ease-out;
+          box-shadow: 0 0 20px var(--accent-primary), 0 0 40px var(--accent-primary);
+          mix-blend-mode: screen;
           transform: translate(
-            calc(var(--mouse-x) * 0.1 * calc(var(--index) - 10) * 0.1),
-            calc(var(--mouse-y) * 0.1 * calc(var(--index) - 10) * 0.1)
+            calc(var(--mouse-x) * 0.15 * calc(var(--index) - 10) * 0.15),
+            calc(var(--mouse-y) * 0.15 * calc(var(--index) - 10) * 0.15)
           );
         }
 
         .particle:nth-child(even) {
-          background: var(--accent-secondary);
-          width: 3px;
-          height: 3px;
+          background: radial-gradient(circle, var(--accent-secondary), transparent);
+          width: 8px;
+          height: 8px;
+          box-shadow: 0 0 20px var(--accent-secondary), 0 0 40px var(--accent-secondary);
         }
 
         .particle:nth-child(3n) {
-          opacity: 0.3;
-          width: 2px;
-          height: 2px;
+          opacity: 0.7;
+          width: 6px;
+          height: 6px;
         }
 
         /* Hero Section */
