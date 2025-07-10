@@ -244,7 +244,8 @@ export default function Login() {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 20px;
+          padding: 40px 20px;
+          min-height: calc(100vh - 200px); /* Account for header and footer */
         }
 
         .login-card {
@@ -302,12 +303,13 @@ export default function Login() {
 
         .form-input {
           width: 100%;
-          padding: 18px 20px;
-          background: rgba(255, 255, 255, 0.05);
+          padding: 20px 24px;
+          background: rgba(255, 255, 255, 0.08);
           border: 1px solid var(--glass-border);
           border-radius: 12px;
           color: #ffffff;
-          font-size: 1.125rem;
+          font-size: 1.25rem;
+          font-weight: 400;
           transition: all 0.3s ease;
         }
 
@@ -318,7 +320,8 @@ export default function Login() {
         }
 
         .form-input::placeholder {
-          color: rgba(255, 255, 255, 0.7);
+          color: rgba(255, 255, 255, 0.8);
+          font-weight: 300;
         }
         
         /* Style select dropdown */
@@ -334,13 +337,13 @@ export default function Login() {
 
         .submit-btn {
           width: 100%;
-          padding: 18px;
+          padding: 20px;
           background: linear-gradient(135deg, var(--accent-neon), var(--accent-blue));
           border: none;
           border-radius: 12px;
           color: white;
           font-weight: 600;
-          font-size: 1.125rem;
+          font-size: 1.25rem;
           cursor: pointer;
           transition: all 0.3s ease;
         }
@@ -377,8 +380,9 @@ export default function Login() {
 
         .switch-mode {
           text-align: center;
-          color: rgba(255, 255, 255, 0.9);
+          color: #ffffff;
           font-size: 1.125rem;
+          margin-top: 24px;
         }
 
         .switch-btn {
@@ -402,7 +406,7 @@ export default function Login() {
         }
 
         .role-card {
-          padding: 20px;
+          padding: 24px;
           background: rgba(255, 255, 255, 0.05);
           border: 2px solid var(--glass-border);
           border-radius: 12px;
@@ -412,9 +416,10 @@ export default function Login() {
         }
 
         .role-card h3 {
-          font-size: 1.1rem;
+          font-size: 1.25rem;
           font-weight: 600;
           margin: 0;
+          color: #ffffff;
         }
 
         .role-card.active {
