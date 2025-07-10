@@ -39,20 +39,12 @@ export default function Header() {
         
         <nav className="nav-section">
           {!user && !isAuthPage && (
-            <>
-              <button 
-                className="btn btn-secondary"
-                onClick={() => router.push('/login')}
-              >
-                Sign In
-              </button>
-              <button 
-                className="btn btn-primary"
-                onClick={() => router.push('/login?signup=true')}
-              >
-                Get Started
-              </button>
-            </>
+            <button 
+              className="btn btn-primary"
+              onClick={() => router.push('/login')}
+            >
+              Sign In
+            </button>
           )}
           
           {user && (
@@ -142,13 +134,18 @@ export default function Header() {
         }
 
         .btn-primary {
-          background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-          color: white;
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(20px);
+          border: 2px solid var(--accent-primary);
+          color: var(--text-primary);
+          font-weight: 600;
+          padding: 10px 24px;
         }
 
         .btn-primary:hover {
           transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(0, 255, 136, 0.3);
+          box-shadow: 0 20px 40px rgba(0, 255, 136, 0.3);
+          background: rgba(0, 255, 136, 0.1);
         }
 
         .btn-secondary {

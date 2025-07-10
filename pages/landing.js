@@ -354,10 +354,132 @@ export default function Landing() {
 
         /* Glass morphism effect */
         .glass {
-          background: var(--glass-bg);
+          background: rgba(50, 50, 50, 0.3);
           backdrop-filter: blur(20px);
-          border: 1px solid var(--glass-border);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 20px;
+        }
+
+        /* Floating shapes */
+        .floating-shapes {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .shape {
+          position: absolute;
+          background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+          opacity: 0.1;
+          filter: blur(40px);
+          animation: float 20s infinite ease-in-out;
+        }
+
+        .shape.circle {
+          border-radius: 50%;
+        }
+
+        .shape.square {
+          border-radius: 20%;
+        }
+
+        .shape-1 {
+          width: 300px;
+          height: 300px;
+          top: 10%;
+          left: 10%;
+          animation-duration: 25s;
+        }
+
+        .shape-2 {
+          width: 200px;
+          height: 200px;
+          top: 60%;
+          right: 15%;
+          animation-duration: 30s;
+          animation-delay: -5s;
+        }
+
+        .shape-3 {
+          width: 250px;
+          height: 250px;
+          bottom: 20%;
+          left: 30%;
+          animation-duration: 35s;
+          animation-delay: -10s;
+        }
+
+        .shape-4 {
+          width: 150px;
+          height: 150px;
+          top: 30%;
+          right: 30%;
+          animation-duration: 20s;
+          animation-delay: -15s;
+        }
+
+        .shape-5 {
+          width: 350px;
+          height: 350px;
+          bottom: 10%;
+          right: 5%;
+          animation-duration: 40s;
+          animation-delay: -20s;
+        }
+
+        @keyframes float {
+          0%, 100% {
+            transform: translate(0, 0) rotate(0deg);
+          }
+          33% {
+            transform: translate(30px, -30px) rotate(120deg);
+          }
+          66% {
+            transform: translate(-20px, 20px) rotate(240deg);
+          }
+        }
+
+        /* Interactive particles */
+        .particles-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .particle {
+          position: absolute;
+          width: 4px;
+          height: 4px;
+          background: var(--accent-primary);
+          border-radius: 50%;
+          opacity: 0.6;
+          transition: transform 0.3s ease-out;
+          transform: translate(
+            calc(var(--mouse-x) * 0.1 * calc(var(--index) - 10) * 0.1),
+            calc(var(--mouse-y) * 0.1 * calc(var(--index) - 10) * 0.1)
+          );
+        }
+
+        .particle:nth-child(even) {
+          background: var(--accent-secondary);
+          width: 3px;
+          height: 3px;
+        }
+
+        .particle:nth-child(3n) {
+          opacity: 0.3;
+          width: 2px;
+          height: 2px;
         }
 
         /* Hero Section */
