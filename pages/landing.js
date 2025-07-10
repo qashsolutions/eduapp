@@ -78,14 +78,15 @@ export default function Landing() {
 
   useEffect(() => {
     // Redirect if already logged in
-    const unsubscribe = onAuthChange((user) => {
-      if (user && router.isReady) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user && router.isReady) {
         setTimeout(() => {
           router.push('/');
         }, 100);
       }
     });
-    return () => unsubscribe();
+    
+    return () => subscription.unsubscribe();
   }, [router]);
 
   // Split content into sections for better visual organization
