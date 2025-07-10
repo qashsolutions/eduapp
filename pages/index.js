@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import Header from '../components/Header';
 import MoodSelector from '../components/MoodSelector';
 import ProgressBar from '../components/ProgressBar';
 import QuestionCard from '../components/QuestionCard';
@@ -26,8 +27,8 @@ export default function Dashboard() {
       console.log('Dashboard: Auth state changed:', firebaseUser?.uid);
       
       if (!firebaseUser) {
-        console.log('Dashboard: No user, redirecting to login...');
-        router.replace('/login'); // Use replace to prevent back button issues
+        console.log('Dashboard: No user, redirecting to landing...');
+        router.replace('/landing'); // Use replace to prevent back button issues
         return;
       }
 
@@ -265,12 +266,12 @@ export default function Dashboard() {
         </Head>
       )}
       
+      <Header />
+      
       <div className="container">
       {!selectedTopic ? (
         <>
-          <header className="header">
-            <h1 className="logo">LearnAI ✨</h1>
-            <p className="subtitle">
+          <p className="subtitle">
               {user?.role === 'student' ? 'Student' : 'Teacher'} | 
               Grade {user?.grade || '8'} | 
               ${user?.subscription_status === 'student' ? '70' : user?.subscription_status === 'teacher' ? '120' : '0'}/year
@@ -280,7 +281,6 @@ export default function Dashboard() {
                 Today: {sessionStats.correctAnswers}/{sessionStats.totalQuestions} correct
               </p>
             )}
-          </header>
 
           <MoodSelector 
             selectedMood={selectedMood} 

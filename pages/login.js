@@ -11,6 +11,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
   const [grade, setGrade] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -204,6 +205,18 @@ export default function Login() {
             </>
           )}
 
+          <div className="form-group remember-me">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="checkbox-input"
+              />
+              <span>Remember me</span>
+            </label>
+          </div>
+
           <button 
             type="submit" 
             disabled={loading}
@@ -328,6 +341,26 @@ export default function Login() {
         .submit-btn:disabled {
           opacity: 0.7;
           cursor: not-allowed;
+        }
+
+        .remember-me {
+          margin-top: 16px;
+        }
+
+        .checkbox-label {
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+        }
+
+        .checkbox-input {
+          margin-right: 8px;
+          width: 18px;
+          height: 18px;
+          cursor: pointer;
+          accent-color: var(--accent-neon);
         }
 
         .switch-mode {
