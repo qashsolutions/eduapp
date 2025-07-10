@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import { signIn, signUp } from '../lib/firebase';
 import { createUser } from '../lib/db';
 import { useAuth } from '../lib/AuthContext';
@@ -113,11 +115,13 @@ export default function Login() {
     <>
       <Head>
         <title>Socratic Learning - Login | Learn English & Math, Unlimited Dynamic Questions</title>
-        <meta name="description" content="Sign in to LearnAI to access unlimited dynamic questions for English and Math. Personalized AI-powered learning that adapts to your level." />
+        <meta name="description" content="Sign in to Socratic Learning to access unlimited dynamic questions for English and Math. Personalized AI-powered learning that adapts to your level." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="noindex, nofollow" />
       </Head>
-      <div className="login-container">
+      <div className="page-wrapper">
+        <Header />
+        <div className="login-container">
       <div className="login-card">
         <h1 className="logo">Socratic Learning ✨</h1>
         <p className="tagline">Adaptive learning powered by AI</p>
@@ -228,13 +232,19 @@ export default function Login() {
       </div>
 
       <style jsx>{`
-        .login-container {
+        .page-wrapper {
           min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, #2a1a4a 100%);
+        }
+
+        .login-container {
+          flex: 1;
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 20px;
-          background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, #2a1a4a 100%);
         }
 
         .login-card {
@@ -452,7 +462,9 @@ export default function Login() {
           color: var(--text-primary);
         }
       `}</style>
-    </div>
+        </div>
+        <Footer />
+      </div>
     </>
   );
 }

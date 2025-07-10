@@ -1,11 +1,52 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { createClient } from '@supabase/supabase-js';
 import Header from '../components/Header';
+import Footer from '../components/Footer';
 import { onAuthChange } from '../lib/firebase';
+
+// Initialize Supabase client only if environment variables are available
+const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    )
+  : null;
 
 export default function Landing() {
   const router = useRouter();
+  const [heroContent, setHeroContent] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch hero content from database
+    const fetchContent = async () => {
+      try {
+        if (!supabase) {
+          console.warn('Supabase client not initialized');
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('admin_content')
+          .select('content')
+          .eq('content_key', 'landing_hero_story')
+          .eq('is_active', true)
+          .single();
+
+        if (error) throw error;
+        setHeroContent(data?.content);
+      } catch (error) {
+        console.error('Error fetching content:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContent();
+  }, []);
 
   useEffect(() => {
     // Redirect if already logged in
@@ -55,19 +96,20 @@ export default function Landing() {
               </button>
             </div>
           </div>
-          <div className="hero-visual">
-            <div className="floating-card">
-              <div className="question-preview">
-                <span className="subject-tag">Math</span>
-                <p>If x + 5 = 12, what is x?</p>
-                <div className="options-preview">
-                  <div className="option">A) 5</div>
-                  <div className="option correct">B) 7</div>
-                  <div className="option">C) 9</div>
-                  <div className="option">D) 11</div>
-                </div>
+          <div className="hero-story">
+            {loading ? (
+              <div className="story-loading">Loading...</div>
+            ) : (
+              <div className="story-content">
+                {heroContent ? (
+                  heroContent.split('\n\n').map((paragraph, index) => (
+                    <p key={index}>{paragraph}</p>
+                  ))
+                ) : (
+                  <p>Welcome to Socratic Learning - where education meets innovation.</p>
+                )}
               </div>
-            </div>
+            )}
           </div>
         </section>
 
@@ -151,28 +193,7 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="cta">
-          <div className="cta-content">
-            <h2>Ready to Transform Your Learning?</h2>
-            <p>Join thousands of students improving every day with AI-powered education.</p>
-            <button 
-              className="btn btn-primary btn-large"
-              onClick={() => router.push('/login?signup=true')}
-            >
-              Get Started Free
-            </button>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="footer">
-          <div className="footer-content">
-            <p>© 2025 Socratic Learning Technologies<br/>
-            A unit of Qash Solutions Inc.<br/>
-            D-U-N-S® Number: 119536275</p>
-          </div>
-        </footer>
+        <Footer />
       </main>
 
       <style jsx>{`
@@ -263,54 +284,55 @@ export default function Landing() {
           border-color: var(--accent-neon);
         }
 
-        /* Hero Visual */
-        .floating-card {
+        /* Hero Story */
+        .hero-story {
           background: var(--glass-bg);
           backdrop-filter: blur(20px);
           border: 1px solid var(--glass-border);
           border-radius: 24px;
           padding: 32px;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-          animation: float 6s ease-in-out infinite;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          max-height: 600px;
+          overflow-y: auto;
         }
 
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
+        .story-loading {
+          text-align: center;
+          color: var(--text-secondary);
+          padding: 40px;
         }
 
-        .question-preview {
-          font-size: 1.1rem;
+        .story-content {
+          font-size: 1rem;
+          line-height: 1.8;
+          color: var(--text-secondary);
         }
 
-        .subject-tag {
-          display: inline-block;
-          background: rgba(0, 255, 136, 0.2);
-          color: var(--accent-neon);
-          padding: 4px 12px;
-          border-radius: 16px;
-          font-size: 0.85rem;
-          font-weight: 600;
+        .story-content p {
           margin-bottom: 16px;
         }
 
-        .options-preview {
-          margin-top: 20px;
-          display: grid;
-          gap: 12px;
+        .story-content p:last-child {
+          margin-bottom: 0;
         }
 
-        .option {
-          padding: 12px 16px;
+        /* Custom scrollbar for story */
+        .hero-story::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        .hero-story::-webkit-scrollbar-track {
           background: rgba(255, 255, 255, 0.05);
-          border-radius: 12px;
-          border: 1px solid var(--glass-border);
-          transition: all 0.3s ease;
+          border-radius: 4px;
         }
 
-        .option.correct {
-          background: rgba(0, 255, 136, 0.1);
-          border-color: var(--accent-neon);
+        .hero-story::-webkit-scrollbar-thumb {
+          background: var(--glass-border);
+          border-radius: 4px;
+        }
+
+        .hero-story::-webkit-scrollbar-thumb:hover {
+          background: var(--accent-primary);
         }
 
         /* Features Section */
@@ -339,7 +361,7 @@ export default function Landing() {
           backdrop-filter: blur(20px);
           border: 1px solid var(--glass-border);
           border-radius: 20px;
-          padding: 32px;
+          padding: 20px;
           text-align: center;
           transition: all 0.3s ease;
         }
@@ -413,51 +435,7 @@ export default function Landing() {
           font-weight: bold;
         }
 
-        /* CTA Section */
-        .cta {
-          padding: 80px 20px;
-          background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 136, 255, 0.1));
-        }
 
-        .cta-content {
-          max-width: 600px;
-          margin: 0 auto;
-          text-align: center;
-        }
-
-        .cta h2 {
-          font-size: 2.5rem;
-          margin-bottom: 16px;
-          color: var(--text-primary);
-        }
-
-        .cta p {
-          font-size: 1.25rem;
-          color: var(--text-secondary);
-          margin-bottom: 32px;
-        }
-
-        /* Footer */
-        .footer {
-          background: var(--glass-bg);
-          border-top: 1px solid var(--glass-border);
-          padding: 20px 0;
-          margin-top: 80px;
-        }
-
-        .footer-content {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 0 20px;
-          text-align: center;
-        }
-
-        .footer-content p {
-          color: var(--text-secondary);
-          font-size: 0.85rem;
-          line-height: 1.6;
-          margin: 0;
-        }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -475,8 +453,8 @@ export default function Landing() {
             justify-content: center;
           }
 
-          .hero-visual {
-            display: none;
+          .hero-story {
+            max-height: 400px;
           }
 
           .features-grid {

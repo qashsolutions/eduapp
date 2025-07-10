@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Header from '../components/Header';
+import Footer from '../components/Footer';
 import MoodSelector from '../components/MoodSelector';
 import ProgressBar from '../components/ProgressBar';
 import QuestionCard from '../components/QuestionCard';
@@ -579,6 +580,7 @@ export default function Dashboard() {
           overflow-x: hidden;
         }
       `}</style>
+      <Footer />
     </div>
     </>
   );
