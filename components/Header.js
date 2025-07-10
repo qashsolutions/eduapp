@@ -4,7 +4,7 @@ import { useAuth } from '../lib/AuthContext';
 
 export default function Header() {
   const router = useRouter();
-  const { supabaseUser: user, user: dbUser, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const [loading, setLoading] = useState(false);
   const [trialDaysLeft, setTrialDaysLeft] = useState(null);
 
@@ -21,20 +21,20 @@ export default function Header() {
   };
 
   const isLandingPage = router.pathname === '/landing';
-  const isAuthPage = router.pathname === '/login';
+  const isAuthPage = router.pathname.startsWith('/auth/') || router.pathname === '/signup';
   
   // Calculate trial days left or show pending status
   useEffect(() => {
-    if (dbUser?.account_type === 'pending') {
+    if (user?.account_type === 'pending') {
       setTrialDaysLeft('pending');
-    } else if (dbUser?.trial_started_at && dbUser?.account_type === 'trial') {
-      const trialStart = new Date(dbUser.trial_started_at);
+    } else if (user?.trial_started_at && user?.account_type === 'trial') {
+      const trialStart = new Date(user.trial_started_at);
       const now = new Date();
       const daysUsed = Math.floor((now - trialStart) / (1000 * 60 * 60 * 24));
       const daysLeft = Math.max(0, 15 - daysUsed);
       setTrialDaysLeft(daysLeft);
     }
-  }, [dbUser]);
+  }, [user]);
 
   return (
     <header className="header">
@@ -54,7 +54,7 @@ export default function Header() {
           {!user && !isAuthPage && (
             <button 
               className="btn btn-primary"
-              onClick={() => router.push('/login')}
+              onClick={() => router.push('/signup')}
             >
               Sign In
             </button>
