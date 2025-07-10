@@ -40,30 +40,30 @@ function checkRateLimit(userId) {
   return true;
 }
 
-// Verify Firebase token using REST API
-async function verifyFirebaseToken(token) {
+// Import Supabase for token verification
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
+
+// Verify Supabase token
+async function verifySupabaseToken(token) {
   if (!token) return null;
   
   try {
-    // Use Firebase REST API to verify token
-    const response = await fetch(
-      `https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken: token })
-      }
-    );
+    // Get user from token
+    const { data: { user }, error } = await supabase.auth.getUser(token);
     
-    if (!response.ok) {
-      console.error('Firebase token verification failed:', response.status);
+    if (error || !user) {
+      console.error('Token verification failed:', error);
       return null;
     }
     
-    const data = await response.json();
-    return data.users?.[0]?.localId || null;
+    return user.id; // This is the Supabase user ID
   } catch (error) {
-    console.error('Error verifying Firebase token:', error);
+    console.error('Error verifying Supabase token:', error);
     return null;
   }
 }
@@ -128,21 +128,21 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
   try {
     const { action, userId, topic, answer, timeSpent, hintsUsed } = req.body;
 
-    // Extract and verify Firebase token
+    // Extract and verify Supabase token
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'No authorization token provided' });
     }
     
     const token = authHeader.split('Bearer ')[1];
-    const verifiedUserId = await verifyFirebaseToken(token);
+    const verifiedUserId = await verifySupabaseToken(token);
     
     if (!verifiedUserId) {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
     
-    // The verifiedUserId from Firebase should match the userId in request body
-    // userId in our database is the Firebase UID stored as text
+    // The verifiedUserId from Supabase should match the userId in request body
+    // userId in our database is the Supabase user ID stored as text
     if (verifiedUserId !== userId) {
       console.error('Token mismatch:', { verifiedUserId, requestUserId: userId });
       return res.status(401).json({ error: 'Token mismatch' });

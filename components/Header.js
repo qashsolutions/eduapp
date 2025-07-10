@@ -1,18 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { logOut } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
 
 export default function Header() {
   const router = useRouter();
-  const { firebaseUser: user, user: dbUser } = useAuth();
+  const { supabaseUser: user, user: dbUser, signOut } = useAuth();
   const [loading, setLoading] = useState(false);
   const [trialDaysLeft, setTrialDaysLeft] = useState(null);
 
   const handleSignOut = async () => {
     setLoading(true);
     try {
-      await logOut();
+      await signOut();
       router.push('/landing');
     } catch (error) {
       console.error('Error signing out:', error);

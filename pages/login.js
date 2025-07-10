@@ -3,13 +3,12 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { signIn, signUp } from '../lib/firebase';
 import { createUser } from '../lib/db';
 import { useAuth } from '../lib/AuthContext';
 
 export default function Login() {
   const router = useRouter();
-  const { authChecked, refreshUser } = useAuth();
+  const { authChecked, refreshUser, signIn, signUp } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -60,7 +59,7 @@ export default function Login() {
         const authResult = await signIn(data.email, data.tempPassword);
         if (authResult.error) throw new Error(authResult.error);
         
-        localStorage.setItem('userId', authResult.user.uid);
+        localStorage.setItem('userId', authResult.user.id);
         await refreshUser();
         router.replace('/');
         return;
@@ -142,7 +141,7 @@ export default function Login() {
           console.log('Creating user profile in Supabase...');
           const userProfile = await createUser(
             email, 
-            authResult.user.uid, 
+            authResult.user.id, 
             isParentSignup ? 'parent' : role,
             null,
             isParentSignup ? true : false
@@ -159,7 +158,7 @@ export default function Login() {
 
       // Store user ID in localStorage for quick access
       if (authResult.user) {
-        localStorage.setItem('userId', authResult.user.uid);
+        localStorage.setItem('userId', authResult.user.id);
         console.log('User authenticated:', authResult.user.uid);
       }
       

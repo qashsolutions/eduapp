@@ -7,13 +7,12 @@ import MoodSelector from '../components/MoodSelector';
 import ProgressBar from '../components/ProgressBar';
 import QuestionCard from '../components/QuestionCard';
 import { useAuth } from '../lib/AuthContext';
-import { auth } from '../lib/firebase';
 import { getUser, getSessionStats } from '../lib/db';
 import { MOOD_TOPICS, formatTopicName, getCachedProficiency } from '../lib/utils';
 
 export default function Dashboard() {
   const router = useRouter();
-  const { user, loading: authLoading, isAuthenticated } = useAuth();
+  const { user, loading: authLoading, isAuthenticated, getSession } = useAuth();
   const [selectedMood, setSelectedMood] = useState('creative');
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -50,8 +49,9 @@ export default function Dashboard() {
     setGenerating(true);
 
     try {
-      // Get Firebase token for authentication
-      const token = await auth.currentUser?.getIdToken();
+      // Get Supabase session token for authentication
+      const session = await getSession();
+      const token = session?.access_token;
       
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -84,7 +84,8 @@ export default function Dashboard() {
 
   const handleAnswer = async (correct, timeSpent, hintsUsed, selectedAnswer) => {
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const session = await getSession();
+      const token = session?.access_token;
       
       const response = await fetch('/api/generate', {
         method: 'POST',
