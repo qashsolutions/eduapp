@@ -156,43 +156,6 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* For Different Users */}
-        <section className="user-types">
-          <h2 className="section-title">Perfect For Everyone</h2>
-          
-          <div className="user-cards">
-            <div className="user-card">
-              <h3>👩‍🎓 Students</h3>
-              <ul>
-                <li>Practice at your own pace</li>
-                <li>Build confidence with adaptive difficulty</li>
-                <li>Master concepts with unlimited practice</li>
-                <li>Get help when stuck with smart hints</li>
-              </ul>
-            </div>
-            
-            <div className="user-card">
-              <h3>👨‍🏫 Teachers</h3>
-              <ul>
-                <li>Track student progress in real-time</li>
-                <li>Assign practice based on proficiency</li>
-                <li>Save time with AI-generated questions</li>
-                <li>Focus on teaching, not test creation</li>
-              </ul>
-            </div>
-            
-            <div className="user-card">
-              <h3>👪 Parents</h3>
-              <ul>
-                <li>Monitor your child's progress</li>
-                <li>Affordable alternative to tutoring</li>
-                <li>Safe, ad-free learning environment</li>
-                <li>Available 24/7 for practice</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
         <Footer />
       </main>
 
@@ -388,53 +351,6 @@ export default function Landing() {
           line-height: 1.6;
         }
 
-        /* User Types Section */
-        .user-types {
-          padding: 80px 20px;
-          max-width: 1200px;
-          margin: 0 auto;
-        }
-
-        .user-cards {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 32px;
-        }
-
-        .user-card {
-          background: var(--glass-bg);
-          backdrop-filter: blur(20px);
-          border: 1px solid var(--glass-border);
-          border-radius: 20px;
-          padding: 32px;
-        }
-
-        .user-card h3 {
-          font-size: 1.5rem;
-          margin-bottom: 20px;
-          color: var(--text-primary);
-        }
-
-        .user-card ul {
-          list-style: none;
-          padding: 0;
-        }
-
-        .user-card li {
-          padding: 8px 0;
-          color: var(--text-secondary);
-          position: relative;
-          padding-left: 24px;
-        }
-
-        .user-card li:before {
-          content: "✓";
-          position: absolute;
-          left: 0;
-          color: var(--accent-neon);
-          font-weight: bold;
-        }
-
 
 
         /* Responsive */
@@ -458,10 +374,6 @@ export default function Landing() {
           }
 
           .features-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .user-cards {
             grid-template-columns: 1fr;
           }
         }
