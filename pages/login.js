@@ -98,27 +98,35 @@ export default function Login() {
       } else {
         // For student signup, just store parent consent request
         if (!isLogin && role === 'student' && !isParentSignup) {
-          // Send parent consent email
-          const response = await fetch('/api/send-parent-consent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              childFirstName: firstName,
-              childGrade: parseInt(grade),
-              parentEmail: parentEmail
-            })
-          });
-          
-          if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.error || 'Failed to send parent consent email');
+          try {
+            // Send parent consent email
+            const response = await fetch('/api/send-parent-consent', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                childFirstName: firstName,
+                childGrade: parseInt(grade),
+                parentEmail: parentEmail
+              })
+            });
+            
+            if (!response.ok) {
+              const data = await response.json();
+              throw new Error(data.error || 'Failed to send parent consent email');
+            }
+            
+            // Show success message
+            setError('');
+            setLoading(false);
+            alert('Success! We\'ve sent an email to your parent/guardian for approval.');
+            setIsLogin(true);
+            return;
+          } catch (error) {
+            console.error('Student signup error:', error);
+            setError(error.message || 'Failed to send parent consent email');
+            setLoading(false);
+            return;
           }
-          
-          // Show success message
-          setError('');
-          alert('Success! We\'ve sent an email to your parent/guardian for approval.');
-          setIsLogin(true);
-          return;
         }
         
         // Sign up with Firebase (for parents/teachers only)
