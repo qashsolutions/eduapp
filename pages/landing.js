@@ -134,6 +134,17 @@ export default function Landing() {
                         <p key={index} className="hero-paragraph">{paragraph}</p>
                       ))}
                     </div>
+                    
+                    <div className="hero-features">
+                      <div className="hero-feature-card glass">
+                        <div className="mini-icon">
+                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor" opacity="0.8"/>
+                          </svg>
+                        </div>
+                        <p>Learning tailored to your mood & interests</p>
+                      </div>
+                    </div>
                   </div>
                   
                   <div className="feature-cards-container">
@@ -218,7 +229,7 @@ export default function Landing() {
                           <path d="M12 2L2 7L12 12L22 7L12 2ZM2 17L12 22L22 17V7L12 12L2 7V17Z" fill="currentColor" opacity="0.8"/>
                         </svg>
                       </div>
-                      <h3>15+ Years Teaching</h3>
+                      <h3>20+ Years Teaching</h3>
                       <p>Built with deep understanding of how students actually learn, not how we think they should learn.</p>
                     </div>
                     
@@ -236,7 +247,7 @@ export default function Landing() {
                     >
                       Start Learning Free
                     </button>
-                    <p className="cta-subtitle">No credit card required • Free forever</p>
+                    <p className="cta-subtitle">All features free for two weeks • $8/month or $70/year</p>
                   </div>
                 </div>
               </section>
@@ -355,7 +366,7 @@ export default function Landing() {
         }
 
         .hero-title {
-          font-size: 3.5rem;
+          font-size: 2.5rem;
           font-weight: 800;
           color: var(--text-primary);
           margin-bottom: 32px;
@@ -367,10 +378,44 @@ export default function Landing() {
         }
 
         .hero-paragraph {
-          font-size: 1.25rem;
+          font-size: 1.5rem;
           line-height: 1.8;
-          color: var(--text-secondary);
+          color: #ffffff;
           margin-bottom: 20px;
+          text-align: left;
+          font-weight: 400;
+        }
+
+        .hero-features {
+          margin-top: 32px;
+        }
+
+        .hero-feature-card {
+          padding: 20px;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          margin-bottom: 16px;
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        .mini-icon {
+          width: 48px;
+          height: 48px;
+          background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          color: white;
+        }
+
+        .hero-feature-card p {
+          font-size: 1.1rem;
+          color: #ffffff;
+          margin: 0;
+          font-weight: 500;
         }
 
         .feature-cards-container {
@@ -403,14 +448,14 @@ export default function Landing() {
         .feature-card h3 {
           font-size: 1.5rem;
           font-weight: 700;
-          color: var(--text-primary);
+          color: #ffffff;
           margin-bottom: 12px;
         }
 
         .feature-card p {
           font-size: 1.1rem;
           line-height: 1.6;
-          color: var(--text-secondary);
+          color: #e0e0e0;
         }
 
         /* Problem Section */
@@ -453,7 +498,7 @@ export default function Landing() {
         .section-title {
           font-size: 2.5rem;
           font-weight: 800;
-          color: var(--text-primary);
+          color: #ffffff;
           margin-bottom: 32px;
           line-height: 1.2;
         }
