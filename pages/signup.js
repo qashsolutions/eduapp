@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import Header from '../components/Header';
+import HeaderSignup from '../components/Header_signup';
 import Footer from '../components/Footer';
 
 /**
@@ -47,16 +47,12 @@ export default function Signup() {
       </Head>
 
       <div className="page-wrapper">
-        <Header />
+        <HeaderSignup />
         
         <div className="signup-container">
           <div className="container">
           {/* Page header with branding */}
-          <div className="header">
-            <h1 className="logo">Socratic AI Tutor</h1>
-            <p className="subtitle">Personalized Learning That Adapts to You</p>
-            <p className="grade-info">For Students in Grades 5-11</p>
-          </div>
+          {/* Removed duplicate header - using Header component instead */}
 
           {/* User type selection cards */}
           <div className="user-selection">
@@ -184,8 +180,11 @@ export default function Signup() {
           flex: 1;
           position: relative;
           overflow-x: hidden;
-          padding: 4rem 0;
+          padding: 2rem 0;
           z-index: 2;
+          min-height: calc(100vh - 200px);
+          display: flex;
+          align-items: center;
         }
 
         /* Removed floating elements - using clean design */
@@ -229,11 +228,9 @@ export default function Signup() {
         .user-selection {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 2rem;
-          margin-bottom: 3rem;
-          max-width: 900px;
-          margin-left: auto;
-          margin-right: auto;
+          gap: 3rem;
+          margin: 4rem 0;
+          width: 100%;
         }
 
         /* Responsive grid for mobile */
@@ -255,7 +252,7 @@ export default function Signup() {
           transition: all 0.4s ease;
           position: relative;
           overflow: hidden;
-          min-height: 320px;
+          min-height: 400px;
           box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
         }
 
