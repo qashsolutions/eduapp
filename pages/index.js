@@ -328,24 +328,24 @@ export default function Landing() {
 
       <style jsx>{`
         :root {
-          /* Light glassmorphic colors */
-          --bg-primary: #fafaf9;
-          --bg-secondary: #f5f4f0;
+          /* Sandy white colors with better contrast */
+          --bg-primary: #fdfcfa;
+          --bg-secondary: #f9f7f4;
           --accent-primary: #667eea;
           --accent-secondary: #764ba2;
-          --text-primary: #2d3748;
-          --text-secondary: #4a5568;
-          --glass-bg: rgba(255, 255, 255, 0.3);
-          --glass-border: rgba(255, 255, 255, 0.4);
+          --text-primary: #1a1a1a;
+          --text-secondary: #333333;
+          --glass-bg: rgba(255, 255, 255, 0.7);
+          --glass-border: rgba(0, 0, 0, 0.1);
         }
 
         .page-wrapper {
           min-height: 100vh;
           background: 
-            radial-gradient(circle at 20% 50%, rgba(120, 119, 116, 0.03) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(120, 119, 116, 0.03) 0%, transparent 50%),
-            radial-gradient(circle at 40% 80%, rgba(120, 119, 116, 0.02) 0%, transparent 50%),
-            linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            radial-gradient(circle at 20% 50%, rgba(120, 119, 116, 0.02) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(120, 119, 116, 0.02) 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, rgba(120, 119, 116, 0.01) 0%, transparent 50%),
+            linear-gradient(135deg, #fdfcfa 0%, #f9f7f4 100%);
           position: relative;
         }
         
@@ -360,19 +360,20 @@ export default function Landing() {
             repeating-linear-gradient(
               0deg,
               transparent,
-              transparent 2px,
-              rgba(120, 119, 116, 0.015) 2px,
-              rgba(120, 119, 116, 0.015) 4px
+              transparent 1px,
+              rgba(0, 0, 0, 0.03) 1px,
+              rgba(0, 0, 0, 0.03) 2px
             ),
             repeating-linear-gradient(
               90deg,
               transparent,
-              transparent 2px,
-              rgba(120, 119, 116, 0.01) 2px,
-              rgba(120, 119, 116, 0.01) 4px
+              transparent 1px,
+              rgba(0, 0, 0, 0.02) 1px,
+              rgba(0, 0, 0, 0.02) 2px
             );
           pointer-events: none;
           z-index: 1;
+          opacity: 0.4;
         }
 
         .landing-container {
@@ -386,20 +387,22 @@ export default function Landing() {
           display: flex;
           align-items: center;
           justify-content: center;
+          background: transparent;
         }
 
         .loading-text {
-          color: var(--text-secondary);
-          font-size: 1.2rem;
+          color: var(--text-primary);
+          font-size: 1.3rem;
+          font-weight: 500;
         }
 
-        /* Glass morphism effect - light version */
+        /* Glass morphism effect - off-white version */
         .glass {
-          background: rgba(255, 255, 255, 0.25);
-          backdrop-filter: blur(15px);
-          border: 1px solid rgba(255, 255, 255, 0.3);
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(0, 0, 0, 0.08);
           border-radius: 20px;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
         }
 
         /* Removed floating shapes and particles for cleaner light design */
@@ -423,7 +426,7 @@ export default function Landing() {
           font-weight: 700;
           color: var(--text-primary);
           margin-bottom: 2rem;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -435,9 +438,9 @@ export default function Landing() {
         }
 
         .hero-paragraph {
-          font-size: 1.2rem;
-          line-height: 1.7;
-          color: var(--text-secondary);
+          font-size: 1.3rem;
+          line-height: 1.8;
+          color: var(--text-primary);
           margin-bottom: 1.5rem;
           text-align: left;
           font-weight: 400;
@@ -485,7 +488,7 @@ export default function Landing() {
         .card-icon {
           width: 60px;
           height: 60px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
           border-radius: 15px;
           display: flex;
           align-items: center;
@@ -502,26 +505,26 @@ export default function Landing() {
         }
 
         .feature-card h3 {
-          font-size: 1.3rem;
+          font-size: 1.4rem;
           font-weight: 700;
           color: var(--text-primary);
           margin-bottom: 0.8rem;
         }
 
         .feature-card p {
-          font-size: 1rem;
-          line-height: 1.5;
-          color: var(--text-secondary);
+          font-size: 1.15rem;
+          line-height: 1.6;
+          color: var(--text-primary);
         }
 
         /* Content Section */
         .content-section {
-          background: rgba(255, 255, 255, 0.3);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.4);
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(0, 0, 0, 0.06);
           border-radius: 25px;
           padding: 3rem;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
         }
         
         /* Problem Section */
@@ -553,16 +556,16 @@ export default function Landing() {
         }
 
         .problem-card h3 {
-          font-size: 1.3rem;
+          font-size: 1.4rem;
           font-weight: 700;
           color: var(--text-primary);
           margin-bottom: 0.8rem;
         }
 
         .problem-card p {
-          font-size: 1rem;
-          line-height: 1.5;
-          color: var(--text-secondary);
+          font-size: 1.15rem;
+          line-height: 1.6;
+          color: var(--text-primary);
         }
 
         .section-content {
@@ -570,9 +573,9 @@ export default function Landing() {
         }
 
         .content-paragraph {
-          font-size: 1.2rem;
-          line-height: 1.7;
-          color: var(--text-secondary);
+          font-size: 1.3rem;
+          line-height: 1.8;
+          color: var(--text-primary);
           margin-bottom: 1.5rem;
         }
 
@@ -596,7 +599,7 @@ export default function Landing() {
           font-weight: 700;
           color: var(--text-primary);
           margin-bottom: 2rem;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -640,7 +643,7 @@ export default function Landing() {
         }
 
         .cta-button {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
           color: white;
           padding: 1rem 2.5rem;
           border: none;
