@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
 import { supabase } from '../../lib/db';
 import { useAuth } from '../../lib/AuthContext';
 
@@ -14,7 +16,7 @@ export default function TeacherAuth() {
   const { refreshUser } = useAuth();
   
   // Form state management
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(false); // Default to signup
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -178,161 +180,123 @@ export default function TeacherAuth() {
     <>
       <Head>
         {/* SEO and bot-friendly meta tags */}
-        <title>{isLogin ? 'Teacher Login' : 'Teacher Sign Up'} - Socratic AI Tutor</title>
-        <meta name="description" content="Teacher portal for Socratic AI Tutor. Access student progress tracking, curriculum tools, and teaching resources." />
+        <title>{isLogin ? 'Teacher Login' : 'Teacher Sign Up'} - Socratic Learning</title>
+        <meta name="description" content="Teacher portal for Socratic Learning. Access student progress tracking, curriculum tools, and teaching resources." />
         <meta name="keywords" content="teacher login, educator portal, teaching tools, student progress tracking" />
-        <meta property="og:title" content={`Teacher ${isLogin ? 'Login' : 'Sign Up'} - Socratic AI Tutor`} />
+        <meta property="og:title" content={`Teacher ${isLogin ? 'Login' : 'Sign Up'} - Socratic Learning`} />
         <meta property="og:description" content="Educator access to personalized learning tools" />
         <meta name="robots" content="index, follow" />
       </Head>
 
-      <div className="auth-container">
-        {/* Background elements */}
-        <div className="bg-element"></div>
-        <div className="bg-element"></div>
-        <div className="bg-element"></div>
-        <div className="bg-element"></div>
-
-        <div className="form-container">
-          {/* Back navigation */}
-          <Link href="/signup" className="back-btn">
-            ← Back to Selection
-          </Link>
-
-          {/* Form header with icon */}
-          <div className="form-header">
+      <div className="page-wrapper">
+        <Header />
+        
+        <div className="auth-container">
+          {/* Left Side - Features */}
+          <div className="left-side">
             <div className="icon-container">
-              <span className="glow-icon glow-achievement">🎓</span>
+              <svg width="120" height="120" viewBox="0 0 24 24" className="grad-cap-icon">
+                <path d="M12,3L1,9L12,15L21,9V16H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z"/>
+              </svg>
             </div>
-            <h1 className="form-title">
-              {isLogin ? 'Teacher Login' : 'Teacher Registration'}
-            </h1>
-            <p className="form-subtitle">
-              {isLogin ? '' : 'Join our educator community'}
-            </p>
+            
+            <div className="feature-item">
+              <h3 className="feature-title">Always On</h3>
+              <p className="feature-text">24 X 7 access to limitless variations in content.</p>
+            </div>
+            
+            <div className="feature-item">
+              <h3 className="feature-title">Back to basics</h3>
+              <p className="feature-text">Review concepts, get answers to your questions.</p>
+            </div>
+            
+            <div className="feature-item">
+              <h3 className="feature-title">Transparent pricing</h3>
+              <p className="feature-text">Bring all your students for one flat monthly fee.</p>
+            </div>
           </div>
-
-          {/* Error display */}
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
-
-          {/* Authentication form */}
-          <form onSubmit={isLogin ? handleLogin : handleSignup}>
-            {/* Signup-only fields */}
+          
+          {/* Right Side - Auth Form */}
+          <div className="right-side">
+            <h1 className="auth-title">{isLogin ? 'Login' : 'Sign up'}</h1>
+            <p className="auth-subtitle">Join as a Teacher/Educator</p>
             {!isLogin && (
-              <>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="firstName">
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      id="firstName"
-                      name="firstName"
-                      className="form-input"
-                      placeholder="Enter your first name"
-                      value={formData.firstName}
-                      onChange={handleChange}
-                      disabled={loading}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="lastName">
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      id="lastName"
-                      name="lastName"
-                      className="form-input"
-                      placeholder="Enter your last name"
-                      value={formData.lastName}
-                      onChange={handleChange}
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-              </>
+              <p className="auth-note">$1 for 14 days trial period for COPPA compliance</p>
             )}
-
-            {/* Common fields */}
-            <div className="form-group">
-              <label className="form-label" htmlFor="email">
-                Email Address
-              </label>
+            
+            {/* Error display */}
+            {error && (
+              <div className="error-message">
+                {error}
+              </div>
+            )}
+            
+            {/* Authentication form */}
+            <form onSubmit={isLogin ? handleLogin : handleSignup} className="auth-form">
+              {/* Signup-only fields */}
+              {!isLogin && (
+                <div className="form-row">
+                  <input
+                    type="text"
+                    name="firstName"
+                    className="form-input half-width"
+                    placeholder="First Name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    disabled={loading}
+                  />
+                  <input
+                    type="text"
+                    name="lastName"
+                    className="form-input half-width"
+                    placeholder="Last Name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    disabled={loading}
+                  />
+                </div>
+              )}
+              
               <input
                 type="email"
-                id="email"
                 name="email"
                 className="form-input"
-                placeholder="your.email@school.edu"
+                placeholder="Email"
                 value={formData.email}
                 onChange={handleChange}
                 disabled={loading}
               />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label" htmlFor="password">
-                Password
-              </label>
+              
               <input
                 type="password"
-                id="password"
                 name="password"
                 className="form-input"
-                placeholder={isLogin ? 'Enter your password' : 'Min 8 chars: a-z, A-Z, 0-9, special char'}
+                placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
                 disabled={loading}
               />
+              
               {!isLogin && (
-                <p className="password-hint">
-                  Password must contain at least 8 characters, including lowercase (a-z), uppercase (A-Z), numbers (0-9), and one special character
-                </p>
-              )}
-            </div>
-
-            {/* School field for signup only */}
-            {!isLogin && (
-              <div className="form-group">
-                <label className="form-label" htmlFor="school">
-                  School/Institution (or type 'Freelancer')
-                </label>
                 <input
                   type="text"
-                  id="school"
                   name="school"
                   className="form-input"
-                  placeholder="Enter school name or 'Freelancer'"
+                  placeholder="School/Institution (or type 'Freelancer')"
                   value={formData.school}
                   onChange={handleChange}
                   disabled={loading}
                 />
-              </div>
-            )}
-
-            {/* Remove info box per requirements */}
-
-            {/* Submit button */}
-            <button 
-              type="submit" 
-              className="btn btn-primary"
-              disabled={loading}
-            >
-              {loading ? 'Please wait...' : (isLogin ? 'Login to Dashboard' : 'Create Teacher Account')}
-            </button>
-          </form>
-
-          {/* Toggle between login/signup */}
-          <div className="auth-toggle">
-            <p>
-              {isLogin ? "Don't have an account? " : "Already have an account? "}
+              )}
+              
+              <button 
+                type="submit" 
+                className="submit-btn"
+                disabled={loading}
+              >
+                {loading ? 'Please wait...' : (isLogin ? 'Login with Email' : 'Sign up with Email')}
+              </button>
+              
               <button
                 type="button"
                 onClick={() => {
@@ -342,310 +306,242 @@ export default function TeacherAuth() {
                 }}
                 className="toggle-link"
               >
-                {isLogin ? 'Sign up here' : 'Login here'}
+                {isLogin ? "Don't have an account?" : "Already have an account?"}
               </button>
-            </p>
+            </form>
           </div>
-
         </div>
+        
+        <Footer />
       </div>
 
       <style jsx>{`
-        /* Base container styles */
-        .auth-container {
-          min-height: calc(100vh - 140px); /* Account for header and footer */
-          background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+        /* Page wrapper to match index.js sandy white theme */
+        .page-wrapper {
+          min-height: 100vh;
+          background: linear-gradient(135deg, #f9f7f2 0%, #f0ebe0 100%);
+          position: relative;
           display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 3rem 1rem;
-          position: relative;
-          overflow: hidden;
+          flex-direction: column;
         }
-
-        /* Floating background elements */
-        .bg-element {
-          position: absolute;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 70%, transparent 100%);
-          animation: float 8s ease-in-out infinite;
-          pointer-events: none;
-        }
-
-        .bg-element:nth-child(1) {
-          width: 300px;
-          height: 300px;
-          top: 10%;
-          left: -5%;
-          animation-delay: 0s;
-        }
-
-        .bg-element:nth-child(2) {
-          width: 200px;
-          height: 200px;
-          top: 60%;
-          right: -5%;
-          animation-delay: 2s;
-        }
-
-        .bg-element:nth-child(3) {
-          width: 150px;
-          height: 150px;
-          top: 30%;
-          right: 20%;
-          animation-delay: 4s;
-        }
-
-        .bg-element:nth-child(4) {
-          width: 250px;
-          height: 250px;
-          bottom: 10%;
-          left: 15%;
-          animation-delay: 1s;
-        }
-
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-
-        /* Form container with glass morphism */
-        .form-container {
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 24px;
-          padding: 2.5rem;
+        
+        /* Main auth container with 2-column layout */
+        .auth-container {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 2rem;
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 3rem 2rem;
+          min-height: calc(100vh - 200px);
           width: 100%;
-          max-width: 500px;
-          position: relative;
-          z-index: 10;
-          animation: fadeInUp 0.5s ease;
         }
-
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        /* Back button styling */
-        .back-btn {
-          display: inline-flex;
-          align-items: center;
-          background: rgba(255,255,255,0.1);
-          color: white;
-          padding: 0.75rem 1.5rem;
-          border: 1px solid rgba(255,255,255,0.3);
-          border-radius: 12px;
-          text-decoration: none;
-          margin-bottom: 1.5rem;
-          transition: all 0.3s ease;
-          font-size: 1rem;
-        }
-
-        .back-btn:hover {
-          background: rgba(255,255,255,0.2);
-          transform: translateX(-5px);
-        }
-
-        /* Form header section */
-        .form-header {
+        
+        /* Left side - Features */
+        .left-side {
+          background: white;
+          padding: 3rem;
+          border-radius: 10px;
           text-align: center;
-          margin-bottom: 2rem;
-        }
-
-        .icon-container {
-          display: inline-flex;
+          display: flex;
+          flex-direction: column;
           align-items: center;
-          justify-content: center;
-          width: 80px;
-          height: 80px;
-          background: rgba(147, 51, 234, 0.2);
-          border-radius: 20px;
-          margin-bottom: 1rem;
-          font-size: 2.5rem;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-
-        /* Glow effects for icons */
-        .glow-icon {
-          filter: drop-shadow(0 0 8px currentColor);
-          animation: pulse-glow 3s ease-in-out infinite;
+        
+        /* Right side - Form */
+        .right-side {
+          background: white;
+          padding: 3rem;
+          border-radius: 10px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-
-        .glow-achievement {
-          color: #f59e0b;
-          filter: drop-shadow(0 0 12px #f59e0b);
+        
+        /* Icon container */
+        .icon-container {
+          margin-bottom: 3rem;
         }
-
-        @keyframes pulse-glow {
-          0%, 100% { filter: drop-shadow(0 0 8px currentColor); }
-          50% { filter: drop-shadow(0 0 16px currentColor); }
+        
+        .grad-cap-icon {
+          fill: #5a67d8;
         }
-
-        /* Form titles */
-        .form-title {
-          font-size: 2rem;
+        
+        /* Feature items */
+        .feature-item {
+          text-align: left;
+          margin-bottom: 2.5rem;
+          width: 100%;
+          max-width: 400px;
+        }
+        
+        .feature-title {
+          font-size: 1.3rem;
           font-weight: 700;
-          color: white;
+          color: #2d3748;
           margin-bottom: 0.5rem;
         }
-
-        .form-subtitle {
-          font-size: 1.2rem;
-          color: rgba(255,255,255,0.8);
+        
+        .feature-text {
+          font-size: 1.1rem;
+          line-height: 1.6;
+          color: #4a5568;
         }
-
-        /* Error message styling */
+        
+        /* Auth form styling */
+        .auth-title {
+          font-size: 2rem;
+          font-weight: 700;
+          color: #5a67d8;
+          text-align: center;
+          margin-bottom: 0.5rem;
+        }
+        
+        .auth-subtitle {
+          text-align: center;
+          font-size: 1.3rem;
+          color: #2d3748;
+          margin-bottom: 0.5rem;
+        }
+        
+        .auth-note {
+          text-align: center;
+          color: #666;
+          font-size: 1rem;
+          font-style: italic;
+          margin-bottom: 2rem;
+        }
+        
+        /* Error message */
         .error-message {
-          background: rgba(239, 68, 68, 0.2);
-          border: 1px solid rgba(239, 68, 68, 0.5);
-          border-radius: 12px;
+          background: #fee;
+          border: 1px solid #fcc;
+          border-radius: 8px;
           padding: 1rem;
           margin-bottom: 1.5rem;
-          color: #fca5a5;
-          font-size: 1rem;
+          color: #c53030;
+          font-size: 0.95rem;
           text-align: center;
         }
-
-        /* Form row for side-by-side fields */
+        
+        /* Form styling */
+        .auth-form {
+          margin-top: 2rem;
+        }
+        
         .form-row {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 1rem;
+          margin-bottom: 1rem;
         }
-
-        @media (max-width: 500px) {
-          .form-row {
-            grid-template-columns: 1fr;
-          }
-        }
-
-        /* Form group styling */
-        .form-group {
-          margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-          display: block;
-          font-size: 1.1rem;
-          font-weight: 600;
-          color: white;
-          margin-bottom: 0.5rem;
-        }
-
+        
         .form-input {
           width: 100%;
-          padding: 1rem 1.5rem;
-          border: 1px solid rgba(255,255,255,0.3);
-          border-radius: 12px;
-          background: rgba(255,255,255,0.1);
-          color: white;
+          padding: 0.875rem 1rem;
+          margin-bottom: 1rem;
+          border: 1px solid #cbd5e0;
+          border-radius: 6px;
           font-size: 1.1rem;
-          backdrop-filter: blur(10px);
+          background: white;
+          color: #2d3748;
           transition: all 0.3s ease;
         }
-
-        .form-input::placeholder {
-          color: rgba(255,255,255,0.6);
-        }
-
+        
         .form-input:focus {
           outline: none;
-          border-color: rgba(147, 51, 234, 0.6);
-          background: rgba(255,255,255,0.15);
-          box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
+          border-color: #5a67d8;
+          box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.1);
         }
-
+        
+        .form-input::placeholder {
+          color: #a0aec0;
+        }
+        
         .form-input:disabled {
+          background: #f7fafc;
+          cursor: not-allowed;
+        }
+        
+        .half-width {
+          margin-bottom: 0;
+        }
+        
+        /* Submit button */
+        .submit-btn {
+          width: 100%;
+          padding: 0.875rem 2rem;
+          border: 1px solid #cbd5e0;
+          border-radius: 6px;
+          background: white;
+          color: #2d3748;
+          font-size: 1.1rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-bottom: 2rem;
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+          background: #5a67d8;
+          color: white;
+          border-color: #5a67d8;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(90, 103, 216, 0.3);
+        }
+        
+        .submit-btn:disabled {
           opacity: 0.6;
           cursor: not-allowed;
         }
-
-        .password-hint {
-          font-size: 0.85rem;
-          color: rgba(255,255,255,0.7);
-          margin-top: 0.5rem;
-          line-height: 1.4;
-        }
-
-
-        /* Button styling */
-        .btn {
-          width: 100%;
-          padding: 1rem 2rem;
-          border: none;
-          border-radius: 12px;
-          font-size: 1.1rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-        }
-
-        .btn-primary {
-          background: rgba(147, 51, 234, 0.8);
-          color: white;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-          background: rgba(147, 51, 234, 1);
-          transform: translateY(-2px);
-          box-shadow: 0 10px 20px rgba(147, 51, 234, 0.3);
-        }
-
-        .btn:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        /* Auth toggle section */
-        .auth-toggle {
-          text-align: center;
-          margin-top: 2rem;
-          color: rgba(255,255,255,0.8);
-          font-size: 1.1rem;
-        }
-
+        
+        /* Toggle link */
         .toggle-link {
+          display: block;
+          width: 100%;
           background: none;
           border: none;
-          color: #c084fc;
-          text-decoration: underline;
-          cursor: pointer;
+          color: #5a67d8;
           font-size: 1.1rem;
-          font-weight: 600;
+          text-align: center;
+          cursor: pointer;
           transition: color 0.3s ease;
+          padding: 0.5rem;
         }
-
+        
         .toggle-link:hover {
-          color: #e9d5ff;
+          color: #6b46c1;
+          text-decoration: underline;
         }
-
-
-        /* Mobile optimizations */
-        @media (max-width: 500px) {
-          .form-container {
-            padding: 2rem 1.5rem;
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+          .auth-container {
+            grid-template-columns: 1fr;
+            padding: 2rem 1rem;
           }
-
-          .form-title {
+          
+          .left-side {
+            display: none; /* Hide features on mobile for cleaner UI */
+          }
+          
+          .right-side {
+            padding: 2rem;
+          }
+          
+          .auth-title {
             font-size: 1.75rem;
           }
-
-          .form-subtitle {
-            font-size: 1.1rem;
+          
+          .auth-subtitle {
+            font-size: 1.2rem;
           }
-
-          .icon-container {
-            width: 60px;
-            height: 60px;
-            font-size: 2rem;
+          
+          .form-row {
+            grid-template-columns: 1fr;
+          }
+          
+          .form-input {
+            font-size: 1rem;
           }
         }
       `}</style>
