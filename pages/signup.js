@@ -109,229 +109,90 @@ export default function Signup() {
       </div>
 
       <style jsx>{`
-        /* Root variables to match index.js */
-        :root {
-          --bg-primary: #fdfcfa;
-          --bg-secondary: #f9f7f4;
-          --accent-primary: #5a67d8;
-          --accent-secondary: #6b46c1;
-          --text-primary: #1a1a1a;
-          --text-secondary: #333333;
-          --glass-bg: rgba(255, 255, 255, 0.7);
-          --glass-border: rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Reset and base styles */
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        
-        /* Page wrapper with same background as index */
+        /* Page wrapper to match teacher-auth sandy white theme */
         .page-wrapper {
           min-height: 100vh;
-          background: 
-            radial-gradient(circle at 20% 50%, rgba(120, 119, 116, 0.02) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(120, 119, 116, 0.02) 0%, transparent 50%),
-            radial-gradient(circle at 40% 80%, rgba(120, 119, 116, 0.01) 0%, transparent 50%),
-            linear-gradient(135deg, #fdfcfa 0%, #f9f7f4 100%);
+          background: linear-gradient(135deg, #f9f7f2 0%, #f0ebe0 100%);
           position: relative;
           display: flex;
           flex-direction: column;
-        }
-        
-        .page-wrapper::before {
-          content: '';
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-image: 
-            repeating-linear-gradient(
-              45deg,
-              transparent,
-              transparent 1px,
-              rgba(0, 0, 0, 0.03) 1px,
-              rgba(0, 0, 0, 0.03) 2px
-            ),
-            repeating-linear-gradient(
-              -45deg,
-              transparent,
-              transparent 1px,
-              rgba(0, 0, 0, 0.02) 1px,
-              rgba(0, 0, 0, 0.02) 2px
-            ),
-            radial-gradient(ellipse at top, transparent, rgba(0, 0, 0, 0.01));
-          pointer-events: none;
-          z-index: 1;
-          opacity: 0.5;
-          mix-blend-mode: multiply;
+          color: #2d3748;
         }
 
         /* Main container */
         .signup-container {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
           flex: 1;
-          position: relative;
-          overflow-x: hidden;
-          padding: 2rem 0;
-          z-index: 2;
-          min-height: calc(100vh - 200px);
           display: flex;
           align-items: center;
+          justify-content: center;
+          padding: 0 5%;
+          margin: 1rem 0;
         }
-
-        /* Removed floating elements - using clean design */
 
         /* Content container */
         .container {
           width: 100%;
-          margin: 0 auto;
-          padding: 2rem 5%;
-          position: relative;
-          z-index: 10;
-        }
-
-        /* Header section */
-        .header {
-          text-align: center;
-          margin-bottom: 3rem;
-          padding-top: 2rem;
-        }
-
-        .logo {
-          font-size: clamp(2.5rem, 5vw, 3.5rem);
-          font-weight: 700;
-          color: var(--text-primary);
-          margin-bottom: 1rem;
-        }
-
-        .subtitle {
-          font-size: clamp(1.3rem, 3vw, 1.6rem);
-          color: var(--text-secondary);
-          margin-bottom: 0.5rem;
-        }
-
-        .grade-info {
-          font-size: clamp(1.2rem, 2.5vw, 1.4rem);
-          color: var(--text-secondary);
-          margin-bottom: 2rem;
-        }
-
-        /* User selection grid */
-        .user-selection {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 3rem;
-          margin: 4rem 0;
-          width: 100%;
+          min-height: calc(100vh - 250px);
         }
 
-        /* Responsive grid for mobile */
-        @media (max-width: 768px) {
-          .user-selection {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-          }
+        /* Remove header section - not needed with new layout */
+
+        /* User selection - full container grid layout */
+        .user-selection {
+          display: contents; /* Use CSS Grid from parent */
         }
 
-        /* User type cards with glass morphism */
+        /* User type cards - matching teacher-auth style */
         .user-card {
-          background: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(0, 0, 0, 0.08);
-          border-radius: 25px;
-          padding: 3rem;
-          padding-bottom: 8rem;
+          background: white;
+          padding: 3rem 4rem;
+          border-radius: 20px;
           cursor: pointer;
           transition: all 0.4s ease;
           position: relative;
-          overflow: hidden;
-          min-height: 400px;
-          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
           display: flex;
           flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+          min-height: 550px;
         }
 
         /* Card hover effects */
         .user-card:hover {
-          transform: translateY(-8px);
-          background: rgba(255, 255, 255, 0.9);
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-          border-color: rgba(0, 0, 0, 0.12);
+          transform: translateY(-5px);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
         }
 
         /* Selected card state */
         .user-card.selected {
-          background: rgba(255, 255, 255, 0.95);
-          border-color: var(--accent-primary);
-          box-shadow: 0 8px 32px rgba(90, 103, 216, 0.2);
-          transform: translateY(-5px);
-        }
-
-        /* Student/Parent card specific styling */
-        .student-parent-card {
-          background: rgba(255, 255, 255, 0.85);
-          border: 1px solid rgba(0, 0, 0, 0.08);
-        }
-
-        .student-parent-card:hover {
-          background: rgba(255, 255, 255, 0.9);
-          border-color: rgba(52, 211, 153, 0.3);
-        }
-
-        .student-parent-card.selected {
-          background: rgba(255, 255, 255, 0.95);
-          border-color: rgba(52, 211, 153, 0.5);
-          box-shadow: 0 8px 32px rgba(52, 211, 153, 0.15);
-        }
-
-        /* Teacher card specific styling */
-        .teacher-card {
-          background: rgba(255, 255, 255, 0.85);
-          border: 1px solid rgba(0, 0, 0, 0.08);
-        }
-
-        .teacher-card:hover {
-          background: rgba(255, 255, 255, 0.9);
-          border-color: rgba(147, 51, 234, 0.3);
-        }
-
-        .teacher-card.selected {
-          background: rgba(255, 255, 255, 0.95);
-          border-color: rgba(147, 51, 234, 0.5);
-          box-shadow: 0 8px 32px rgba(147, 51, 234, 0.15);
+          transform: translateY(-3px);
+          box-shadow: 0 6px 16px rgba(90, 103, 216, 0.15);
         }
 
         /* Card header section */
         .card-header {
           display: flex;
+          flex-direction: column;
           align-items: center;
-          margin-bottom: 1.5rem;
+          margin-bottom: 2rem;
         }
 
         /* Card icon container */
         .card-icon {
-          width: 80px;
-          height: 80px;
-          border-radius: 20px;
+          width: 120px;
+          height: 120px;
+          border-radius: 30px;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-right: 1.5rem;
-          font-size: 2.5rem;
+          margin-bottom: 2rem;
+          font-size: 3.5rem;
           position: relative;
-        }
-
-        /* Icon background colors */
-        .student-parent-icon {
-          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-          box-shadow: 0 4px 20px rgba(90, 103, 216, 0.3);
-        }
-
-        .teacher-icon {
           background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
           box-shadow: 0 4px 20px rgba(90, 103, 216, 0.3);
         }
@@ -361,58 +222,57 @@ export default function Signup() {
 
         /* Card text content */
         .card-title {
-          font-size: clamp(2.5rem, 4vw, 3rem);
+          font-size: 2rem;
           font-weight: 700;
-          color: #1a1a1a !important;
+          color: #2d3748;
           margin-bottom: 0.5rem;
         }
 
         .card-subtitle {
-          font-size: clamp(1.4rem, 2.5vw, 1.6rem);
-          color: #1a1a1a !important;
+          font-size: 1.3rem;
+          color: #4a5568;
+          margin-bottom: 2rem;
         }
 
         .card-description {
-          font-size: clamp(1.3rem, 2.5vw, 1.5rem);
-          color: #1a1a1a !important;
-          line-height: 1.7;
-          margin-bottom: 1.5rem;
+          font-size: 1.15rem;
+          color: #4a5568;
+          line-height: 1.6;
+          margin-bottom: 3rem;
+          max-width: 500px;
         }
 
         /* User type badges */
         .user-types {
           display: flex;
-          gap: 3rem;
-          margin-top: auto;
+          gap: 1.5rem;
           justify-content: center;
           align-items: center;
-          position: absolute;
-          bottom: 3rem;
-          left: 3rem;
-          right: 3rem;
+          flex-wrap: wrap;
         }
 
         .user-type-badge {
-          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-          color: white !important;
-          padding: 1.8rem 2rem;
-          border: none;
-          border-radius: 30px;
-          font-size: 2.5rem;
-          font-weight: 700;
+          background: white;
+          color: #2d3748;
+          padding: 1.25rem 2.5rem;
+          border: 1px solid #cbd5e0;
+          border-radius: 8px;
+          font-size: 1.2rem;
+          font-weight: 500;
           cursor: pointer;
           transition: all 0.3s ease;
           text-decoration: none;
           display: inline-block;
-          box-shadow: 0 4px 20px rgba(90, 103, 216, 0.4);
+          min-width: 200px;
           text-align: center;
-          width: 280px;
-          max-width: 100%;
         }
         
         .user-type-badge:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 6px 25px rgba(90, 103, 216, 0.6);
+          background: #5a67d8;
+          color: white;
+          border-color: #5a67d8;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(90, 103, 216, 0.3);
         }
 
         /* Info box for additional information */
@@ -430,37 +290,71 @@ export default function Signup() {
           line-height: 1.7;
         }
 
+        /* Tablet responsiveness */
+        @media (max-width: 1200px) {
+          .container {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+          }
+        }
+
         /* Mobile optimizations */
         @media (max-width: 768px) {
-          .container {
-            padding: 1rem;
+          .signup-container {
+            padding: 0 2%;
           }
 
           .user-card {
-            padding: 2rem;
+            padding: 2rem 1.5rem;
             min-height: auto;
           }
 
-          .card-header {
-            flex-direction: column;
-            text-align: center;
+          .card-icon {
+            width: 80px;
+            height: 80px;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
           }
 
-          .card-icon {
-            margin-right: 0;
-            margin-bottom: 1rem;
+          .card-title {
+            font-size: 1.5rem;
+          }
+
+          .card-subtitle {
+            font-size: 1.1rem;
+          }
+
+          .card-description {
+            font-size: 1rem;
           }
 
           .user-types {
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1rem;
           }
 
           .user-type-badge {
-            width: 220px;
-            font-size: 2rem;
-            padding: 1.5rem 1rem;
+            min-width: 100%;
+            font-size: 1.1rem;
+            padding: 1rem 2rem;
           }
+        }
+      `}</style>
+      
+      <style jsx global>{`
+        /* Override global dark theme for this page */
+        body {
+          background: linear-gradient(135deg, #f9f7f2 0%, #f0ebe0 100%) !important;
+          color: #2d3748 !important;
+        }
+        
+        body::before {
+          display: none !important;
+        }
+        
+        /* Ensure all text uses dark colors */
+        * {
+          color: inherit;
         }
       `}</style>
     </>
