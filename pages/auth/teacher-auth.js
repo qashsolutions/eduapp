@@ -329,44 +329,49 @@ export default function TeacherAuth() {
         
         /* Main auth container with 2-column layout */
         .auth-container {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
+          display: flex;
           gap: 3rem;
-          max-width: 1400px;
-          margin: 0 auto;
-          padding: 4rem 3rem;
+          max-width: 1200px;
+          margin: 2rem auto;
+          padding: 0 2rem;
           flex: 1;
-          align-items: stretch;
+          align-items: center;
+          justify-content: center;
           width: 100%;
         }
         
         /* Left side - Features */
         .left-side {
           background: white;
-          padding: 4rem 3rem;
-          border-radius: 15px;
+          padding: 3rem 2.5rem;
+          border-radius: 12px;
           text-align: center;
           display: flex;
           flex-direction: column;
           align-items: center;
+          justify-content: center;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-          min-height: 600px;
+          flex: 1;
+          max-width: 500px;
+          min-height: auto;
         }
         
         /* Right side - Form */
         .right-side {
           background: white;
-          padding: 4rem 3rem;
-          border-radius: 15px;
+          padding: 3rem 2.5rem;
+          border-radius: 12px;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
           display: flex;
           flex-direction: column;
-          min-height: 600px;
+          flex: 1;
+          max-width: 500px;
+          min-height: auto;
         }
         
         /* Icon container */
         .icon-container {
-          margin-bottom: 3rem;
+          margin-bottom: 2.5rem;
         }
         
         .grad-cap-icon {
@@ -376,27 +381,26 @@ export default function TeacherAuth() {
         /* Feature items */
         .feature-item {
           text-align: left;
-          margin-bottom: 2.5rem;
+          margin-bottom: 2rem;
           width: 100%;
-          max-width: 400px;
         }
         
         .feature-title {
-          font-size: 1.3rem;
+          font-size: 1.2rem;
           font-weight: 700;
           color: #2d3748;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.3rem;
         }
         
         .feature-text {
-          font-size: 1.1rem;
-          line-height: 1.6;
+          font-size: 1rem;
+          line-height: 1.5;
           color: #4a5568;
         }
         
         /* Auth form styling */
         .auth-title {
-          font-size: 2rem;
+          font-size: 1.8rem;
           font-weight: 700;
           color: #5a67d8;
           text-align: center;
@@ -405,17 +409,17 @@ export default function TeacherAuth() {
         
         .auth-subtitle {
           text-align: center;
-          font-size: 1.3rem;
+          font-size: 1.2rem;
           color: #2d3748;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.3rem;
         }
         
         .auth-note {
           text-align: center;
           color: #666;
-          font-size: 1rem;
+          font-size: 0.9rem;
           font-style: italic;
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
         }
         
         /* Error message */
@@ -444,11 +448,11 @@ export default function TeacherAuth() {
         
         .form-input {
           width: 100%;
-          padding: 0.875rem 1rem;
+          padding: 0.75rem 1rem;
           margin-bottom: 1rem;
           border: 1px solid #cbd5e0;
           border-radius: 6px;
-          font-size: 1.1rem;
+          font-size: 1rem;
           background: white;
           color: #2d3748;
           transition: all 0.3s ease;
@@ -523,23 +527,24 @@ export default function TeacherAuth() {
         /* Tablet responsiveness */
         @media (max-width: 1024px) {
           .auth-container {
+            flex-direction: column;
+            max-width: 600px;
             gap: 2rem;
-            padding: 3rem 2rem;
+            margin: 1.5rem auto;
           }
           
           .left-side,
           .right-side {
-            padding: 3rem 2rem;
-            min-height: 500px;
+            max-width: 100%;
+            width: 100%;
           }
         }
         
         /* Mobile responsiveness */
         @media (max-width: 768px) {
           .auth-container {
-            grid-template-columns: 1fr;
-            padding: 2rem 1rem;
-            gap: 2rem;
+            padding: 0 1rem;
+            margin: 1rem auto;
           }
           
           .left-side {
@@ -547,16 +552,15 @@ export default function TeacherAuth() {
           }
           
           .right-side {
-            padding: 2.5rem 2rem;
-            min-height: auto;
+            padding: 2rem 1.5rem;
           }
           
           .auth-title {
-            font-size: 1.75rem;
+            font-size: 1.5rem;
           }
           
           .auth-subtitle {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
           }
           
           .form-row {
@@ -565,6 +569,11 @@ export default function TeacherAuth() {
           
           .form-input {
             font-size: 1rem;
+            padding: 0.75rem 1rem;
+          }
+          
+          .submit-btn {
+            padding: 0.75rem 1.5rem;
           }
         }
       `}</style>
