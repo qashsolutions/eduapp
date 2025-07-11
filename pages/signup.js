@@ -385,6 +385,7 @@ export default function Signup() {
           gap: 1.5rem;
           margin-top: auto;
           justify-content: center;
+          align-items: center;
           position: absolute;
           bottom: 3rem;
           left: 3rem;
@@ -402,11 +403,11 @@ export default function Signup() {
           cursor: pointer;
           transition: all 0.3s ease;
           text-decoration: none;
-          display: block;
+          display: inline-block;
           box-shadow: 0 4px 20px rgba(90, 103, 216, 0.4);
-          flex: 1;
           text-align: center;
-          width: 100%;
+          width: 280px;
+          max-width: 100%;
         }
         
         .user-type-badge:hover {
@@ -455,7 +456,7 @@ export default function Signup() {
           }
 
           .user-type-badge {
-            width: 100%;
+            width: 220px;
             font-size: 2rem;
             padding: 1.5rem 1rem;
           }
