@@ -1,7 +1,13 @@
 import Stripe from 'stripe';
-import { supabase } from '../../lib/db';
+import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// Use service role for server-side operations
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -9,10 +15,27 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { consentId, childName, childGrade } = req.body;
+    const { type, parentEmail, studentName, studentGrade, parentName } = req.body;
 
-    if (!consentId || !childName || !childGrade) {
+    // Validate required fields
+    if (!parentEmail || !studentName || !studentGrade || !parentName) {
       return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Create parent consent record before payment
+    const { data: consentData, error: consentError } = await supabase
+      .from('parent_consents')
+      .insert({
+        child_first_name: studentName,
+        child_grade: parseInt(studentGrade),
+        // parent_id and child_id will be updated after payment success
+      })
+      .select()
+      .single();
+
+    if (consentError) {
+      console.error('Error creating consent record:', consentError);
+      return res.status(500).json({ error: 'Failed to create consent record' });
     }
 
     // Create Stripe checkout session for $1 verification
@@ -23,27 +46,33 @@ export default async function handler(req, res) {
           currency: 'usd',
           product_data: {
             name: 'Parent Verification',
-            description: `Verify parent consent for ${childName} (Grade ${childGrade})`,
+            description: `Verify parent consent for ${studentName} (Grade ${studentGrade})`,
           },
           unit_amount: 100, // $1.00 in cents
         },
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/parent-setup?session_id={CHECKOUT_SESSION_ID}&consent_id=${consentId}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/parent-verify?consent_id=${consentId}`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/auth/parent-verify?payment_success=true&session_id={CHECKOUT_SESSION_ID}&consent_id=${consentData.id}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/auth/parent-verify?consent_id=${consentData.id}&error=payment_cancelled`,
       metadata: {
-        consent_id: consentId,
-        child_name: childName,
-        child_grade: childGrade,
+        consent_id: consentData.id,
+        parent_email: parentEmail,
+        parent_name: parentName,
+        student_name: studentName,
+        student_grade: studentGrade,
       },
     });
 
     // Store session ID in consent record
-    await supabase
+    const { error: updateError } = await supabase
       .from('parent_consents')
       .update({ stripe_payment_intent: session.id })
-      .eq('id', consentId);
+      .eq('id', consentData.id);
+
+    if (updateError) {
+      console.error('Error updating consent record:', updateError);
+    }
 
     return res.status(200).json({ sessionId: session.id });
   } catch (error) {

@@ -8,29 +8,47 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { sessionId } = req.body;
+    const { sessionId, consentId } = req.body;
 
-    if (!sessionId) {
-      return res.status(400).json({ error: 'Missing session ID' });
+    if (!sessionId || !consentId) {
+      return res.status(400).json({ error: 'Missing session ID or consent ID' });
     }
 
-    // Retrieve the checkout session from Stripe
+    // Retrieve the session from Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
+    // Verify the session is paid and matches our consent ID
     if (session.payment_status !== 'paid') {
-      return res.status(400).json({ error: 'Payment not completed' });
+      return res.status(400).json({ 
+        error: 'Payment not completed', 
+        paid: false 
+      });
     }
 
-    // Get customer email
-    const customerEmail = session.customer_details?.email || session.customer_email;
+    // Verify the consent ID matches what we stored in metadata
+    if (session.metadata.consent_id !== consentId) {
+      return res.status(400).json({ 
+        error: 'Invalid consent ID', 
+        paid: false 
+      });
+    }
 
-    return res.status(200).json({
-      success: true,
-      customerEmail: customerEmail,
-      metadata: session.metadata
+    // Return success with session details
+    return res.status(200).json({ 
+      paid: true,
+      sessionId: session.id,
+      consentId: consentId,
+      parentEmail: session.metadata.parent_email,
+      parentName: session.metadata.parent_name,
+      studentName: session.metadata.student_name,
+      studentGrade: session.metadata.student_grade
     });
+
   } catch (error) {
     console.error('Payment verification error:', error);
-    return res.status(500).json({ error: 'Failed to verify payment' });
+    return res.status(500).json({ 
+      error: 'Failed to verify payment',
+      paid: false 
+    });
   }
 }

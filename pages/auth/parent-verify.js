@@ -128,15 +128,45 @@ export default function ParentVerify() {
   useEffect(() => {
     // Check if returning from successful payment
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('payment_success') === 'true' && studentInfo) {
-      completeVerification();
+    const paymentSuccess = urlParams.get('payment_success') === 'true';
+    const sessionId = urlParams.get('session_id');
+    const consentId = urlParams.get('consent_id');
+    
+    if (paymentSuccess && sessionId && consentId && studentInfo) {
+      verifyPaymentAndComplete(sessionId, consentId);
     }
   }, [studentInfo]);
 
   /**
+   * Verify payment with Stripe and complete the verification
+   */
+  const verifyPaymentAndComplete = async (sessionId, consentId) => {
+    try {
+      // Verify payment was successful via API
+      const response = await fetch('/api/verify-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, consentId })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.paid) {
+        throw new Error('Payment verification failed');
+      }
+
+      // Payment verified, now complete the process
+      await completeVerification(consentId);
+    } catch (err) {
+      console.error('Payment verification error:', err);
+      setError('Payment verification failed. Please contact support.');
+    }
+  };
+
+  /**
    * Complete the verification process after payment
    */
-  const completeVerification = async () => {
+  const completeVerification = async (consentId) => {
     try {
       // Generate student passcode
       const newPasscode = generatePasscode();
@@ -169,11 +199,14 @@ export default function ParentVerify() {
 
       if (parentInsertError) throw parentInsertError;
 
+      // Generate student ID to use in both places
+      const studentId = crypto.randomUUID();
+
       // Create student record linked to parent
       const { error: studentError } = await supabase
         .from('users')
         .insert({
-          id: crypto.randomUUID(), // Generate a UUID for the student
+          id: studentId,
           email: `${studentInfo.name.toLowerCase().replace(/\s/g, '')}_${Date.now()}@student.local`, // Create a unique email for student
           first_name: studentInfo.name,
           grade: parseInt(studentInfo.grade),
@@ -187,6 +220,19 @@ export default function ParentVerify() {
         });
 
       if (studentError) throw studentError;
+
+      // Update parent_consents record with parent_id and child_id
+      const { error: consentUpdateError } = await supabase
+        .from('parent_consents')
+        .update({
+          parent_id: parentAuth.user.id,
+          child_id: studentId
+        })
+        .eq('id', consentId);
+
+      if (consentUpdateError) {
+        console.error('Error updating consent record:', consentUpdateError);
+      }
 
       // Show success with passcode
       setPasscode(newPasscode);
