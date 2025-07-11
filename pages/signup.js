@@ -63,7 +63,7 @@ export default function Signup() {
             >
               <div className="card-header">
                 <div className="card-icon student-parent-icon">
-                  <svg width="60" height="60" viewBox="0 0 24 24" className="family-icon">
+                  <svg width="50" height="50" viewBox="0 0 24 24" className="family-icon">
                     <g>
                       <circle cx="8" cy="4" r="2"/>
                       <circle cx="16" cy="4" r="2"/>
@@ -98,7 +98,7 @@ export default function Signup() {
             >
               <div className="card-header">
                 <div className="card-icon teacher-icon">
-                  <svg width="60" height="60" viewBox="0 0 24 24" className="grad-cap-icon">
+                  <svg width="50" height="50" viewBox="0 0 24 24" className="grad-cap-icon">
                     <path d="M12,3L1,9L12,15L21,9V16H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z"/>
                   </svg>
                 </div>
@@ -138,17 +138,19 @@ export default function Signup() {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 0 5%;
+          padding: 2rem;
           margin: 1rem 0;
+          width: 100%;
         }
 
         /* Content container */
         .container {
           width: 100%;
+          max-width: 1200px;
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 3rem;
-          min-height: calc(100vh - 250px);
+          gap: 2rem;
+          margin: 0 auto;
         }
 
         /* Remove header section - not needed with new layout */
@@ -161,7 +163,7 @@ export default function Signup() {
         /* User type cards - matching teacher-auth style */
         .user-card {
           background: white;
-          padding: 3rem 4rem;
+          padding: 2.5rem 3rem;
           border-radius: 20px;
           cursor: pointer;
           transition: all 0.4s ease;
@@ -172,7 +174,8 @@ export default function Signup() {
           justify-content: center;
           align-items: center;
           text-align: center;
-          min-height: 550px;
+          min-height: 450px;
+          max-height: 600px;
         }
 
         /* Card hover effects */
@@ -197,14 +200,14 @@ export default function Signup() {
 
         /* Card icon container */
         .card-icon {
-          width: 120px;
-          height: 120px;
-          border-radius: 30px;
+          width: 100px;
+          height: 100px;
+          border-radius: 25px;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 2rem;
-          font-size: 3.5rem;
+          margin-bottom: 1.5rem;
+          font-size: 3rem;
           position: relative;
           background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
           box-shadow: 0 4px 20px rgba(90, 103, 216, 0.3),
@@ -261,24 +264,24 @@ export default function Signup() {
 
         /* Card text content */
         .card-title {
-          font-size: 2rem;
+          font-size: 1.75rem;
           font-weight: 700;
           color: #2d3748;
           margin-bottom: 0.5rem;
         }
 
         .card-subtitle {
-          font-size: 1.3rem;
+          font-size: 1.15rem;
           color: #4a5568;
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
         }
 
         .card-description {
-          font-size: 1.15rem;
+          font-size: 1.05rem;
           color: #4a5568;
           line-height: 1.6;
-          margin-bottom: 3rem;
-          max-width: 500px;
+          margin-bottom: 2rem;
+          max-width: 400px;
         }
 
         /* User type badges */
@@ -293,16 +296,16 @@ export default function Signup() {
         .user-type-badge {
           background: white;
           color: #2d3748;
-          padding: 1.25rem 2.5rem;
+          padding: 1rem 2rem;
           border: 1px solid #cbd5e0;
           border-radius: 8px;
-          font-size: 1.2rem;
+          font-size: 1.1rem;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.3s ease;
           text-decoration: none;
           display: inline-block;
-          min-width: 200px;
+          min-width: 160px;
           text-align: center;
         }
         
@@ -329,18 +332,40 @@ export default function Signup() {
           line-height: 1.7;
         }
 
+        /* Desktop screens */
+        @media (min-width: 1400px) {
+          .container {
+            max-width: 1400px;
+          }
+          
+          .user-card {
+            padding: 3rem 4rem;
+          }
+          
+          .card-icon {
+            width: 120px;
+            height: 120px;
+          }
+        }
+
         /* Tablet responsiveness */
-        @media (max-width: 1200px) {
+        @media (max-width: 1024px) {
           .container {
             grid-template-columns: 1fr;
             gap: 2rem;
+            max-width: 600px;
+          }
+          
+          .user-card {
+            min-height: 380px;
+            max-height: none;
           }
         }
 
         /* Mobile optimizations */
         @media (max-width: 768px) {
           .signup-container {
-            padding: 0 2%;
+            padding: 1rem;
           }
 
           .user-card {
@@ -385,6 +410,8 @@ export default function Signup() {
         body {
           background: linear-gradient(135deg, #f9f7f2 0%, #f0ebe0 100%) !important;
           color: #2d3748 !important;
+          -webkit-text-size-adjust: 100%;
+          text-size-adjust: 100%;
         }
         
         body::before {
@@ -394,6 +421,14 @@ export default function Signup() {
         /* Ensure all text uses dark colors */
         * {
           color: inherit;
+        }
+        
+        /* Safari-specific fixes */
+        @supports (-webkit-touch-callout: none) {
+          .user-card {
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+          }
         }
       `}</style>
     </>
