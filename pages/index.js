@@ -411,8 +411,6 @@ export default function Landing() {
         .hero-section {
           padding: 60px 5%;
           width: 100%;
-          max-width: 100%;
-          margin: 0 auto;
         }
 
         .content-grid {
@@ -421,8 +419,6 @@ export default function Landing() {
           gap: 3rem;
           align-items: start;
           width: 100%;
-          max-width: 1400px;
-          margin: 0 auto;
         }
 
         .hero-title {
@@ -529,14 +525,12 @@ export default function Landing() {
         
         /* Problem Section */
         .problem-section {
-          padding: 80px 20px;
+          padding: 60px 5%;
         }
 
         .content-wrapper {
           width: 100%;
-          max-width: 100%;
-          padding: 0 5%;
-          margin: 0 auto;
+          padding: 0;
         }
 
         .problem-grid {
@@ -545,8 +539,6 @@ export default function Landing() {
           gap: 3rem;
           align-items: start;
           width: 100%;
-          max-width: 1400px;
-          margin: 0 auto;
         }
 
         .problem-cards-stack {
@@ -592,8 +584,6 @@ export default function Landing() {
         .solution-section {
           padding: 60px 5%;
           width: 100%;
-          max-width: 100%;
-          margin: 0 auto;
         }
 
         .content-grid.reverse {
@@ -614,7 +604,7 @@ export default function Landing() {
 
         /* Benefits Section */
         .benefits-section {
-          padding: 80px 20px;
+          padding: 60px 5%;
         }
 
         .benefits-grid {
@@ -623,8 +613,6 @@ export default function Landing() {
           gap: 3rem;
           margin-bottom: 48px;
           width: 100%;
-          max-width: 1400px;
-          margin: 0 auto 48px;
         }
 
         .benefit-card {
@@ -675,11 +663,11 @@ export default function Landing() {
 
         /* Responsive */
         @media (max-width: 1200px) {
-          .content-grid,
-          .content-grid.reverse,
-          .problem-grid,
-          .benefits-grid {
-            max-width: 95%;
+          .hero-section,
+          .problem-section,
+          .solution-section,
+          .benefits-section {
+            padding: 60px 4%;
           }
         }
         
