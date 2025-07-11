@@ -382,7 +382,7 @@ export default function Signup() {
         /* User type badges */
         .user-types {
           display: flex;
-          gap: 1.5rem;
+          gap: 3rem;
           margin-top: auto;
           justify-content: center;
           align-items: center;
@@ -453,6 +453,7 @@ export default function Signup() {
 
           .user-types {
             flex-direction: column;
+            gap: 1.5rem;
           }
 
           .user-type-badge {
