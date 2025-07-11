@@ -56,6 +56,13 @@ export default function TeacherAuth() {
       }
 
       // Create auth user with Supabase
+      console.log('=== TEACHER SIGNUP ATTEMPT ===');
+      console.log('Email:', formData.email);
+      console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+      console.log('Timestamp:', new Date().toISOString());
+      
+      const signupStart = Date.now();
+      
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -66,8 +73,19 @@ export default function TeacherAuth() {
           }
         }
       });
+      
+      const signupDuration = Date.now() - signupStart;
+      console.log(`Signup request took: ${signupDuration}ms`);
+      console.log('Auth response:', { authData, authError });
 
-      if (authError) throw authError;
+      if (authError) {
+        console.error('=== SIGNUP ERROR ===');
+        console.error('Error type:', authError.name);
+        console.error('Error message:', authError.message);
+        console.error('Error status:', authError.status);
+        console.error('Full error:', authError);
+        throw authError;
+      }
 
       // Create user profile with teacher-specific data
       if (authData.user) {
@@ -96,10 +114,13 @@ export default function TeacherAuth() {
         router.push('/');
       }
     } catch (err) {
-      console.error('Signup error:', err);
+      console.error('=== CATCH BLOCK ERROR ===');
+      console.error('Error caught:', err);
+      console.error('Error stack:', err.stack);
       setError(err.message || 'Failed to create account. Please try again.');
     } finally {
       setLoading(false);
+      console.log('=== SIGNUP PROCESS COMPLETE ===');
     }
   };
 
@@ -265,11 +286,16 @@ export default function TeacherAuth() {
                 id="password"
                 name="password"
                 className="form-input"
-                placeholder={isLogin ? 'Enter your password' : 'Create a secure password'}
+                placeholder={isLogin ? 'Enter your password' : 'Min 8 chars: a-z, A-Z, 0-9, special char'}
                 value={formData.password}
                 onChange={handleChange}
                 disabled={loading}
               />
+              {!isLogin && (
+                <p className="password-hint">
+                  Password must contain at least 8 characters, including lowercase (a-z), uppercase (A-Z), numbers (0-9), and one special character
+                </p>
+              )}
             </div>
 
             {/* School field for signup only */}
@@ -539,6 +565,13 @@ export default function TeacherAuth() {
         .form-input:disabled {
           opacity: 0.6;
           cursor: not-allowed;
+        }
+
+        .password-hint {
+          font-size: 0.85rem;
+          color: rgba(255,255,255,0.7);
+          margin-top: 0.5rem;
+          line-height: 1.4;
         }
 
 
