@@ -89,14 +89,14 @@ export default function Header() {
 
       <style jsx>{`
         .header {
-          background: rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.08);
           backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
           position: sticky;
           top: 0;
           z-index: 1000;
-          padding: 16px 0;
-          box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+          padding: 20px 0;
+          box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
         }
 
         .header-container {
@@ -109,22 +109,22 @@ export default function Header() {
         }
 
         .logo {
-          font-size: 1.8rem;
+          font-size: 2.2rem !important;
           font-weight: 800;
-          color: #ffffff;
+          color: #ffffff !important;
           margin: 0;
           transition: transform 0.2s ease;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .logo-subheader {
-          font-size: 0.9rem;
-          color: #ffffff;
+          font-size: 1.1rem !important;
+          color: #ffffff !important;
           margin: 0;
           margin-top: -4px;
           letter-spacing: 0.05em;
-          font-weight: 600;
-          opacity: 0.9;
+          font-weight: 700;
+          opacity: 1;
         }
 
         .logo-section > div:hover .logo {

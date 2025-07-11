@@ -14,12 +14,12 @@ export default function Footer() {
 
       <style jsx>{`
         .footer {
-          background: rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.08);
           backdrop-filter: blur(20px);
-          border-top: 1px solid rgba(255, 255, 255, 0.3);
-          padding: 20px 0;
+          border-top: 1px solid rgba(255, 255, 255, 0.2);
+          padding: 24px 0;
           margin-top: 0;
-          box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.03);
         }
 
         .footer-content {
@@ -33,16 +33,16 @@ export default function Footer() {
 
         .footer-left p,
         .footer-right p {
-          color: #ffffff;
-          font-size: 1rem;
+          color: #ffffff !important;
+          font-size: 1.2rem !important;
           line-height: 1.6;
           margin: 0;
           font-weight: 700;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .footer-left a {
-          color: #ffffff;
+          color: #ffffff !important;
           text-decoration: none;
           transition: color 0.3s ease;
           font-weight: 700;

@@ -434,10 +434,10 @@ export default function Landing() {
         }
 
         .hero-paragraph {
-          font-size: 1.6rem;
+          font-size: 3.2rem;
           line-height: 1.8;
           color: #1a1a1a !important;
-          margin-bottom: 1.5rem;
+          margin-bottom: 2rem;
           text-align: left;
           font-weight: 400;
         }
@@ -501,14 +501,14 @@ export default function Landing() {
         }
 
         .feature-card h3 {
-          font-size: 1.8rem;
+          font-size: 3.6rem;
           font-weight: 700;
           color: #1a1a1a !important;
-          margin-bottom: 1rem;
+          margin-bottom: 1.5rem;
         }
 
         .feature-card p {
-          font-size: 1.4rem;
+          font-size: 2.8rem;
           line-height: 1.7;
           color: #1a1a1a !important;
         }
@@ -553,14 +553,14 @@ export default function Landing() {
         }
 
         .problem-card h3 {
-          font-size: 1.8rem;
+          font-size: 3.6rem;
           font-weight: 700;
           color: #1a1a1a !important;
-          margin-bottom: 1rem;
+          margin-bottom: 1.5rem;
         }
 
         .problem-card p {
-          font-size: 1.4rem;
+          font-size: 2.8rem;
           line-height: 1.7;
           color: #1a1a1a !important;
         }
@@ -570,10 +570,10 @@ export default function Landing() {
         }
 
         .content-paragraph {
-          font-size: 1.6rem;
+          font-size: 3.2rem;
           line-height: 1.8;
           color: #1a1a1a !important;
-          margin-bottom: 1.5rem;
+          margin-bottom: 2rem;
         }
 
         .content-paragraph:last-child {
@@ -720,7 +720,7 @@ export default function Landing() {
 
           .hero-paragraph,
           .content-paragraph {
-            font-size: 1.3rem;
+            font-size: 2.6rem;
           }
 
           .feature-card,
@@ -731,12 +731,12 @@ export default function Landing() {
           
           .feature-card h3,
           .problem-card h3 {
-            font-size: 1.5rem;
+            font-size: 3rem;
           }
           
           .feature-card p,
           .problem-card p {
-            font-size: 1.2rem;
+            font-size: 2.4rem;
           }
 
           .cta-button {
