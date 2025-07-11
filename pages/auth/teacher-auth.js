@@ -331,10 +331,10 @@ export default function TeacherAuth() {
         .auth-container {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 2rem;
-          max-width: 1400px;
+          gap: 3rem;
+          max-width: 1600px;
           margin: 3rem auto;
-          padding: 0 3rem;
+          padding: 0 4rem;
           width: 100%;
           min-height: calc(100vh - 300px);
         }
@@ -342,7 +342,7 @@ export default function TeacherAuth() {
         /* Left side - Features */
         .left-side {
           background: white;
-          padding: 4rem;
+          padding: 4rem 5rem;
           border-radius: 20px;
           text-align: center;
           display: flex;
@@ -356,7 +356,7 @@ export default function TeacherAuth() {
         /* Right side - Form */
         .right-side {
           background: white;
-          padding: 4rem;
+          padding: 4rem 5rem;
           border-radius: 20px;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
           display: flex;
@@ -379,7 +379,6 @@ export default function TeacherAuth() {
           text-align: left;
           margin-bottom: 3rem;
           width: 100%;
-          max-width: 400px;
         }
         
         .feature-title {
@@ -522,18 +521,20 @@ export default function TeacherAuth() {
         }
         
         /* Tablet responsiveness */
-        @media (max-width: 1024px) {
+        @media (max-width: 1200px) {
           .auth-container {
             grid-template-columns: 1fr;
-            max-width: 700px;
+            max-width: 800px;
             gap: 2rem;
             margin: 2rem auto;
             min-height: auto;
+            padding: 0 2rem;
           }
           
           .left-side,
           .right-side {
             min-height: 500px;
+            padding: 3rem 4rem;
           }
         }
         
