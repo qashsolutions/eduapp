@@ -89,13 +89,14 @@ export default function Header() {
 
       <style jsx>{`
         .header {
-          background: rgba(10, 10, 15, 0.8);
+          background: rgba(255, 255, 255, 0.15);
           backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.3);
           position: sticky;
           top: 0;
           z-index: 1000;
           padding: 16px 0;
+          box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
         }
 
         .header-container {
@@ -108,19 +109,22 @@ export default function Header() {
         }
 
         .logo {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: var(--text-primary);
+          font-size: 1.8rem;
+          font-weight: 800;
+          color: #ffffff;
           margin: 0;
           transition: transform 0.2s ease;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .logo-subheader {
-          font-size: 0.75rem;
-          color: var(--text-secondary);
+          font-size: 0.9rem;
+          color: #ffffff;
           margin: 0;
           margin-top: -4px;
           letter-spacing: 0.05em;
+          font-weight: 600;
+          opacity: 0.9;
         }
 
         .logo-section > div:hover .logo {
@@ -132,7 +136,8 @@ export default function Header() {
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
-          font-weight: 600;
+          font-weight: 700;
+          font-size: 1rem;
         }
 
         .nav-section {
@@ -148,8 +153,10 @@ export default function Header() {
         }
         
         .user-email {
-          color: var(--text-secondary);
-          font-size: 0.9rem;
+          color: #ffffff;
+          font-size: 1rem;
+          font-weight: 600;
+          opacity: 0.9;
         }
         
         .trial-badge {
@@ -178,10 +185,10 @@ export default function Header() {
         }
 
         .btn {
-          padding: 8px 20px;
+          padding: 10px 24px;
           border-radius: 24px;
-          font-weight: 500;
-          font-size: 0.9rem;
+          font-weight: 700;
+          font-size: 1rem;
           cursor: pointer;
           transition: all 0.3s ease;
           border: none;
@@ -190,12 +197,13 @@ export default function Header() {
         }
 
         .btn-primary {
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.2);
           backdrop-filter: blur(20px);
-          border: 2px solid var(--accent-primary);
-          color: var(--text-primary);
-          font-weight: 600;
-          padding: 10px 24px;
+          border: 2px solid #00ff88;
+          color: #00ff88;
+          font-weight: 700;
+          padding: 12px 28px;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .btn-primary:hover {
@@ -205,9 +213,10 @@ export default function Header() {
         }
 
         .btn-secondary {
-          background: var(--glass-bg);
-          color: var(--text-primary);
-          border: 1px solid var(--glass-border);
+          background: rgba(255, 255, 255, 0.2);
+          color: #ffffff;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          font-weight: 600;
         }
 
         .btn-secondary:hover {
