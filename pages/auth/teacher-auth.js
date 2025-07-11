@@ -323,38 +323,45 @@ export default function TeacherAuth() {
           position: relative;
           display: flex;
           flex-direction: column;
+          /* Override global dark background */
+          color: #2d3748;
         }
         
         /* Main auth container with 2-column layout */
         .auth-container {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 2rem;
-          max-width: 1200px;
+          gap: 3rem;
+          max-width: 1400px;
           margin: 0 auto;
-          padding: 3rem 2rem;
-          min-height: calc(100vh - 200px);
+          padding: 4rem 3rem;
+          flex: 1;
+          align-items: stretch;
           width: 100%;
         }
         
         /* Left side - Features */
         .left-side {
           background: white;
-          padding: 3rem;
-          border-radius: 10px;
+          padding: 4rem 3rem;
+          border-radius: 15px;
           text-align: center;
           display: flex;
           flex-direction: column;
           align-items: center;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          min-height: 600px;
         }
         
         /* Right side - Form */
         .right-side {
           background: white;
-          padding: 3rem;
-          border-radius: 10px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          padding: 4rem 3rem;
+          border-radius: 15px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          display: flex;
+          flex-direction: column;
+          min-height: 600px;
         }
         
         /* Icon container */
@@ -513,11 +520,26 @@ export default function TeacherAuth() {
           text-decoration: underline;
         }
         
+        /* Tablet responsiveness */
+        @media (max-width: 1024px) {
+          .auth-container {
+            gap: 2rem;
+            padding: 3rem 2rem;
+          }
+          
+          .left-side,
+          .right-side {
+            padding: 3rem 2rem;
+            min-height: 500px;
+          }
+        }
+        
         /* Mobile responsiveness */
         @media (max-width: 768px) {
           .auth-container {
             grid-template-columns: 1fr;
             padding: 2rem 1rem;
+            gap: 2rem;
           }
           
           .left-side {
@@ -525,7 +547,8 @@ export default function TeacherAuth() {
           }
           
           .right-side {
-            padding: 2rem;
+            padding: 2.5rem 2rem;
+            min-height: auto;
           }
           
           .auth-title {
@@ -543,6 +566,23 @@ export default function TeacherAuth() {
           .form-input {
             font-size: 1rem;
           }
+        }
+      `}</style>
+      
+      <style jsx global>{`
+        /* Override global dark theme for this page */
+        body {
+          background: linear-gradient(135deg, #f9f7f2 0%, #f0ebe0 100%) !important;
+          color: #2d3748 !important;
+        }
+        
+        body::before {
+          display: none !important;
+        }
+        
+        /* Ensure all text uses dark colors */
+        * {
+          color: inherit;
         }
       `}</style>
     </>
