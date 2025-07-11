@@ -89,14 +89,14 @@ export default function Header() {
 
       <style jsx>{`
         .header {
-          background: rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.85);
           backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
           position: sticky;
           top: 0;
           z-index: 1000;
           padding: 20px 0;
-          box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
         }
 
         .header-container {
@@ -111,19 +111,18 @@ export default function Header() {
         .logo {
           font-size: 2.2rem !important;
           font-weight: 800;
-          color: #ffffff !important;
+          color: #2d3748 !important;
           margin: 0;
           transition: transform 0.2s ease;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .logo-subheader {
           font-size: 1.1rem !important;
-          color: #ffffff !important;
+          color: #4a5568 !important;
           margin: 0;
           margin-top: -4px;
           letter-spacing: 0.05em;
-          font-weight: 700;
+          font-weight: 600;
           opacity: 1;
         }
 
@@ -132,7 +131,7 @@ export default function Header() {
         }
 
         .gradient-text {
-          background: linear-gradient(135deg, #00ff88, #0088ff);
+          background: linear-gradient(135deg, #5a67d8, #6b46c1);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -153,18 +152,17 @@ export default function Header() {
         }
         
         .user-email {
-          color: #ffffff;
+          color: #4a5568;
           font-size: 1rem;
           font-weight: 600;
-          opacity: 0.9;
         }
         
         .trial-badge {
           background: linear-gradient(135deg, #ffd700, #ff8c00);
           color: #000;
-          padding: 4px 12px;
+          padding: 6px 16px;
           border-radius: 20px;
-          font-size: 0.8rem;
+          font-size: 0.9rem;
           font-weight: 600;
           animation: pulse 2s ease-in-out infinite;
         }
@@ -172,9 +170,9 @@ export default function Header() {
         .pending-badge {
           background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
           color: #fff;
-          padding: 4px 12px;
+          padding: 6px 16px;
           border-radius: 20px;
-          font-size: 0.8rem;
+          font-size: 0.9rem;
           font-weight: 600;
           animation: pulse 2s ease-in-out infinite;
         }
@@ -197,31 +195,35 @@ export default function Header() {
         }
 
         .btn-primary {
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(20px);
-          border: 2px solid #00ff88;
-          color: #00ff88;
-          font-weight: 700;
-          padding: 12px 28px;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+          color: white;
+          padding: 1rem 2.5rem;
+          border: none;
+          border-radius: 25px;
+          font-size: 1.2rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          text-decoration: none;
+          display: inline-block;
+          box-shadow: 0 4px 20px rgba(90, 103, 216, 0.4);
         }
 
         .btn-primary:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 20px 40px rgba(0, 255, 136, 0.3);
-          background: rgba(0, 255, 136, 0.1);
+          transform: translateY(-3px);
+          box-shadow: 0 6px 25px rgba(90, 103, 216, 0.6);
         }
 
         .btn-secondary {
-          background: rgba(255, 255, 255, 0.2);
-          color: #ffffff;
-          border: 1px solid rgba(255, 255, 255, 0.3);
+          background: rgba(0, 0, 0, 0.05);
+          color: #4a5568;
+          border: 1px solid rgba(0, 0, 0, 0.1);
           font-weight: 600;
         }
 
         .btn-secondary:hover {
-          background: rgba(255, 255, 255, 0.1);
-          border-color: var(--accent-neon);
+          background: rgba(0, 0, 0, 0.08);
+          border-color: rgba(0, 0, 0, 0.2);
         }
 
         .btn:disabled {
