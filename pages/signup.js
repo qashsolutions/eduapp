@@ -77,11 +77,7 @@ export default function Signup() {
                 <span className="user-type-badge">Student</span>
                 <span className="user-type-badge">Parent</span>
               </div>
-              <div className="info-box">
-                <p className="info-text">
-                  <strong>How it works:</strong> Student provides name & grade → Parent receives email → Parent verifies with $1 payment → Student gets secure passcode
-                </p>
-              </div>
+              {/* Removed How it works text */}
             </div>
 
             {/* Teacher card */}
@@ -248,12 +244,15 @@ export default function Signup() {
           border: 1px solid rgba(0, 0, 0, 0.08);
           border-radius: 25px;
           padding: 3rem;
+          padding-bottom: 8rem;
           cursor: pointer;
           transition: all 0.4s ease;
           position: relative;
           overflow: hidden;
           min-height: 400px;
           box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+          display: flex;
+          flex-direction: column;
         }
 
         /* Card hover effects */
@@ -364,18 +363,18 @@ export default function Signup() {
         .card-title {
           font-size: clamp(2.5rem, 4vw, 3rem);
           font-weight: 700;
-          color: var(--text-primary) !important;
+          color: #1a1a1a !important;
           margin-bottom: 0.5rem;
         }
 
         .card-subtitle {
           font-size: clamp(1.4rem, 2.5vw, 1.6rem);
-          color: var(--text-secondary) !important;
+          color: #1a1a1a !important;
         }
 
         .card-description {
           font-size: clamp(1.3rem, 2.5vw, 1.5rem);
-          color: var(--text-primary) !important;
+          color: #1a1a1a !important;
           line-height: 1.7;
           margin-bottom: 1.5rem;
         }
@@ -383,22 +382,36 @@ export default function Signup() {
         /* User type badges */
         .user-types {
           display: flex;
-          gap: 1rem;
-          margin-bottom: 1rem;
+          gap: 1.5rem;
+          margin-top: auto;
           justify-content: center;
+          position: absolute;
+          bottom: 3rem;
+          left: 0;
+          right: 0;
         }
 
         .user-type-badge {
-          background: rgba(90, 103, 216, 0.1);
-          padding: 1rem 2rem;
-          border-radius: 12px;
-          font-size: clamp(1.2rem, 2vw, 1.4rem);
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+          color: white;
+          padding: 1rem 2.5rem;
+          border: none;
+          border-radius: 25px;
+          font-size: 1.4rem;
           font-weight: 600;
-          color: var(--accent-primary);
-          border: 1px solid rgba(90, 103, 216, 0.2);
+          cursor: pointer;
+          transition: all 0.3s ease;
+          text-decoration: none;
+          display: inline-block;
+          box-shadow: 0 4px 20px rgba(90, 103, 216, 0.4);
           flex: 1;
           text-align: center;
           min-width: 120px;
+        }
+        
+        .user-type-badge:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 25px rgba(90, 103, 216, 0.6);
         }
 
         /* Info box for additional information */
