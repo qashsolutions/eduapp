@@ -204,7 +204,7 @@ export default function StudentSignup() {
               </div>
               <div className="feature-item">
                 <span className="feature-bullet">•</span>
-                <span className="feature-text">Choose your mood to get appropriate content</span>
+                <span className="feature-text">Dynamically generated & mood appropriate content</span>
               </div>
               <div className="feature-item">
                 <span className="feature-bullet">•</span>
@@ -212,7 +212,7 @@ export default function StudentSignup() {
               </div>
               <div className="feature-item">
                 <span className="feature-bullet">•</span>
-                <span className="feature-text">75 Million + combination of questions - will likely never see the same question again</span>
+                <span className="feature-text">Will likely never see the same question again</span>
               </div>
               <div className="feature-item">
                 <span className="feature-bullet">•</span>
@@ -406,11 +406,19 @@ function getStyles() {
     
     /* Icon container */
     .icon-container {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+      border-radius: 30px;
       margin-bottom: 2.5rem;
+      box-shadow: 0 4px 20px rgba(90, 103, 216, 0.3);
     }
     
     .family-icon {
-      fill: #5a67d8;
+      fill: white;
     }
     
     /* Features list */
@@ -435,8 +443,8 @@ function getStyles() {
     }
     
     .feature-text {
-      font-size: 1.1rem;
-      line-height: 1.6;
+      font-size: 1.25rem;
+      line-height: 1.7;
       color: #4a5568;
     }
     
