@@ -63,7 +63,9 @@ export default function Signup() {
             >
               <div className="card-header">
                 <div className="card-icon student-parent-icon">
-                  <span className="glow-icon glow-english">👨‍👩‍👧‍👦</span>
+                  <svg width="60" height="60" viewBox="0 0 24 24" className="family-icon">
+                    <path d="M16 4C17.11 4 18 4.89 18 6C18 7.11 17.11 8 16 8C14.89 8 14 7.11 14 6C14 4.89 14.89 4 16 4M8 4C9.11 4 10 4.89 10 6C10 7.11 9.11 8 8 8C6.89 8 6 7.11 6 6C6 4.89 6.89 4 8 4M16 10C18.67 10 24 11.33 24 14V16H16V14C16 13.5 15.89 13 15.71 12.5C14.53 11.5 12.92 10.76 11.25 10.36C12.5 10.13 14.03 10 16 10M8 10C10.67 10 16 11.33 16 14V16H0V14C0 11.33 5.33 10 8 10M8 18C6.89 18 6 18.89 6 20C6 21.11 6.89 22 8 22C9.11 22 10 21.11 10 20C10 18.89 9.11 18 8 18M16 18C14.89 18 14 18.89 14 20C14 21.11 14.89 22 16 22C17.11 22 18 21.11 18 20C18 18.89 17.11 18 16 18Z"/>
+                  </svg>
                 </div>
                 <div>
                   <h2 className="card-title">Student & Parent</h2>
@@ -87,7 +89,9 @@ export default function Signup() {
             >
               <div className="card-header">
                 <div className="card-icon teacher-icon">
-                  <span className="glow-icon glow-achievement">🎓</span>
+                  <svg width="60" height="60" viewBox="0 0 24 24" className="grad-cap-icon">
+                    <path d="M12,3L1,9L12,15L21,9V16H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z"/>
+                  </svg>
                 </div>
                 <div>
                   <h2 className="card-title">Teacher</h2>
@@ -197,6 +201,12 @@ export default function Signup() {
           box-shadow: 0 4px 20px rgba(90, 103, 216, 0.3);
         }
 
+        /* SVG icon styling */
+        .grad-cap-icon,
+        .family-icon {
+          fill: white;
+        }
+        
         /* Glow icon base styles */
         .glow-icon {
           filter: drop-shadow(0 0 8px currentColor);
@@ -205,7 +215,7 @@ export default function Signup() {
 
         /* Subject-specific glow colors */
         .glow-english {
-          color: #10b981;
+          color: white;
           filter: drop-shadow(0 0 12px #10b981);
         }
 
