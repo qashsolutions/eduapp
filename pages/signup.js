@@ -387,26 +387,26 @@ export default function Signup() {
           justify-content: center;
           position: absolute;
           bottom: 3rem;
-          left: 0;
-          right: 0;
+          left: 3rem;
+          right: 3rem;
         }
 
         .user-type-badge {
           background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-          color: white;
-          padding: 1rem 2.5rem;
+          color: white !important;
+          padding: 1.8rem 2rem;
           border: none;
-          border-radius: 25px;
-          font-size: 1.4rem;
-          font-weight: 600;
+          border-radius: 30px;
+          font-size: 2.5rem;
+          font-weight: 700;
           cursor: pointer;
           transition: all 0.3s ease;
           text-decoration: none;
-          display: inline-block;
+          display: block;
           box-shadow: 0 4px 20px rgba(90, 103, 216, 0.4);
           flex: 1;
           text-align: center;
-          min-width: 120px;
+          width: 100%;
         }
         
         .user-type-badge:hover {
@@ -456,6 +456,8 @@ export default function Signup() {
 
           .user-type-badge {
             width: 100%;
+            font-size: 2rem;
+            padding: 1.5rem 1rem;
           }
         }
       `}</style>
