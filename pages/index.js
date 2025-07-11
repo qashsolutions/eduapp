@@ -409,27 +409,27 @@ export default function Landing() {
 
         /* Hero Section */
         .hero-section {
-          padding: 80px 20px;
-          max-width: 1200px;
+          padding: 60px 5%;
+          width: 100%;
+          max-width: 100%;
           margin: 0 auto;
         }
 
         .content-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 4rem;
+          gap: 3rem;
           align-items: start;
+          width: 100%;
+          max-width: 1400px;
+          margin: 0 auto;
         }
 
         .hero-title {
           font-size: 2.5rem;
           font-weight: 700;
-          color: var(--text-primary);
+          color: #1a1a1a;
           margin-bottom: 2rem;
-          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
           line-height: 1.2;
         }
 
@@ -440,7 +440,7 @@ export default function Landing() {
         .hero-paragraph {
           font-size: 1.3rem;
           line-height: 1.8;
-          color: var(--text-primary);
+          color: #1a1a1a !important;
           margin-bottom: 1.5rem;
           text-align: left;
           font-weight: 400;
@@ -507,14 +507,14 @@ export default function Landing() {
         .feature-card h3 {
           font-size: 1.4rem;
           font-weight: 700;
-          color: var(--text-primary);
+          color: #1a1a1a !important;
           margin-bottom: 0.8rem;
         }
 
         .feature-card p {
           font-size: 1.15rem;
           line-height: 1.6;
-          color: var(--text-primary);
+          color: #1a1a1a !important;
         }
 
         /* Content Section */
@@ -533,15 +533,20 @@ export default function Landing() {
         }
 
         .content-wrapper {
-          max-width: 1200px;
+          width: 100%;
+          max-width: 100%;
+          padding: 0 5%;
           margin: 0 auto;
         }
 
         .problem-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 4rem;
+          gap: 3rem;
           align-items: start;
+          width: 100%;
+          max-width: 1400px;
+          margin: 0 auto;
         }
 
         .problem-cards-stack {
@@ -558,14 +563,14 @@ export default function Landing() {
         .problem-card h3 {
           font-size: 1.4rem;
           font-weight: 700;
-          color: var(--text-primary);
+          color: #1a1a1a !important;
           margin-bottom: 0.8rem;
         }
 
         .problem-card p {
           font-size: 1.15rem;
           line-height: 1.6;
-          color: var(--text-primary);
+          color: #1a1a1a !important;
         }
 
         .section-content {
@@ -575,7 +580,7 @@ export default function Landing() {
         .content-paragraph {
           font-size: 1.3rem;
           line-height: 1.8;
-          color: var(--text-primary);
+          color: #1a1a1a !important;
           margin-bottom: 1.5rem;
         }
 
@@ -585,8 +590,9 @@ export default function Landing() {
 
         /* Solution Section */
         .solution-section {
-          padding: 80px 20px;
-          max-width: 1200px;
+          padding: 60px 5%;
+          width: 100%;
+          max-width: 100%;
           margin: 0 auto;
         }
 
@@ -597,12 +603,8 @@ export default function Landing() {
         .section-title {
           font-size: 2.5rem;
           font-weight: 700;
-          color: var(--text-primary);
+          color: #1a1a1a;
           margin-bottom: 2rem;
-          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
           line-height: 1.2;
         }
 
@@ -618,8 +620,11 @@ export default function Landing() {
         .benefits-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 4rem;
+          gap: 3rem;
           margin-bottom: 48px;
+          width: 100%;
+          max-width: 1400px;
+          margin: 0 auto 48px;
         }
 
         .benefit-card {
@@ -669,20 +674,30 @@ export default function Landing() {
         }
 
         /* Responsive */
+        @media (max-width: 1200px) {
+          .content-grid,
+          .content-grid.reverse,
+          .problem-grid,
+          .benefits-grid {
+            max-width: 95%;
+          }
+        }
+        
         @media (max-width: 1024px) {
           .content-grid,
           .content-grid.reverse,
           .problem-grid {
             grid-template-columns: 1fr;
-            gap: 40px;
+            gap: 30px;
           }
 
           .benefits-grid {
             grid-template-columns: 1fr;
+            gap: 30px;
           }
 
           .hero-title {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
           }
 
           .section-title {
@@ -697,13 +712,18 @@ export default function Landing() {
           .benefits-section {
             padding: 40px 20px;
           }
+          
+          .content-wrapper {
+            padding: 0 20px;
+          }
 
+          .content-section,
           .section-content {
-            padding: 32px 24px;
+            padding: 2rem;
           }
 
           .hero-title {
-            font-size: 2rem;
+            font-size: 1.8rem;
           }
 
           .hero-paragraph,
@@ -712,8 +732,19 @@ export default function Landing() {
           }
 
           .feature-card,
+          .problem-card,
           .benefit-card {
-            padding: 24px;
+            padding: 1.5rem;
+          }
+          
+          .feature-card h3,
+          .problem-card h3 {
+            font-size: 1.2rem;
+          }
+          
+          .feature-card p,
+          .problem-card p {
+            font-size: 1rem;
           }
 
           .cta-button {
