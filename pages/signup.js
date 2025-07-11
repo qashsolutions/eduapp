@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 /**
  * Main signup landing page for EduApp
@@ -44,14 +46,11 @@ export default function Signup() {
         <link rel="canonical" href={`${process.env.NEXT_PUBLIC_BASE_URL}/signup`} />
       </Head>
 
-      <div className="signup-container">
-        {/* Floating background elements for visual depth */}
-        <div className="bg-element"></div>
-        <div className="bg-element"></div>
-        <div className="bg-element"></div>
-        <div className="bg-element"></div>
-
-        <div className="container">
+      <div className="page-wrapper">
+        <Header />
+        
+        <div className="signup-container">
+          <div className="container">
           {/* Page header with branding */}
           <div className="header">
             <h1 className="logo">Socratic AI Tutor</h1>
@@ -113,78 +112,89 @@ export default function Signup() {
           </div>
         </div>
       </div>
+        
+      <Footer />
+      </div>
 
       <style jsx>{`
+        /* Root variables to match index.js */
+        :root {
+          --bg-primary: #fdfcfa;
+          --bg-secondary: #f9f7f4;
+          --accent-primary: #5a67d8;
+          --accent-secondary: #6b46c1;
+          --text-primary: #1a1a1a;
+          --text-secondary: #333333;
+          --glass-bg: rgba(255, 255, 255, 0.7);
+          --glass-border: rgba(0, 0, 0, 0.1);
+        }
+        
         /* Reset and base styles */
         * {
           margin: 0;
           padding: 0;
           box-sizing: border-box;
         }
+        
+        /* Page wrapper with same background as index */
+        .page-wrapper {
+          min-height: 100vh;
+          background: 
+            radial-gradient(circle at 20% 50%, rgba(120, 119, 116, 0.02) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(120, 119, 116, 0.02) 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, rgba(120, 119, 116, 0.01) 0%, transparent 50%),
+            linear-gradient(135deg, #fdfcfa 0%, #f9f7f4 100%);
+          position: relative;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .page-wrapper::before {
+          content: '';
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-image: 
+            repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 1px,
+              rgba(0, 0, 0, 0.03) 1px,
+              rgba(0, 0, 0, 0.03) 2px
+            ),
+            repeating-linear-gradient(
+              -45deg,
+              transparent,
+              transparent 1px,
+              rgba(0, 0, 0, 0.02) 1px,
+              rgba(0, 0, 0, 0.02) 2px
+            ),
+            radial-gradient(ellipse at top, transparent, rgba(0, 0, 0, 0.01));
+          pointer-events: none;
+          z-index: 1;
+          opacity: 0.5;
+          mix-blend-mode: multiply;
+        }
 
-        /* Main container with gradient background */
+        /* Main container */
         .signup-container {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-          background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
-          min-height: calc(100vh - 140px); /* Account for header and footer */
+          flex: 1;
           position: relative;
           overflow-x: hidden;
-          padding: 2rem 0;
+          padding: 4rem 0;
+          z-index: 2;
         }
 
-        /* Floating background elements for depth */
-        .bg-element {
-          position: absolute;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 70%, transparent 100%);
-          animation: float 8s ease-in-out infinite;
-          pointer-events: none;
-        }
-
-        /* Individual background element positioning */
-        .bg-element:nth-child(1) {
-          width: 300px;
-          height: 300px;
-          top: 10%;
-          left: -5%;
-          animation-delay: 0s;
-        }
-
-        .bg-element:nth-child(2) {
-          width: 200px;
-          height: 200px;
-          top: 60%;
-          right: -5%;
-          animation-delay: 2s;
-        }
-
-        .bg-element:nth-child(3) {
-          width: 150px;
-          height: 150px;
-          top: 30%;
-          right: 20%;
-          animation-delay: 4s;
-        }
-
-        .bg-element:nth-child(4) {
-          width: 250px;
-          height: 250px;
-          bottom: 10%;
-          left: 15%;
-          animation-delay: 1s;
-        }
-
-        /* Floating animation for background elements */
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
+        /* Removed floating elements - using clean design */
 
         /* Content container */
         .container {
-          max-width: 1200px;
+          width: 100%;
           margin: 0 auto;
-          padding: 2rem 1rem;
+          padding: 2rem 5%;
           position: relative;
           z-index: 10;
         }
@@ -197,22 +207,21 @@ export default function Signup() {
         }
 
         .logo {
-          font-size: clamp(2rem, 5vw, 3rem);
+          font-size: clamp(2.5rem, 5vw, 3.5rem);
           font-weight: 700;
-          color: white;
+          color: var(--text-primary);
           margin-bottom: 1rem;
-          text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .subtitle {
-          font-size: clamp(1.1rem, 3vw, 1.3rem);
-          color: rgba(255,255,255,0.9);
+          font-size: clamp(1.3rem, 3vw, 1.6rem);
+          color: var(--text-secondary);
           margin-bottom: 0.5rem;
         }
 
         .grade-info {
-          font-size: clamp(1rem, 2.5vw, 1.1rem);
-          color: rgba(255,255,255,0.8);
+          font-size: clamp(1.2rem, 2.5vw, 1.4rem);
+          color: var(--text-secondary);
           margin-bottom: 2rem;
         }
 
@@ -237,66 +246,67 @@ export default function Signup() {
 
         /* User type cards with glass morphism */
         .user-card {
-          background: rgba(255, 255, 255, 0.12);
-          backdrop-filter: blur(20px);
-          border: 2px solid rgba(255, 255, 255, 0.15);
-          border-radius: 24px;
-          padding: 2.5rem;
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          border-radius: 25px;
+          padding: 3rem;
           cursor: pointer;
           transition: all 0.4s ease;
           position: relative;
           overflow: hidden;
           min-height: 320px;
+          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
         }
 
         /* Card hover effects */
         .user-card:hover {
           transform: translateY(-8px);
-          background: rgba(255, 255, 255, 0.18);
-          box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-          border-color: rgba(255, 255, 255, 0.25);
+          background: rgba(255, 255, 255, 0.9);
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+          border-color: rgba(0, 0, 0, 0.12);
         }
 
         /* Selected card state */
         .user-card.selected {
-          background: rgba(255, 255, 255, 0.2);
-          border-color: rgba(255, 255, 255, 0.4);
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.95);
+          border-color: var(--accent-primary);
+          box-shadow: 0 8px 32px rgba(90, 103, 216, 0.2);
           transform: translateY(-5px);
         }
 
         /* Student/Parent card specific styling */
         .student-parent-card {
-          background: rgba(52, 211, 153, 0.12);
-          border: 2px solid rgba(52, 211, 153, 0.25);
+          background: rgba(255, 255, 255, 0.85);
+          border: 1px solid rgba(0, 0, 0, 0.08);
         }
 
         .student-parent-card:hover {
-          background: rgba(52, 211, 153, 0.18);
-          border-color: rgba(52, 211, 153, 0.4);
+          background: rgba(255, 255, 255, 0.9);
+          border-color: rgba(52, 211, 153, 0.3);
         }
 
         .student-parent-card.selected {
-          background: rgba(52, 211, 153, 0.25);
-          border-color: rgba(52, 211, 153, 0.6);
-          box-shadow: 0 0 40px rgba(52, 211, 153, 0.3);
+          background: rgba(255, 255, 255, 0.95);
+          border-color: rgba(52, 211, 153, 0.5);
+          box-shadow: 0 8px 32px rgba(52, 211, 153, 0.15);
         }
 
         /* Teacher card specific styling */
         .teacher-card {
-          background: rgba(147, 51, 234, 0.12);
-          border: 2px solid rgba(147, 51, 234, 0.25);
+          background: rgba(255, 255, 255, 0.85);
+          border: 1px solid rgba(0, 0, 0, 0.08);
         }
 
         .teacher-card:hover {
-          background: rgba(147, 51, 234, 0.18);
-          border-color: rgba(147, 51, 234, 0.4);
+          background: rgba(255, 255, 255, 0.9);
+          border-color: rgba(147, 51, 234, 0.3);
         }
 
         .teacher-card.selected {
-          background: rgba(147, 51, 234, 0.25);
-          border-color: rgba(147, 51, 234, 0.6);
-          box-shadow: 0 0 40px rgba(147, 51, 234, 0.3);
+          background: rgba(255, 255, 255, 0.95);
+          border-color: rgba(147, 51, 234, 0.5);
+          box-shadow: 0 8px 32px rgba(147, 51, 234, 0.15);
         }
 
         /* Card header section */
@@ -308,24 +318,26 @@ export default function Signup() {
 
         /* Card icon container */
         .card-icon {
-          width: 60px;
-          height: 60px;
-          border-radius: 16px;
+          width: 80px;
+          height: 80px;
+          border-radius: 20px;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-right: 1rem;
-          font-size: 1.8rem;
+          margin-right: 1.5rem;
+          font-size: 2.5rem;
           position: relative;
         }
 
         /* Icon background colors */
         .student-parent-icon {
-          background: rgba(52, 211, 153, 0.2);
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+          box-shadow: 0 4px 20px rgba(90, 103, 216, 0.3);
         }
 
         .teacher-icon {
-          background: rgba(147, 51, 234, 0.2);
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+          box-shadow: 0 4px 20px rgba(90, 103, 216, 0.3);
         }
 
         /* Glow icon base styles */
@@ -353,21 +365,21 @@ export default function Signup() {
 
         /* Card text content */
         .card-title {
-          font-size: clamp(1.8rem, 4vw, 2.2rem);
+          font-size: clamp(2.5rem, 4vw, 3rem);
           font-weight: 700;
-          color: white;
+          color: var(--text-primary) !important;
           margin-bottom: 0.5rem;
         }
 
         .card-subtitle {
-          font-size: clamp(1.2rem, 2.5vw, 1.4rem);
-          color: rgba(255,255,255,0.9);
+          font-size: clamp(1.4rem, 2.5vw, 1.6rem);
+          color: var(--text-secondary) !important;
         }
 
         .card-description {
-          font-size: clamp(1.1rem, 2.5vw, 1.3rem);
-          color: white;
-          line-height: 1.6;
+          font-size: clamp(1.3rem, 2.5vw, 1.5rem);
+          color: var(--text-primary) !important;
+          line-height: 1.7;
           margin-bottom: 1.5rem;
         }
 
@@ -380,13 +392,13 @@ export default function Signup() {
         }
 
         .user-type-badge {
-          background: rgba(255,255,255,0.15);
+          background: rgba(90, 103, 216, 0.1);
           padding: 1rem 2rem;
           border-radius: 12px;
-          font-size: clamp(1.1rem, 2vw, 1.3rem);
+          font-size: clamp(1.2rem, 2vw, 1.4rem);
           font-weight: 600;
-          color: white;
-          border: 1px solid rgba(255,255,255,0.2);
+          color: var(--accent-primary);
+          border: 1px solid rgba(90, 103, 216, 0.2);
           flex: 1;
           text-align: center;
           min-width: 120px;
@@ -394,17 +406,17 @@ export default function Signup() {
 
         /* Info box for additional information */
         .info-box {
-          background: rgba(255,255,255,0.1);
-          border: 1px solid rgba(255,255,255,0.2);
+          background: rgba(0, 0, 0, 0.03);
+          border: 1px solid rgba(0, 0, 0, 0.08);
           border-radius: 12px;
-          padding: 1rem;
+          padding: 1.5rem;
           margin: 1rem 0;
         }
 
         .info-text {
-          color: white;
-          font-size: clamp(1rem, 2vw, 1.2rem);
-          line-height: 1.6;
+          color: var(--text-secondary);
+          font-size: clamp(1.2rem, 2vw, 1.4rem);
+          line-height: 1.7;
         }
 
         /* Mobile optimizations */
