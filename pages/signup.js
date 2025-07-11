@@ -198,13 +198,33 @@ export default function Signup() {
           font-size: 3.5rem;
           position: relative;
           background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-          box-shadow: 0 4px 20px rgba(90, 103, 216, 0.3);
+          box-shadow: 0 4px 20px rgba(90, 103, 216, 0.3),
+                      inset 0 -3px 10px rgba(0, 0, 0, 0.2),
+                      inset 0 3px 10px rgba(255, 255, 255, 0.2);
+          overflow: hidden;
+        }
+        
+        /* Add glossy effect overlay */
+        .card-icon::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 50%;
+          background: linear-gradient(to bottom, 
+                      rgba(255, 255, 255, 0.15) 0%,
+                      rgba(255, 255, 255, 0.05) 50%,
+                      transparent 100%);
+          border-radius: 30px 30px 0 0;
         }
 
         /* SVG icon styling */
         .grad-cap-icon,
         .family-icon {
           fill: white;
+          position: relative;
+          z-index: 1;
         }
         
         /* Glow icon base styles */
