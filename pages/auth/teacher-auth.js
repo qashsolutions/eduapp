@@ -77,6 +77,7 @@ export default function TeacherAuth() {
             role: 'teacher',
             first_name: formData.firstName,
             account_type: 'teacher',
+            school: formData.school,
             subscription_status: 'teacher',
             trial_started_at: new Date().toISOString(),
             trial_expires_at: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString() // 15 days trial
@@ -181,7 +182,7 @@ export default function TeacherAuth() {
               {isLogin ? 'Teacher Login' : 'Teacher Registration'}
             </h1>
             <p className="form-subtitle">
-              {isLogin ? 'Welcome back, educator!' : 'Join our educator community'}
+              {isLogin ? '' : 'Join our educator community'}
             </p>
           </div>
 
@@ -270,14 +271,14 @@ export default function TeacherAuth() {
             {!isLogin && (
               <div className="form-group">
                 <label className="form-label" htmlFor="school">
-                  School/Institution
+                  School/Institution (or type 'Freelancer')
                 </label>
                 <input
                   type="text"
                   id="school"
                   name="school"
                   className="form-input"
-                  placeholder="Enter your school name"
+                  placeholder="Enter school name or 'Freelancer'"
                   value={formData.school}
                   onChange={handleChange}
                   disabled={loading}
@@ -285,15 +286,7 @@ export default function TeacherAuth() {
               </div>
             )}
 
-            {/* Information box */}
-            <div className="info-box">
-              <p className="info-text">
-                📚 {isLogin 
-                  ? 'Access your teacher dashboard to track student progress and manage learning paths.' 
-                  : 'As an educator, you\'ll have access to student progress tracking, curriculum alignment tools, and teaching resources.'
-                }
-              </p>
-            </div>
+            {/* Remove info box per requirements */}
 
             {/* Submit button */}
             <button 
@@ -323,10 +316,6 @@ export default function TeacherAuth() {
             </p>
           </div>
 
-          {/* Student/Parent redirect */}
-          <div className="redirect-section">
-            <p>Are you a student or parent? <Link href="/auth/student-signup" className="redirect-link">Click here</Link></p>
-          </div>
         </div>
       </div>
 
@@ -547,21 +536,6 @@ export default function TeacherAuth() {
           cursor: not-allowed;
         }
 
-        /* Info box styling */
-        .info-box {
-          background: rgba(147, 51, 234, 0.1);
-          border: 1px solid rgba(147, 51, 234, 0.3);
-          border-radius: 12px;
-          padding: 1rem;
-          margin: 1.5rem 0;
-        }
-
-        .info-text {
-          color: white;
-          font-size: 1rem;
-          line-height: 1.6;
-          margin: 0;
-        }
 
         /* Button styling */
         .btn {
@@ -597,7 +571,7 @@ export default function TeacherAuth() {
           text-align: center;
           margin-top: 2rem;
           color: rgba(255,255,255,0.8);
-          font-size: 1rem;
+          font-size: 1.1rem;
         }
 
         .toggle-link {
@@ -606,7 +580,8 @@ export default function TeacherAuth() {
           color: #c084fc;
           text-decoration: underline;
           cursor: pointer;
-          font-size: 1rem;
+          font-size: 1.1rem;
+          font-weight: 600;
           transition: color 0.3s ease;
         }
 
@@ -614,26 +589,6 @@ export default function TeacherAuth() {
           color: #e9d5ff;
         }
 
-        /* Redirect section */
-        .redirect-section {
-          text-align: center;
-          margin-top: 1.5rem;
-          padding-top: 1.5rem;
-          border-top: 1px solid rgba(255,255,255,0.1);
-          color: rgba(255,255,255,0.8);
-          font-size: 1rem;
-        }
-
-        .redirect-link {
-          color: #34d399;
-          text-decoration: none;
-          transition: color 0.3s ease;
-        }
-
-        .redirect-link:hover {
-          color: #6ee7b7;
-          text-decoration: underline;
-        }
 
         /* Mobile optimizations */
         @media (max-width: 500px) {
