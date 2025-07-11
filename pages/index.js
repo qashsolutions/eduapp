@@ -146,7 +146,7 @@ export default function Landing() {
         />
       </Head>
       
-      <div className="page-wrapper" data-time={timeOfDay} data-season={season}>
+      <div className="page-wrapper">
         <Header />
         
         <main className="landing-container">
@@ -159,35 +159,42 @@ export default function Landing() {
               {/* Hero Section */}
               <section className="hero-section">
                 <div className="content-grid">
-                  <div className="hero-content">
+                  <div className="content-section glass">
                     <h1 className="hero-title">Personalized Learning Revolution</h1>
                     <div className="hero-text">
                       {sections.intro.map((paragraph, index) => (
                         <p key={index} className="hero-paragraph">{paragraph}</p>
                       ))}
                     </div>
-                    
                   </div>
                   
                   <div className="feature-cards-container">
                     <div className="feature-card glass">
-                      <div className="card-icon">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor" opacity="0.8"/>
-                        </svg>
+                      <div className="feature-content">
+                        <div className="card-icon">
+                          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z" fill="currentColor"/>
+                          </svg>
+                        </div>
+                        <div className="feature-text">
+                          <h3>Socratic Method</h3>
+                          <p>We don't lecture at students - we guide them to discover answers themselves, building confidence and critical thinking.</p>
+                        </div>
                       </div>
-                      <h3>Adaptive Content</h3>
-                      <p>77 million unique combinations ensure your child never sees the same content twice. Every session feels fresh and purposeful.</p>
                     </div>
                     
                     <div className="feature-card glass">
-                      <div className="card-icon">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 11H7V13H9V11ZM13 11H11V13H13V11ZM17 11H15V13H17V11ZM19 4H18V2H16V4H8V2H6V4H5C3.89 4 3.01 4.9 3.01 6L3 20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 19 4ZM19 20H5V9H19V20Z" fill="currentColor" opacity="0.8"/>
-                        </svg>
+                      <div className="feature-content">
+                        <div className="card-icon">
+                          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7V10C2 16 6 20.5 12 22C18 20.5 22 16 22 10V7L12 2M12 4.14L20 8.35V10C20 15.26 16.67 19.1 12 20C7.33 19.1 4 15.26 4 10V8.35L12 4.14Z" fill="currentColor"/>
+                          </svg>
+                        </div>
+                        <div className="feature-text">
+                          <h3>Adaptive Content</h3>
+                          <p>77 million unique combinations ensure your child never sees the same content twice. Every session feels fresh and purposeful.</p>
+                        </div>
                       </div>
-                      <h3>Socratic Method</h3>
-                      <p>We don't lecture at students - we guide them to discover answers themselves, building confidence and critical thinking.</p>
                     </div>
                   </div>
                 </div>
@@ -199,26 +206,49 @@ export default function Landing() {
                   <div className="problem-grid">
                     <div className="problem-cards-stack">
                       <div className="problem-card glass">
-                        <div className="card-icon">
-                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" opacity="0.8"/>
-                          </svg>
+                        <div className="feature-content">
+                          <div className="card-icon">
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z" fill="currentColor"/>
+                            </svg>
+                          </div>
+                          <div className="feature-text">
+                            <h3>The Reality Check</h3>
+                            <p>What's really happening in today's classrooms...and why it's not working.</p>
+                          </div>
                         </div>
-                        <h3>The Reality Check</h3>
-                        <p>What's really happening in today's classrooms - and why it's not working.</p>
                       </div>
                       
                       <div className="problem-card glass">
-                        <div className="card-icon">
-                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor" opacity="0.8"/>
-                          </svg>
+                        <div className="feature-content">
+                          <div className="card-icon">
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12,3L1,9L12,15L21,9V16H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z" fill="currentColor"/>
+                            </svg>
+                          </div>
+                          <div className="feature-text">
+                            <h3>Learning tailored to your mood & interests</h3>
+                            <p>Personalized education that adapts to how you feel and what excites you.</p>
+                          </div>
                         </div>
-                        <h3>Learning tailored to your mood & interests</h3>
-                        <p>Personalized education that adapts to how you feel and what excites you.</p>
+                      </div>
+                      
+                      <div className="problem-card glass">
+                        <div className="feature-content">
+                          <div className="card-icon">
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12 2L2 7V10C2 16 6 20.5 12 22C18 20.5 22 16 22 10V7L12 2M12 4.14L20 8.35V10C20 15.26 16.67 19.1 12 20C7.33 19.1 4 15.26 4 10V8.35L12 4.14Z" fill="currentColor"/>
+                            </svg>
+                          </div>
+                          <div className="feature-text">
+                            <h3>Adaptive Content</h3>
+                            <p>77 million unique combinations ensure your child never sees the same content twice. Every session feels fresh and purposeful.</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="section-content glass">
+                    <div className="content-section glass">
+                      <h2 className="section-title">Real Results for Real Families</h2>
                       {sections.problem.map((paragraph, index) => (
                         <p key={index} className="content-paragraph">{paragraph}</p>
                       ))}
@@ -227,72 +257,65 @@ export default function Landing() {
                 </div>
               </section>
 
-              {/* Solution Section */}
-              <section className="solution-section">
-                <div className="content-grid reverse">
-                  <div className="feature-cards-container">
-                    <div className="feature-card glass">
-                      <div className="card-icon">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M19 3H5C3.89 3 3 3.89 3 5V19C3 20.1 3.89 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.89 20.1 3 19 3ZM19 19H5V5H19V19ZM12 12C10.34 12 9 13.34 9 15S10.34 18 12 18S15 16.66 15 15S13.66 12 12 12ZM12 10C13.66 10 15 8.66 15 7S13.66 4 12 4S9 5.34 9 7S10.34 10 12 10Z" fill="currentColor" opacity="0.8"/>
-                        </svg>
-                      </div>
-                      <h3>Parent Dashboard</h3>
-                      <p>Finally get real insights into what your child is learning. Track progress, identify strengths, and spot areas needing support.</p>
-                    </div>
-                    
-                    <div className="feature-card glass">
-                      <div className="card-icon">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22S22 17.52 22 12S17.52 2 12 2ZM13 17H11V11H13V17ZM13 9H11V7H13V9Z" fill="currentColor" opacity="0.8"/>
-                        </svg>
-                      </div>
-                      <h3>Unlimited Growth</h3>
-                      <p>No time limits, no content restrictions. Let your child explore and learn at their own pace, as much as they want.</p>
-                    </div>
-                  </div>
-                  
-                  <div className="solution-content">
-                    <h2 className="section-title">Real Results for Real Families</h2>
-                    <div className="solution-text">
-                      {sections.solution.map((paragraph, index) => (
-                        <p key={index} className="content-paragraph">{paragraph}</p>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </section>
+              {/* Solution Section - this section has been merged with benefits */}
 
               {/* Benefits Section */}
               <section className="benefits-section">
                 <div className="content-wrapper">
-                  <h2 className="section-title">Built by Educators, for Families</h2>
                   <div className="benefits-grid">
-                    <div className="benefit-card glass">
-                      <div className="card-icon">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 2L2 7L12 12L22 7L12 2ZM2 17L12 22L22 17V7L12 12L2 7V17Z" fill="currentColor" opacity="0.8"/>
-                        </svg>
+                    <div className="content-section glass">
+                      <h2 className="section-title">Built by Educators, for Families</h2>
+                      <div className="solution-text">
+                        {sections.solution.map((paragraph, index) => (
+                          <p key={index} className="content-paragraph">{paragraph}</p>
+                        ))}
                       </div>
-                      <h3>20+ Years Teaching</h3>
-                      <p>Built with deep understanding of how students actually learn, not how we think they should learn.</p>
+                      <div className="benefits-content" style={{ marginTop: '2rem' }}>
+                        {sections.benefits.map((paragraph, index) => (
+                          <p key={index} className="content-paragraph">{paragraph}</p>
+                        ))}
+                      </div>
                     </div>
                     
-                    <div className="benefits-content">
-                      {sections.benefits.map((paragraph, index) => (
-                        <p key={index} className="content-paragraph">{paragraph}</p>
-                      ))}
+                    <div className="feature-cards-container">
+                      <div className="feature-card glass">
+                        <div className="feature-content">
+                          <div className="card-icon">
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M16,4C18.21,4 20,5.79 20,8C20,10.21 18.21,12 16,12C13.79,12 12,10.21 12,8C12,5.79 13.79,4 16,4M16,14C18.67,14 24,15.33 24,18V20H8V18C8,15.33 13.33,14 16,14M8,4C10.21,4 12,5.79 12,8C12,10.21 10.21,12 8,12C5.79,12 4,10.21 4,8C4,5.79 5.79,4 8,4M8,14C10.67,14 16,15.33 16,18V20H0V18C0,15.33 5.33,14 8,14Z" fill="currentColor"/>
+                            </svg>
+                          </div>
+                          <div className="feature-text">
+                            <h3>Parent Dashboard</h3>
+                            <p>Finally get real insights into what your child is learning, track progress, identify strengths, and spot areas needing support.</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="feature-card glass">
+                        <div className="feature-content">
+                          <div className="card-icon">
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M16,6L18.29,8.29L13.41,13.17L9.41,9.17L2,16.59L3.41,18L9.41,12L13.41,16L19.71,9.71L22,12V6H16Z" fill="currentColor"/>
+                            </svg>
+                          </div>
+                          <div className="feature-text">
+                            <h3>Unlimited Growth</h3>
+                            <p>No time limits, no content restrictions. Let your child explore and learn at their own pace, as much as they want.</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   
                   <div className="cta-container">
                     <button 
-                      className="cta-button glass"
+                      className="cta-button"
                       onClick={() => router.push('/signup')}
                     >
-                      Start Learning Free
+                      Start Learning
                     </button>
-                    <p className="cta-subtitle">All features free for two weeks • $8/month or $70*/year</p>
+                    <p className="cta-subtitle">All features at $1 for first two weeks • $8/month or $70*/year</p>
                   </div>
                 </div>
               </section>
@@ -305,75 +328,57 @@ export default function Landing() {
 
       <style jsx>{`
         :root {
-          /* Default colors */
-          --bg-primary: #1a1a2e;
-          --bg-secondary: #2d2d4e;
-          --accent-primary: #00ff88;
-          --accent-secondary: #0088ff;
-          --text-primary: #ffffff;
-          --text-secondary: #e0e0e0;
-          --glass-bg: rgba(0, 0, 0, 0.3);
-          --glass-border: rgba(255, 255, 255, 0.2);
-        }
-
-        /* Time-based themes */
-        [data-time="morning"] {
-          --bg-primary: #2d3561;
-          --bg-secondary: #3d4571;
-          --accent-primary: #ffd700;
-          --accent-secondary: #ff6b6b;
-        }
-
-        [data-time="noon"] {
-          --bg-primary: #1a2332;
-          --bg-secondary: #2a3342;
-          --accent-primary: #00d4ff;
-          --accent-secondary: #0099cc;
-        }
-
-        [data-time="evening"] {
-          --bg-primary: #2d1b4e;
-          --bg-secondary: #3d2b5e;
-          --accent-primary: #ff6b9d;
-          --accent-secondary: #c44569;
-        }
-
-        [data-time="night"] {
-          --bg-primary: #1a1a2e;
-          --bg-secondary: #2d2d4e;
-          --accent-primary: #00ff88;
-          --accent-secondary: #0088ff;
-        }
-
-        /* Seasonal modifiers */
-        [data-season="spring"] {
-          --accent-primary: #88ff00;
-          --accent-secondary: #00ff88;
-        }
-
-        [data-season="summer"] {
-          --accent-primary: #ffd700;
-          --accent-secondary: #ff8c00;
-        }
-
-        [data-season="fall"] {
-          --accent-primary: #ff6b35;
-          --accent-secondary: #d35400;
-        }
-
-        [data-season="winter"] {
-          --accent-primary: #00d4ff;
-          --accent-secondary: #0066cc;
+          /* Light glassmorphic colors */
+          --bg-primary: #fafaf9;
+          --bg-secondary: #f5f4f0;
+          --accent-primary: #667eea;
+          --accent-secondary: #764ba2;
+          --text-primary: #2d3748;
+          --text-secondary: #4a5568;
+          --glass-bg: rgba(255, 255, 255, 0.3);
+          --glass-border: rgba(255, 255, 255, 0.4);
         }
 
         .page-wrapper {
           min-height: 100vh;
-          background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-          transition: background 1s ease;
+          background: 
+            radial-gradient(circle at 20% 50%, rgba(120, 119, 116, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(120, 119, 116, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, rgba(120, 119, 116, 0.02) 0%, transparent 50%),
+            linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+          position: relative;
+        }
+        
+        .page-wrapper::before {
+          content: '';
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-image: 
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 2px,
+              rgba(120, 119, 116, 0.015) 2px,
+              rgba(120, 119, 116, 0.015) 4px
+            ),
+            repeating-linear-gradient(
+              90deg,
+              transparent,
+              transparent 2px,
+              rgba(120, 119, 116, 0.01) 2px,
+              rgba(120, 119, 116, 0.01) 4px
+            );
+          pointer-events: none;
+          z-index: 1;
         }
 
         .landing-container {
           overflow-x: hidden;
+          position: relative;
+          z-index: 2;
         }
 
         .loading-container {
@@ -388,160 +393,40 @@ export default function Landing() {
           font-size: 1.2rem;
         }
 
-        /* Glass morphism effect */
+        /* Glass morphism effect - light version */
         .glass {
-          background: rgba(30, 30, 30, 0.4);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.25);
+          backdrop-filter: blur(15px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
           border-radius: 20px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
-        /* Floating shapes */
-        .floating-shapes {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-          pointer-events: none;
-          z-index: 1;
-        }
-
-        .shape {
-          position: absolute;
-          background: radial-gradient(circle at center, var(--accent-primary), var(--accent-secondary));
-          opacity: 0.5;
-          filter: blur(30px);
-          animation: float 20s infinite ease-in-out;
-          box-shadow: 0 0 120px var(--accent-primary), 0 0 60px var(--accent-secondary);
-          mix-blend-mode: screen;
-        }
-
-        .shape.circle {
-          border-radius: 50%;
-        }
-
-        .shape.square {
-          border-radius: 20%;
-        }
-
-        .shape-1 {
-          width: 300px;
-          height: 300px;
-          top: 10%;
-          left: 10%;
-          animation-duration: 25s;
-        }
-
-        .shape-2 {
-          width: 200px;
-          height: 200px;
-          top: 60%;
-          right: 15%;
-          animation-duration: 30s;
-          animation-delay: -5s;
-        }
-
-        .shape-3 {
-          width: 250px;
-          height: 250px;
-          bottom: 20%;
-          left: 30%;
-          animation-duration: 35s;
-          animation-delay: -10s;
-        }
-
-        .shape-4 {
-          width: 150px;
-          height: 150px;
-          top: 30%;
-          right: 30%;
-          animation-duration: 20s;
-          animation-delay: -15s;
-        }
-
-        .shape-5 {
-          width: 350px;
-          height: 350px;
-          bottom: 10%;
-          right: 5%;
-          animation-duration: 40s;
-          animation-delay: -20s;
-        }
-
-        @keyframes float {
-          0%, 100% {
-            transform: translate(0, 0) rotate(0deg);
-          }
-          33% {
-            transform: translate(30px, -30px) rotate(120deg);
-          }
-          66% {
-            transform: translate(-20px, 20px) rotate(240deg);
-          }
-        }
-
-        /* Interactive particles */
-        .particles-container {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-          pointer-events: none;
-          z-index: 1;
-        }
-
-        .particle {
-          position: absolute;
-          width: 10px;
-          height: 10px;
-          background: radial-gradient(circle, var(--accent-primary), transparent);
-          border-radius: 50%;
-          opacity: 1;
-          transition: transform 0.3s ease-out;
-          box-shadow: 0 0 20px var(--accent-primary), 0 0 40px var(--accent-primary);
-          mix-blend-mode: screen;
-          transform: translate(
-            calc(var(--mouse-x) * 0.15 * calc(var(--index) - 10) * 0.15),
-            calc(var(--mouse-y) * 0.15 * calc(var(--index) - 10) * 0.15)
-          );
-        }
-
-        .particle:nth-child(even) {
-          background: radial-gradient(circle, var(--accent-secondary), transparent);
-          width: 8px;
-          height: 8px;
-          box-shadow: 0 0 20px var(--accent-secondary), 0 0 40px var(--accent-secondary);
-        }
-
-        .particle:nth-child(3n) {
-          opacity: 0.7;
-          width: 6px;
-          height: 6px;
-        }
+        /* Removed floating shapes and particles for cleaner light design */
 
         /* Hero Section */
         .hero-section {
           padding: 80px 20px;
-          max-width: 1400px;
+          max-width: 1200px;
           margin: 0 auto;
         }
 
         .content-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 60px;
+          gap: 4rem;
           align-items: start;
         }
 
         .hero-title {
           font-size: 2.5rem;
-          font-weight: 800;
+          font-weight: 700;
           color: var(--text-primary);
-          margin-bottom: 32px;
+          margin-bottom: 2rem;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           line-height: 1.2;
         }
 
@@ -550,10 +435,10 @@ export default function Landing() {
         }
 
         .hero-paragraph {
-          font-size: 1.5rem;
-          line-height: 1.8;
-          color: #ffffff;
-          margin-bottom: 20px;
+          font-size: 1.2rem;
+          line-height: 1.7;
+          color: var(--text-secondary);
+          margin-bottom: 1.5rem;
           text-align: left;
           font-weight: 400;
         }
@@ -562,94 +447,133 @@ export default function Landing() {
         .feature-cards-container {
           display: flex;
           flex-direction: column;
-          gap: 24px;
+          gap: 1.5rem;
         }
 
         .feature-card {
-          padding: 32px;
-          transition: transform 0.3s ease;
+          padding: 2rem;
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .feature-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
         }
 
         .feature-card:hover {
-          transform: translateY(-4px);
+          transform: translateY(-3px);
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-content {
+          display: flex;
+          align-items: flex-start;
+          gap: 1.5rem;
+        }
+        
+        .feature-text {
+          flex: 1;
         }
 
         .card-icon {
-          width: 64px;
-          height: 64px;
-          background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-          border-radius: 16px;
+          width: 60px;
+          height: 60px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 15px;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 20px;
+          box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+          animation: glow 2s ease-in-out infinite alternate;
+          flex-shrink: 0;
           color: white;
+        }
+        
+        @keyframes glow {
+          from { box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4); }
+          to { box-shadow: 0 4px 30px rgba(102, 126, 234, 0.6), 0 0 40px rgba(102, 126, 234, 0.3); }
         }
 
         .feature-card h3 {
-          font-size: 1.5rem;
+          font-size: 1.3rem;
           font-weight: 700;
-          color: #ffffff;
-          margin-bottom: 12px;
+          color: var(--text-primary);
+          margin-bottom: 0.8rem;
         }
 
         .feature-card p {
-          font-size: 1.1rem;
-          line-height: 1.6;
-          color: #e0e0e0;
+          font-size: 1rem;
+          line-height: 1.5;
+          color: var(--text-secondary);
         }
 
+        /* Content Section */
+        .content-section {
+          background: rgba(255, 255, 255, 0.3);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          border-radius: 25px;
+          padding: 3rem;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
         /* Problem Section */
         .problem-section {
           padding: 80px 20px;
-          background: rgba(0, 0, 0, 0.3);
         }
 
         .content-wrapper {
-          max-width: 1400px;
+          max-width: 1200px;
           margin: 0 auto;
         }
 
         .problem-grid {
           display: grid;
-          grid-template-columns: 400px 1fr;
-          gap: 60px;
+          grid-template-columns: 1fr 1fr;
+          gap: 4rem;
           align-items: start;
         }
 
         .problem-cards-stack {
           display: flex;
           flex-direction: column;
-          gap: 24px;
+          gap: 1.5rem;
         }
 
         .problem-card {
-          padding: 32px;
+          padding: 2rem;
           height: fit-content;
         }
 
         .problem-card h3 {
-          font-size: 1.5rem;
+          font-size: 1.3rem;
           font-weight: 700;
-          color: #ffffff;
-          margin-bottom: 12px;
+          color: var(--text-primary);
+          margin-bottom: 0.8rem;
         }
 
         .problem-card p {
-          font-size: 1.1rem;
-          line-height: 1.6;
-          color: #e0e0e0;
+          font-size: 1rem;
+          line-height: 1.5;
+          color: var(--text-secondary);
         }
 
         .section-content {
-          padding: 48px;
+          padding: 3rem;
         }
 
         .content-paragraph {
-          font-size: 1.5rem;
-          line-height: 1.8;
-          color: #ffffff;
-          margin-bottom: 24px;
+          font-size: 1.2rem;
+          line-height: 1.7;
+          color: var(--text-secondary);
+          margin-bottom: 1.5rem;
         }
 
         .content-paragraph:last-child {
@@ -659,7 +583,7 @@ export default function Landing() {
         /* Solution Section */
         .solution-section {
           padding: 80px 20px;
-          max-width: 1400px;
+          max-width: 1200px;
           margin: 0 auto;
         }
 
@@ -669,9 +593,13 @@ export default function Landing() {
 
         .section-title {
           font-size: 2.5rem;
-          font-weight: 800;
-          color: #ffffff;
-          margin-bottom: 32px;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin-bottom: 2rem;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           line-height: 1.2;
         }
 
@@ -682,49 +610,57 @@ export default function Landing() {
         /* Benefits Section */
         .benefits-section {
           padding: 80px 20px;
-          background: rgba(0, 0, 0, 0.3);
         }
 
         .benefits-grid {
           display: grid;
-          grid-template-columns: 350px 1fr;
-          gap: 48px;
+          grid-template-columns: 1fr 1fr;
+          gap: 4rem;
           margin-bottom: 48px;
         }
 
         .benefit-card {
-          padding: 32px;
+          padding: 2rem;
           height: fit-content;
         }
 
         .benefits-content {
-          padding: 0 24px;
+          padding: 0;
         }
 
         /* CTA */
         .cta-container {
           text-align: center;
-          margin-top: 60px;
+          margin-top: 3rem;
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(15px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 25px;
+          padding: 3rem;
         }
 
         .cta-button {
-          padding: 20px 48px;
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: var(--text-primary);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 1rem 2.5rem;
+          border: none;
+          border-radius: 25px;
+          font-size: 1.2rem;
+          font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
-          border: 2px solid var(--accent-primary);
+          text-decoration: none;
+          display: inline-block;
+          box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
         }
 
         .cta-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 20px 40px rgba(0, 255, 136, 0.3);
-          background: rgba(0, 255, 136, 0.1);
+          transform: translateY(-3px);
+          box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
         }
 
         .cta-subtitle {
-          margin-top: 16px;
+          margin-top: 1rem;
           color: var(--text-secondary);
           font-size: 1rem;
         }
