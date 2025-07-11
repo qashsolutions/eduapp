@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
 
 /**
  * Student signup page - First step in COPPA-compliant registration
@@ -99,102 +101,71 @@ export default function StudentSignup() {
     return (
       <>
         <Head>
-          <title>Email Sent - Socratic AI Tutor</title>
+          <title>Email Sent - Socratic Learning</title>
           <meta name="description" content="Parent consent email sent successfully" />
           <meta name="robots" content="noindex, nofollow" />
         </Head>
 
-        <div className="auth-container">
-          <div className="bg-element"></div>
-          <div className="bg-element"></div>
-          <div className="bg-element"></div>
-          <div className="bg-element"></div>
-
-          <div className="form-container success-container">
-            <div className="form-header">
+        <div className="page-wrapper">
+          <Header />
+          
+          <div className="success-container">
+            <div className="success-card">
               <div className="icon-container">
-                <span className="glow-icon glow-white">📧</span>
+                <svg width="80" height="80" viewBox="0 0 24 24" className="email-icon">
+                  <path d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z"/>
+                </svg>
               </div>
-              <h1 className="form-title">Email Sent!</h1>
-              <p className="form-subtitle">Check your parent's inbox</p>
-            </div>
+              <h1 className="success-title">Email Sent!</h1>
+              <p className="success-subtitle">Check your parent's inbox</p>
 
-            <div className="info-box success-box">
-              <p className="info-text">
-                We've sent an email to <strong>{formData.parentEmail}</strong> with a secure link.
-              </p>
-              <p className="info-text" style={{ marginTop: '1rem' }}>
-                Your parent will need to:
-              </p>
-              <ul className="checklist">
-                <li>✅ Click the link in the email</li>
-                <li>✅ Confirm your account details</li>
-                <li>✅ Complete a $1 verification payment</li>
-                <li>✅ Generate your secure passcode</li>
-              </ul>
-            </div>
+              <div className="success-content">
+                <p>We've sent an email to <strong>{formData.parentEmail}</strong> with a secure link.</p>
+                <p style={{ marginTop: '1rem' }}>Your parent will need to:</p>
+                <ul className="checklist">
+                  <li>Click the link in the email</li>
+                  <li>Confirm your account details</li>
+                  <li>Complete a $1 verification payment</li>
+                  <li>Generate your secure passcode</li>
+                </ul>
+              </div>
 
-            <Link href="/auth/student-login" className="btn btn-primary">
-              I got my passcode! →
-            </Link>
+              <Link href="/auth/student-login" className="success-btn">
+                I got my passcode! →
+              </Link>
 
-            <div className="redirect-section">
-              <p>
-                Didn't receive the email? 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmailSent(false);
-                    setFormData({ studentName: '', grade: '', parentEmail: '' });
-                  }}
-                  className="resend-link"
-                >
-                  Try again
-                </button>
-              </p>
+              <div className="success-footer">
+                <p>
+                  Didn't receive the email? 
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmailSent(false);
+                      setFormData({ studentName: '', grade: '', parentEmail: '' });
+                    }}
+                    className="resend-link"
+                  >
+                    Try again
+                  </button>
+                </p>
+              </div>
             </div>
           </div>
+          
+          <Footer />
         </div>
 
         <style jsx>{`
-          ${getStyles()}
-          
-          /* Success-specific styles */
-          .success-container {
-            text-align: center;
+          ${getSuccessStyles()}
+        `}</style>
+        
+        <style jsx global>{`
+          body {
+            background: linear-gradient(135deg, #f9f7f2 0%, #f0ebe0 100%) !important;
+            color: #2d3748 !important;
           }
-
-          .success-box {
-            background: rgba(52, 211, 153, 0.1);
-            border-color: rgba(52, 211, 153, 0.3);
-          }
-
-          .checklist {
-            list-style: none;
-            padding: 0;
-            margin: 1rem 0 0 0;
-            text-align: left;
-          }
-
-          .checklist li {
-            padding: 0.5rem 0;
-            color: white;
-            font-size: 1rem;
-          }
-
-          .resend-link {
-            background: none;
-            border: none;
-            color: #34d399;
-            text-decoration: underline;
-            cursor: pointer;
-            font-size: 1rem;
-            margin-left: 0.5rem;
-            transition: color 0.3s ease;
-          }
-
-          .resend-link:hover {
-            color: #6ee7b7;
+          body::before {
+            display: none !important;
           }
         `}</style>
       </>
@@ -206,143 +177,177 @@ export default function StudentSignup() {
     <>
       <Head>
         {/* SEO and bot-friendly meta tags */}
-        <title>Student Registration - Socratic AI Tutor</title>
-        <meta name="description" content="Start your personalized learning journey with Socratic AI Tutor. COPPA-compliant registration with parent approval." />
+        <title>Student Registration - Socratic Learning</title>
+        <meta name="description" content="Start your personalized learning journey with Socratic Learning. COPPA-compliant registration with parent approval." />
         <meta name="keywords" content="student registration, adaptive learning, personalized education, COPPA compliant" />
-        <meta property="og:title" content="Student Registration - Socratic AI Tutor" />
+        <meta property="og:title" content="Student Registration - Socratic Learning" />
         <meta property="og:description" content="Begin your adaptive learning journey" />
         <meta name="robots" content="index, follow" />
       </Head>
 
-      <div className="auth-container">
-        {/* Background elements */}
-        <div className="bg-element"></div>
-        <div className="bg-element"></div>
-        <div className="bg-element"></div>
-        <div className="bg-element"></div>
-
-        <div className="form-container">
-          {/* Back navigation */}
-          <Link href="/signup" className="back-btn">
-            ← Back to Selection
-          </Link>
-
-          {/* Form header with icon */}
-          <div className="form-header">
+      <div className="page-wrapper">
+        <Header />
+        
+        <div className="auth-container">
+          {/* Left Side - Features */}
+          <div className="left-side">
             <div className="icon-container">
-              <span className="glow-icon glow-progress">🎯</span>
+              <svg width="120" height="120" viewBox="0 0 24 24" className="family-icon">
+                <path d="M16 4C17.11 4 18 4.89 18 6C18 7.11 17.11 8 16 8C14.89 8 14 7.11 14 6C14 4.89 14.89 4 16 4M8 4C9.11 4 10 4.89 10 6C10 7.11 9.11 8 8 8C6.89 8 6 7.11 6 6C6 4.89 6.89 4 8 4M16 10C18.67 10 24 11.33 24 14V16H16V14C16 13.5 15.89 13 15.71 12.5C14.53 11.5 12.92 10.76 11.25 10.36C12.5 10.13 14.03 10 16 10M8 10C10.67 10 16 11.33 16 14V16H0V14C0 11.33 5.33 10 8 10M8 18C6.89 18 6 18.89 6 20C6 21.11 6.89 22 8 22C9.11 22 10 21.11 10 20C10 18.89 9.11 18 8 18M16 18C14.89 18 14 18.89 14 20C14 21.11 14.89 22 16 22C17.11 22 18 21.11 18 20C18 18.89 17.11 18 16 18Z"/>
+              </svg>
             </div>
-            <h1 className="form-title">Student Registration</h1>
-            <p className="form-subtitle">Let's get you started! 🚀</p>
-          </div>
-
-          {/* Error display */}
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
-
-          {/* Registration form */}
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label className="form-label" htmlFor="studentName">
-                What's your first name?
-              </label>
-              <input
-                type="text"
-                id="studentName"
-                name="studentName"
-                className="form-input"
-                placeholder="Enter your first name"
-                value={formData.studentName}
-                onChange={handleChange}
-                disabled={loading}
-                autoComplete="given-name"
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label" htmlFor="grade">
-                What grade are you in?
-              </label>
-              <div className="select-wrapper">
-                <select
-                  id="grade"
-                  name="grade"
-                  className="form-select"
-                  value={formData.grade}
-                  onChange={handleChange}
-                  disabled={loading}
-                >
-                  <option value="">Select your grade</option>
-                  {gradeOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <div className="select-arrow">▼</div>
+            
+            <div className="features-list">
+              <div className="feature-item">
+                <span className="feature-bullet">•</span>
+                <span className="feature-text">Socratic methods of teaching</span>
+              </div>
+              <div className="feature-item">
+                <span className="feature-bullet">•</span>
+                <span className="feature-text">Choose your mood to get appropriate content</span>
+              </div>
+              <div className="feature-item">
+                <span className="feature-bullet">•</span>
+                <span className="feature-text">One flat fee for math and english</span>
+              </div>
+              <div className="feature-item">
+                <span className="feature-bullet">•</span>
+                <span className="feature-text">75 Million + combination of questions - will likely never see the same question again</span>
+              </div>
+              <div className="feature-item">
+                <span className="feature-bullet">•</span>
+                <span className="feature-text">Dynamic progression from simple to complex questions</span>
               </div>
             </div>
+            
+            <div className="coppa-notice">
+              <p>We'll send your parent a special link to approve your account and set up your learning profile safely.</p>
+              <p>🔒 Your information is kept secure and private. We follow COPPA guidelines to protect young learners.</p>
+            </div>
+          </div>
+          
+          {/* Right Side - Form */}
+          <div className="right-side">
+            <h1 className="auth-title">Student Registration</h1>
+            <p className="auth-subtitle">Let's get you started!</p>
+            
+            {/* Error display */}
+            {error && (
+              <div className="error-message">
+                {error}
+              </div>
+            )}
+            
+            {/* Registration form */}
+            <form onSubmit={handleSubmit} className="auth-form">
+              <div className="form-group">
+                <label className="form-label" htmlFor="studentName">
+                  What's your first name?
+                </label>
+                <input
+                  type="text"
+                  id="studentName"
+                  name="studentName"
+                  className="form-input"
+                  placeholder="Enter your first name"
+                  value={formData.studentName}
+                  onChange={handleChange}
+                  disabled={loading}
+                  autoComplete="given-name"
+                />
+              </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="parentEmail">
-                Your parent's email address
-              </label>
-              <input
-                type="email"
-                id="parentEmail"
-                name="parentEmail"
-                className="form-input"
-                placeholder="parent@example.com"
-                value={formData.parentEmail}
-                onChange={handleChange}
+              <div className="form-group">
+                <label className="form-label" htmlFor="grade">
+                  What grade are you in?
+                </label>
+                <div className="select-wrapper">
+                  <select
+                    id="grade"
+                    name="grade"
+                    className="form-select"
+                    value={formData.grade}
+                    onChange={handleChange}
+                    disabled={loading}
+                  >
+                    <option value="">Select your grade</option>
+                    {gradeOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="select-arrow">▼</div>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" htmlFor="parentEmail">
+                  Your parent's email address
+                </label>
+                <input
+                  type="email"
+                  id="parentEmail"
+                  name="parentEmail"
+                  className="form-input"
+                  placeholder="parent@example.com"
+                  value={formData.parentEmail}
+                  onChange={handleChange}
+                  disabled={loading}
+                  autoComplete="email"
+                />
+              </div>
+
+              {/* Submit button */}
+              <button 
+                type="submit" 
+                className="submit-btn"
                 disabled={loading}
-                autoComplete="email"
-              />
-            </div>
-
-            {/* Information box */}
-            <div className="info-box">
-              <p className="info-text">
-                📧 We'll send your parent a special link to approve your account and set up your learning profile safely.
-              </p>
-              <p className="info-text" style={{ marginTop: '0.5rem' }}>
-                🔒 Your information is kept secure and private. We follow COPPA guidelines to protect young learners.
-              </p>
-            </div>
-
-            {/* Submit button */}
-            <button 
-              type="submit" 
-              className="btn btn-primary"
-              disabled={loading}
-            >
-              {loading ? 'Sending email...' : 'Send Parent Approval Email'}
-            </button>
-          </form>
-
-          {/* Alternative options */}
-          <div className="redirect-section">
-            <p>
-              Already have a passcode? 
-              <Link href="/auth/student-login" className="redirect-link">
-                Login here
-              </Link>
-            </p>
-            <p style={{ marginTop: '0.5rem' }}>
-              Are you a teacher? 
-              <Link href="/auth/teacher-auth" className="redirect-link teacher-link">
-                Teacher portal
-              </Link>
-            </p>
+              >
+                {loading ? 'Sending email...' : 'Send Parent Approval Email'}
+              </button>
+              
+              {/* Alternative options */}
+              <div className="form-footer">
+                <p>
+                  Already have a passcode? 
+                  <Link href="/auth/student-login" className="link">
+                    Login here
+                  </Link>
+                </p>
+                <p>
+                  Are you a teacher? 
+                  <Link href="/auth/teacher-auth" className="link">
+                    Teacher portal
+                  </Link>
+                </p>
+              </div>
+            </form>
           </div>
         </div>
+        
+        <Footer />
       </div>
 
       <style jsx>{`
         ${getStyles()}
+      `}</style>
+      
+      <style jsx global>{`
+        /* Override global dark theme for this page */
+        body {
+          background: linear-gradient(135deg, #f9f7f2 0%, #f0ebe0 100%) !important;
+          color: #2d3748 !important;
+        }
+        
+        body::before {
+          display: none !important;
+        }
+        
+        /* Ensure all text uses dark colors */
+        * {
+          color: inherit;
+        }
       `}</style>
     </>
   );
@@ -350,361 +355,478 @@ export default function StudentSignup() {
 
 /**
  * Get common styles for the component
- * Extracted to function to share between success and form views
+ * Matching teacher-auth sandy white theme
  */
 function getStyles() {
   return `
-    /* Base container styles */
-    .auth-container {
-      min-height: calc(100vh - 140px); /* Account for header and footer */
-      background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+    /* Page wrapper to match teacher-auth sandy white theme */
+    .page-wrapper {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f9f7f2 0%, #f0ebe0 100%);
+      position: relative;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 1rem;
-      position: relative;
-      overflow: hidden;
+      flex-direction: column;
+      color: #2d3748;
     }
-
-    /* Floating background elements */
-    .bg-element {
-      position: absolute;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 70%, transparent 100%);
-      animation: float 8s ease-in-out infinite;
-      pointer-events: none;
-    }
-
-    .bg-element:nth-child(1) {
-      width: 300px;
-      height: 300px;
-      top: 10%;
-      left: -5%;
-      animation-delay: 0s;
-    }
-
-    .bg-element:nth-child(2) {
-      width: 200px;
-      height: 200px;
-      top: 60%;
-      right: -5%;
-      animation-delay: 2s;
-    }
-
-    .bg-element:nth-child(3) {
-      width: 150px;
-      height: 150px;
-      top: 30%;
-      right: 20%;
-      animation-delay: 4s;
-    }
-
-    .bg-element:nth-child(4) {
-      width: 250px;
-      height: 250px;
-      bottom: 10%;
-      left: 15%;
-      animation-delay: 1s;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-20px) rotate(180deg); }
-    }
-
-    /* Form container with glass morphism */
-    .form-container {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 24px;
-      padding: 2.5rem;
+    
+    /* Main auth container with 2-column layout */
+    .auth-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      margin: 1rem 0;
+      padding: 0 5%;
       width: 100%;
-      max-width: 500px;
-      position: relative;
-      z-index: 10;
-      animation: fadeInUp 0.5s ease;
+      min-height: calc(100vh - 250px);
     }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Back button styling */
-    .back-btn {
-      display: inline-flex;
+    
+    /* Left side - Features */
+    .left-side {
+      background: white;
+      padding: 3rem 4rem;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      background: rgba(255,255,255,0.1);
-      color: white;
-      padding: 0.75rem 1.5rem;
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 12px;
-      text-decoration: none;
-      margin-bottom: 1.5rem;
-      transition: all 0.3s ease;
-      font-size: 1rem;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      min-height: 550px;
     }
-
-    .back-btn:hover {
-      background: rgba(255,255,255,0.2);
-      transform: translateX(-5px);
+    
+    /* Right side - Form */
+    .right-side {
+      background: white;
+      padding: 3rem 4rem;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      min-height: 550px;
     }
-
-    /* Form header section */
-    .form-header {
-      text-align: center;
+    
+    /* Icon container */
+    .icon-container {
+      margin-bottom: 2.5rem;
+    }
+    
+    .family-icon {
+      fill: #5a67d8;
+    }
+    
+    /* Features list */
+    .features-list {
+      flex: 1;
+      width: 100%;
       margin-bottom: 2rem;
     }
-
-    .icon-container {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 80px;
-      height: 80px;
-      background: rgba(52, 211, 153, 0.2);
-      border-radius: 20px;
-      margin-bottom: 1rem;
-      font-size: 2.5rem;
+    
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      text-align: left;
     }
-
-    /* Glow effects for icons */
-    .glow-icon {
-      filter: drop-shadow(0 0 8px currentColor);
-      animation: pulse-glow 3s ease-in-out infinite;
+    
+    .feature-bullet {
+      color: #5a67d8;
+      font-size: 1.5rem;
+      margin-right: 1rem;
+      flex-shrink: 0;
     }
-
-    .glow-progress {
-      color: #8b5cf6;
-      filter: drop-shadow(0 0 12px #8b5cf6);
+    
+    .feature-text {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #4a5568;
     }
-
-    .glow-white {
-      color: white;
-      filter: drop-shadow(0 0 10px rgba(255,255,255,0.6));
+    
+    /* COPPA notice at bottom */
+    .coppa-notice {
+      width: 100%;
+      padding-top: 2rem;
+      border-top: 1px solid #e2e8f0;
+      margin-top: auto;
     }
-
-    @keyframes pulse-glow {
-      0%, 100% { filter: drop-shadow(0 0 8px currentColor); }
-      50% { filter: drop-shadow(0 0 16px currentColor); }
+    
+    .coppa-notice p {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: #718096;
+      font-style: italic;
+      margin-bottom: 0.75rem;
     }
-
-    /* Form titles */
-    .form-title {
-      font-size: 2rem;
+    
+    .coppa-notice p:last-child {
+      margin-bottom: 0;
+    }
+    
+    /* Auth form styling */
+    .auth-title {
+      font-size: 1.8rem;
       font-weight: 700;
-      color: white;
+      color: #2d3748;
+      text-align: center;
       margin-bottom: 0.5rem;
     }
-
-    .form-subtitle {
+    
+    .auth-subtitle {
+      text-align: center;
       font-size: 1.2rem;
-      color: rgba(255,255,255,0.8);
+      color: #4a5568;
+      margin-bottom: 2rem;
     }
-
-    /* Error message styling */
+    
+    /* Error message */
     .error-message {
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid rgba(239, 68, 68, 0.5);
-      border-radius: 12px;
+      background: #fee;
+      border: 1px solid #fcc;
+      border-radius: 8px;
       padding: 1rem;
       margin-bottom: 1.5rem;
-      color: #fca5a5;
-      font-size: 1rem;
+      color: #c53030;
+      font-size: 0.95rem;
       text-align: center;
     }
-
-    /* Form group styling */
+    
+    /* Form styling */
+    .auth-form {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
     .form-group {
       margin-bottom: 1.5rem;
     }
-
+    
     .form-label {
       display: block;
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 600;
-      color: white;
+      color: #2d3748;
       margin-bottom: 0.5rem;
     }
-
-    .form-input {
+    
+    .form-input,
+    .form-select {
       width: 100%;
-      padding: 1rem 1.5rem;
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 12px;
-      background: rgba(255,255,255,0.1);
-      color: white;
+      padding: 1rem 1.25rem;
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
       font-size: 1.1rem;
-      backdrop-filter: blur(10px);
+      background: white;
+      color: #2d3748;
       transition: all 0.3s ease;
     }
-
-    .form-input::placeholder {
-      color: rgba(255,255,255,0.6);
-    }
-
-    .form-input:focus {
+    
+    .form-input:focus,
+    .form-select:focus {
       outline: none;
-      border-color: rgba(52, 211, 153, 0.6);
-      background: rgba(255,255,255,0.15);
-      box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.2);
+      border-color: #5a67d8;
+      box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.1);
     }
-
-    .form-input:disabled {
-      opacity: 0.6;
+    
+    .form-input::placeholder {
+      color: #a0aec0;
+    }
+    
+    .form-input:disabled,
+    .form-select:disabled {
+      background: #f7fafc;
       cursor: not-allowed;
     }
-
-    /* Select dropdown styling */
+    
+    /* Select wrapper and arrow */
     .select-wrapper {
       position: relative;
     }
-
+    
     .form-select {
-      width: 100%;
-      padding: 1rem 1.5rem;
-      padding-right: 3rem;
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 12px;
-      background: rgba(255,255,255,0.1);
-      color: white;
-      font-size: 1.1rem;
-      backdrop-filter: blur(10px);
       appearance: none;
+      padding-right: 3rem;
       cursor: pointer;
-      transition: all 0.3s ease;
     }
-
-    .form-select:focus {
-      outline: none;
-      border-color: rgba(52, 211, 153, 0.6);
-      background: rgba(255,255,255,0.15);
-      box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.2);
-    }
-
-    .form-select:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .form-select option {
-      background: #374151;
-      color: white;
-    }
-
+    
     .select-arrow {
       position: absolute;
-      right: 1.5rem;
+      right: 1.25rem;
       top: 50%;
       transform: translateY(-50%);
-      color: rgba(255,255,255,0.6);
+      color: #a0aec0;
       pointer-events: none;
       font-size: 0.8rem;
     }
-
-    /* Info box styling */
-    .info-box {
-      background: rgba(52, 211, 153, 0.1);
-      border: 1px solid rgba(52, 211, 153, 0.3);
-      border-radius: 12px;
-      padding: 1rem;
-      margin: 1.5rem 0;
-    }
-
-    .info-text {
-      color: white;
-      font-size: 1rem;
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    /* Button styling */
-    .btn {
+    
+    /* Submit button */
+    .submit-btn {
       width: 100%;
-      padding: 1rem 2rem;
-      border: none;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-weight: 600;
+      padding: 1.25rem 2rem;
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
+      background: white;
+      color: #2d3748;
+      font-size: 1.2rem;
+      font-weight: 500;
       cursor: pointer;
       transition: all 0.3s ease;
-      text-decoration: none;
-      display: block;
-      text-align: center;
+      margin-top: 1.5rem;
+      margin-bottom: 2rem;
     }
-
-    .btn-primary {
-      background: rgba(52, 211, 153, 0.8);
+    
+    .submit-btn:hover:not(:disabled) {
+      background: #5a67d8;
       color: white;
+      border-color: #5a67d8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(90, 103, 216, 0.3);
     }
-
-    .btn-primary:hover:not(:disabled) {
-      background: rgba(52, 211, 153, 1);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(52, 211, 153, 0.3);
-    }
-
-    .btn:disabled {
-      opacity: 0.7;
+    
+    .submit-btn:disabled {
+      opacity: 0.6;
       cursor: not-allowed;
-      transform: none;
     }
-
-    /* Redirect section */
-    .redirect-section {
+    
+    /* Form footer */
+    .form-footer {
       text-align: center;
-      margin-top: 2rem;
-      padding-top: 2rem;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.8);
-      font-size: 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e2e8f0;
+      margin-top: auto;
     }
-
-    .redirect-link {
-      color: #34d399;
+    
+    .form-footer p {
+      color: #4a5568;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .link {
+      color: #5a67d8;
       text-decoration: none;
       margin-left: 0.5rem;
       transition: color 0.3s ease;
     }
-
-    .redirect-link:hover {
-      color: #6ee7b7;
+    
+    .link:hover {
+      color: #6b46c1;
       text-decoration: underline;
     }
-
-    .teacher-link {
-      color: #c084fc;
+    
+    /* Tablet responsiveness */
+    @media (max-width: 1200px) {
+      .auth-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        margin: 1rem 0;
+        padding: 0 3%;
+      }
+      
+      .left-side,
+      .right-side {
+        min-height: 450px;
+        padding: 3rem;
+      }
+      
+      .left-side {
+        display: none; /* Hide features on tablet for cleaner mobile experience */
+      }
     }
-
-    .teacher-link:hover {
-      color: #e9d5ff;
-    }
-
-    /* Mobile optimizations */
-    @media (max-width: 500px) {
-      .form-container {
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .auth-container {
+        padding: 0 2%;
+      }
+      
+      .right-side {
         padding: 2rem 1.5rem;
+        min-height: auto;
       }
-
-      .form-title {
-        font-size: 1.75rem;
+      
+      .auth-title {
+        font-size: 1.5rem;
       }
-
-      .form-subtitle {
+      
+      .auth-subtitle {
         font-size: 1.1rem;
       }
+      
+      .form-input,
+      .form-select {
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
+      }
+      
+      .submit-btn {
+        padding: 0.75rem 1.5rem;
+      }
+    }
+  `;
+}
 
+/**
+ * Get success page styles
+ */
+function getSuccessStyles() {
+  return `
+    .page-wrapper {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f9f7f2 0%, #f0ebe0 100%);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      color: #2d3748;
+    }
+    
+    .success-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    
+    .success-card {
+      background: white;
+      padding: 3rem 4rem;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+    
+    .icon-container {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+      border-radius: 25px;
+      margin-bottom: 2rem;
+    }
+    
+    .email-icon {
+      fill: white;
+    }
+    
+    .success-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 0.5rem;
+    }
+    
+    .success-subtitle {
+      font-size: 1.2rem;
+      color: #4a5568;
+      margin-bottom: 2rem;
+    }
+    
+    .success-content {
+      text-align: left;
+      background: #f7fafc;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .success-content p {
+      color: #4a5568;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    
+    .success-content strong {
+      color: #2d3748;
+      font-weight: 600;
+    }
+    
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0 0 0;
+    }
+    
+    .checklist li {
+      padding: 0.5rem 0;
+      color: #4a5568;
+      font-size: 1rem;
+      position: relative;
+      padding-left: 2rem;
+    }
+    
+    .checklist li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: #48bb78;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    
+    .success-btn {
+      width: 100%;
+      padding: 1.25rem 2rem;
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
+      background: white;
+      color: #2d3748;
+      font-size: 1.2rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .success-btn:hover {
+      background: #5a67d8;
+      color: white;
+      border-color: #5a67d8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(90, 103, 216, 0.3);
+    }
+    
+    .success-footer {
+      text-align: center;
+    }
+    
+    .success-footer p {
+      color: #4a5568;
+      font-size: 1rem;
+    }
+    
+    .resend-link {
+      background: none;
+      border: none;
+      color: #5a67d8;
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-left: 0.5rem;
+      transition: color 0.3s ease;
+    }
+    
+    .resend-link:hover {
+      color: #6b46c1;
+    }
+    
+    @media (max-width: 768px) {
+      .success-card {
+        padding: 2rem 1.5rem;
+      }
+      
+      .success-title {
+        font-size: 1.5rem;
+      }
+      
       .icon-container {
-        width: 60px;
-        height: 60px;
-        font-size: 2rem;
+        width: 80px;
+        height: 80px;
       }
     }
   `;
