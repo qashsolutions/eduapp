@@ -111,7 +111,7 @@ export default function TeacherAuth() {
 
         // Refresh user context and redirect
         await refreshUser();
-        router.push('/');
+        router.push('/dashboard');
       }
     } catch (err) {
       console.error('=== CATCH BLOCK ERROR ===');
@@ -164,7 +164,7 @@ export default function TeacherAuth() {
 
         // Refresh user context and redirect
         await refreshUser();
-        router.push('/');
+        router.push('/dashboard');
       }
     } catch (err) {
       console.error('Login error:', err);

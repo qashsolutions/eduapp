@@ -82,7 +82,7 @@ export default function StudentLogin() {
 
       // Refresh auth context and redirect to dashboard
       await refreshUser();
-      router.push('/');
+      router.push('/dashboard');
     } catch (err) {
       console.error('Login error:', err);
       setError(err.message || 'Failed to login. Please check your details and try again.');

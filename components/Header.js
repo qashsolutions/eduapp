@@ -40,7 +40,7 @@ export default function Header() {
     <header className="header">
       <div className="header-container">
         <div className="logo-section">
-          <div onClick={() => router.push('/')} style={{ cursor: 'pointer' }}>
+          <div onClick={() => router.push(user ? '/dashboard' : '/')} style={{ cursor: 'pointer' }}>
             <h1 className="logo">
               Socratic Learning ✨
             </h1>

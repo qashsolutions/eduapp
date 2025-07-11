@@ -3,607 +3,786 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import MoodSelector from '../components/MoodSelector';
-import ProgressBar from '../components/ProgressBar';
-import QuestionCard from '../components/QuestionCard';
-import { useAuth } from '../lib/AuthContext';
-import { getUser, getSessionStats } from '../lib/db';
-import { MOOD_TOPICS, formatTopicName, getCachedProficiency } from '../lib/utils';
 
-export default function Dashboard() {
+// Import singleton Supabase client
+import { supabase } from '../lib/db';
+
+export default function Landing() {
   const router = useRouter();
-  const { user, loading: authLoading, isAuthenticated, getSession } = useAuth();
-  const [selectedMood, setSelectedMood] = useState('creative');
-  const [selectedTopic, setSelectedTopic] = useState(null);
-  const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [generating, setGenerating] = useState(false);
-  const [sessionStats, setSessionStats] = useState({ totalQuestions: 0, correctAnswers: 0 });
+  const [content, setContent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [timeOfDay, setTimeOfDay] = useState('');
+  const [season, setSeason] = useState('');
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated && user) {
-      // Load session stats when user is available
-      getSessionStats(user.id).then(stats => {
-        setSessionStats(stats);
-      }).catch(error => {
-        console.error('Error loading session stats:', error);
-      });
-    }
-  }, [user, authLoading, isAuthenticated]);
-
-  const handleTopicSelect = async (topic) => {
-    if (!user || !user.id) {
-      console.error('No user data available');
-      setGenerating(false);
-      return;
-    }
-    
-    // Check if account is pending parent approval
-    if (user.account_type === 'pending') {
-      alert('Your account is pending parent approval. Please ask your parent to check their email.');
-      setGenerating(false);
-      return;
-    }
-    
-    setSelectedTopic(topic);
-    setGenerating(true);
-
-    try {
-      // Get Supabase session token for authentication
-      const session = await getSession();
-      const token = session?.access_token;
+    // Set time and season for theming
+    const updateTimeAndSeason = () => {
+      const now = new Date();
+      const hour = now.getHours();
+      const month = now.getMonth();
       
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
-        body: JSON.stringify({
-          action: 'generate',
-          userId: user.id,
-          topic: topic
-        })
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setCurrentQuestion({
-          ...data.question,
-          topic: topic,
-          difficulty: data.difficulty,
-          proficiency: data.currentProficiency
-        });
-      }
-    } catch (error) {
-      console.error('Error generating question:', error);
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const handleAnswer = async (correct, timeSpent, hintsUsed, selectedAnswer) => {
-    try {
-      const session = await getSession();
-      const token = session?.access_token;
+      // Determine time of day
+      if (hour >= 5 && hour < 12) setTimeOfDay('morning');
+      else if (hour >= 12 && hour < 17) setTimeOfDay('noon');
+      else if (hour >= 17 && hour < 20) setTimeOfDay('evening');
+      else setTimeOfDay('night');
       
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
-        body: JSON.stringify({
-          action: 'submit',
-          userId: user.id,
-          topic: selectedTopic,
-          answer: selectedAnswer,
-          correct: correct,
-          timeSpent: timeSpent,
-          hintsUsed: hintsUsed,
-          questionHash: currentQuestion?.questionHash || null
-        })
-      });
+      // Determine season
+      if (month >= 2 && month <= 4) setSeason('spring');
+      else if (month >= 5 && month <= 7) setSeason('summer');
+      else if (month >= 8 && month <= 10) setSeason('fall');
+      else setSeason('winter');
+    };
+    
+    updateTimeAndSeason();
+    const interval = setInterval(updateTimeAndSeason, 60000); // Update every minute
+    
+    return () => clearInterval(interval);
+  }, []);
 
-      if (response.ok) {
-        const data = await response.json();
+  useEffect(() => {
+    // Fetch content from database
+    const fetchContent = async () => {
+      try {
+        if (!supabase) {
+          console.warn('Supabase client not initialized');
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('admin_content')
+          .select('content')
+          .eq('content_key', 'landing_hero_story')
+          .eq('is_active', true)
+          .single();
+
+        if (error) throw error;
         
-        // Update local user state with new proficiency
-        setUser(prev => ({
-          ...prev,
-          [selectedTopic]: data.newProficiency
-        }));
-
-        // Update session stats
-        setSessionStats(prev => ({
-          totalQuestions: prev.totalQuestions + 1,
-          correctAnswers: prev.correctAnswers + (correct ? 1 : 0)
-        }));
+        // Process content to ensure proper paragraph structure
+        if (data?.content) {
+          // Split by double newlines to preserve paragraph structure
+          const paragraphs = data.content.split('\n\n').filter(p => p.trim());
+          setContent(paragraphs);
+        }
+      } catch (error) {
+        console.error('Error fetching content:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error submitting answer:', error);
-    }
-  };
+    };
 
-  const handleNext = () => {
-    handleTopicSelect(selectedTopic);
-  };
+    fetchContent();
+  }, []);
 
-  const handleBack = () => {
-    setSelectedTopic(null);
-    setCurrentQuestion(null);
-  };
-
-  const getAvailableTopics = () => {
-    return MOOD_TOPICS[selectedMood] || [];
-  };
-
-  const getProficiency = (topic) => {
-    // Check cache first
-    const cached = getCachedProficiency(topic);
-    if (cached !== null) return cached;
+  useEffect(() => {
+    // Redirect if already logged in
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user && router.isReady) {
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 100);
+      }
+    });
     
-    // Fall back to user data
-    return user?.[topic] || 5;
+    return () => subscription.unsubscribe();
+  }, [router]);
+
+  // Split content into sections for better visual organization
+  const getContentSections = () => {
+    if (!content || content.length === 0) return { intro: [], problem: [], solution: [], benefits: [] };
+    
+    return {
+      intro: content.slice(0, 2),      // First 2 paragraphs
+      problem: content.slice(2, 5),    // Next 3 paragraphs
+      solution: content.slice(5, 8),   // Next 3 paragraphs
+      benefits: content.slice(8)       // Remaining paragraphs
+    };
   };
 
-  if (authLoading || loading) {
-    return (
-      <div className="loading-container">
-        <div className="logo">LearnAI ✨</div>
-        <div className="loading-text">Loading your learning journey...</div>
-      </div>
-    );
-  }
+  const sections = getContentSections();
 
   return (
     <>
       <Head>
-        <title>Socratic Learning - Learn English & Math, Unlimited Dynamic Questions</title>
-        <meta charSet="utf-8" />
-        <meta name="description" content="Learn English & Math, unlimited dynamic questions. AI-powered adaptive learning that adjusts to your skill level. Personalized education for grades 5-11." />
-        <meta name="keywords" content="learn English, learn Math, unlimited questions, dynamic questions, adaptive learning, AI education, personalized tutoring" />
+        <title>Socratic Learning - AI Tutoring for Students | Personalized English & Math</title>
+        <meta name="description" content="AI-powered Socratic tutoring for students. Personalized learning in English & Math with unlimited practice questions. 14-day trial for $1." />
+        <meta name="keywords" content="AI tutor, Socratic method, personalized learning, English tutoring, Math tutoring, adaptive learning, student education" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="theme-color" content="#0a0a0f" />
-        <link rel="icon" href="/favicon.ico" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://socraticlearning.com/" />
         
-        {/* Open Graph / Facebook */}
+        {/* Open Graph */}
+        <meta property="og:title" content="Socratic Learning - AI Tutoring for Students" />
+        <meta property="og:description" content="Personalized AI tutoring using the Socratic method. Help your child excel in English & Math with adaptive learning." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://learnai.com/" />
-        <meta property="og:title" content="LearnAI - Learn English & Math, Unlimited Dynamic Questions" />
-        <meta property="og:description" content="Learn English & Math with unlimited AI-generated questions that adapt to your level. Perfect for students grades 5-11." />
-        <meta property="og:image" content="https://learnai.com/og-image.png" />
+        <meta property="og:url" content="https://socraticlearning.com/" />
+        <meta property="og:image" content="https://socraticlearning.com/og-image.png" />
         
         {/* Twitter */}
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content="https://learnai.com/" />
-        <meta property="twitter:title" content="LearnAI - Learn English & Math, Unlimited Dynamic Questions" />
-        <meta property="twitter:description" content="Learn English & Math with unlimited AI-generated questions. Adaptive learning for grades 5-11." />
-        <meta property="twitter:image" content="https://learnai.com/twitter-image.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Socratic Learning - AI Tutoring for Students" />
+        <meta name="twitter:description" content="Personalized AI tutoring using the Socratic method. Excel in English & Math." />
+        <meta name="twitter:image" content="https://socraticlearning.com/twitter-image.png" />
         
-        {/* Additional SEO */}
-        <link rel="canonical" href="https://learnai.com/" />
-        <meta name="robots" content="index, follow" />
-        <meta name="author" content="LearnAI" />
-        
-        {/* JSON-LD Structured Data */}
-        <script 
+        {/* Schema.org */}
+        <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "EducationalApplication",
-            "name": "LearnAI",
-            "description": "Learn English & Math with unlimited dynamic questions",
-            "url": "https://learnai.com",
-            "applicationCategory": "EducationalApplication",
-            "operatingSystem": "Web",
-            "offers": [{
-              "@type": "Offer",
-              "name": "Student Plan",
-              "price": "70",
-              "priceCurrency": "USD",
-              "priceSpecification": {
-                "@type": "UnitPriceSpecification",
-                "price": "70",
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "EducationalApplication",
+              "name": "Socratic Learning",
+              "description": "AI-powered tutoring platform using the Socratic method",
+              "applicationCategory": "EducationalApplication",
+              "offers": {
+                "@type": "Offer",
+                "price": "1.00",
                 "priceCurrency": "USD",
-                "unitText": "YEAR"
+                "description": "14-day trial"
               }
-            }],
-            "featureList": [
-              "Adaptive Learning",
-              "13 Topics",
-              "Unlimited Questions", 
-              "AI-Powered",
-              "Grades 5-11"
-            ],
-            "screenshot": "https://learnai.com/screenshot.png",
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": "4.8",
-              "ratingCount": "1250"
-            }
-          })}}
+            })
+          }}
         />
       </Head>
       
-      {/* Dynamic meta tags for when user is in a topic */}
-      {selectedTopic && (
-        <Head>
-          <title>Socratic Learning - Learning {formatTopicName(selectedTopic)} | Level {getProficiency(selectedTopic)}</title>
-          <meta name="description" content={`Practice ${formatTopicName(selectedTopic)} with AI-generated questions. Currently at level ${getProficiency(selectedTopic)}/9.`} />
-        </Head>
-      )}
-      
-      <div className="page-wrapper">
+      <div className="page-wrapper" data-time={timeOfDay} data-season={season}>
         <Header />
         
-        <div className="container">
-      {!selectedTopic ? (
-        <>
-          <p className="subtitle">
-              {user?.role === 'student' ? 'Student' : 'Teacher'} | 
-              Grade {user?.grade || '8'} | 
-              ${user?.subscription_status === 'student' ? '70' : user?.subscription_status === 'teacher' ? '120' : '0'}/year
-            </p>
-            {sessionStats.totalQuestions > 0 && (
-              <p className="session-stats">
-                Today: {sessionStats.correctAnswers}/{sessionStats.totalQuestions} correct
-              </p>
-            )}
+        <main className="landing-container">
+          {loading ? (
+            <div className="loading-container">
+              <div className="loading-text">Loading...</div>
+            </div>
+          ) : (
+            <>
+              {/* Hero Section */}
+              <section className="hero-section">
+                <div className="content-grid">
+                  <div className="hero-content">
+                    <h1 className="hero-title">Personalized Learning Revolution</h1>
+                    <div className="hero-text">
+                      {sections.intro.map((paragraph, index) => (
+                        <p key={index} className="hero-paragraph">{paragraph}</p>
+                      ))}
+                    </div>
+                    
+                  </div>
+                  
+                  <div className="feature-cards-container">
+                    <div className="feature-card glass">
+                      <div className="card-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor" opacity="0.8"/>
+                        </svg>
+                      </div>
+                      <h3>Adaptive Content</h3>
+                      <p>77 million unique combinations ensure your child never sees the same content twice. Every session feels fresh and purposeful.</p>
+                    </div>
+                    
+                    <div className="feature-card glass">
+                      <div className="card-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M9 11H7V13H9V11ZM13 11H11V13H13V11ZM17 11H15V13H17V11ZM19 4H18V2H16V4H8V2H6V4H5C3.89 4 3.01 4.9 3.01 6L3 20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 19 4ZM19 20H5V9H19V20Z" fill="currentColor" opacity="0.8"/>
+                        </svg>
+                      </div>
+                      <h3>Socratic Method</h3>
+                      <p>We don't lecture at students - we guide them to discover answers themselves, building confidence and critical thinking.</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
 
-          <MoodSelector 
-            selectedMood={selectedMood} 
-            onMoodSelect={setSelectedMood} 
-          />
-
-          <section className="topics-section">
-            <h2 className="section-title">Pick your adventure 🎮</h2>
-            <div className="topics-grid">
-              {getAvailableTopics().map((topic) => {
-                const proficiency = getProficiency(topic);
-                return (
-                  <div 
-                    key={topic} 
-                    className="topic-card"
-                    onClick={() => handleTopicSelect(topic)}
-                  >
-                    <div className="topic-header">
-                      <span className="topic-icon">
-                        {topic.includes('comprehension') && '📚'}
-                        {topic.includes('grammar') && '✍️'}
-                        {topic.includes('vocabulary') && '🎯'}
-                        {topic.includes('sentences') && '📝'}
-                        {topic.includes('synonyms') && '🔄'}
-                        {topic.includes('antonyms') && '↔️'}
-                        {topic.includes('fill') && '📋'}
-                        {topic.includes('number') && '🔢'}
-                        {topic.includes('algebra') && '🧮'}
-                        {topic.includes('geometry') && '📐'}
-                        {topic.includes('statistics') && '📊'}
-                        {topic.includes('precalculus') && '📈'}
-                        {topic.includes('calculus') && '∫'}
-                      </span>
-                      <div>
-                        <div className="topic-title">{formatTopicName(topic)}</div>
-                        <div className="topic-subtitle">
-                          {topic.includes('english') ? 'English' : 'Mathematics'}
+              {/* Problem Section */}
+              <section className="problem-section">
+                <div className="content-wrapper">
+                  <div className="problem-grid">
+                    <div className="problem-cards-stack">
+                      <div className="problem-card glass">
+                        <div className="card-icon">
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" opacity="0.8"/>
+                          </svg>
                         </div>
+                        <h3>The Reality Check</h3>
+                        <p>What's really happening in today's classrooms - and why it's not working.</p>
+                      </div>
+                      
+                      <div className="problem-card glass">
+                        <div className="card-icon">
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor" opacity="0.8"/>
+                          </svg>
+                        </div>
+                        <h3>Learning tailored to your mood & interests</h3>
+                        <p>Personalized education that adapts to how you feel and what excites you.</p>
                       </div>
                     </div>
-                    <ProgressBar proficiency={proficiency} />
-                    <button className="start-btn">Start Learning</button>
+                    <div className="section-content glass">
+                      {sections.problem.map((paragraph, index) => (
+                        <p key={index} className="content-paragraph">{paragraph}</p>
+                      ))}
+                    </div>
                   </div>
-                );
-              })}
-            </div>
-          </section>
-        </>
-      ) : (
-        <div className="question-view">
-          <header className="question-header">
-            <button className="back-btn" onClick={handleBack}>←</button>
-            <div className="topic-info">
-              <div className="topic-title">{formatTopicName(selectedTopic)}</div>
-              <div className="question-count">Grade {user?.grade || '8'} Student</div>
-            </div>
-            <div className="streak-badge">Level {getProficiency(selectedTopic)}</div>
-          </header>
+                </div>
+              </section>
 
-          <div className="progress-section">
-            <ProgressBar 
-              proficiency={getProficiency(selectedTopic)} 
-              topic={formatTopicName(selectedTopic)}
-            />
-          </div>
+              {/* Solution Section */}
+              <section className="solution-section">
+                <div className="content-grid reverse">
+                  <div className="feature-cards-container">
+                    <div className="feature-card glass">
+                      <div className="card-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M19 3H5C3.89 3 3 3.89 3 5V19C3 20.1 3.89 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.89 20.1 3 19 3ZM19 19H5V5H19V19ZM12 12C10.34 12 9 13.34 9 15S10.34 18 12 18S15 16.66 15 15S13.66 12 12 12ZM12 10C13.66 10 15 8.66 15 7S13.66 4 12 4S9 5.34 9 7S10.34 10 12 10Z" fill="currentColor" opacity="0.8"/>
+                        </svg>
+                      </div>
+                      <h3>Parent Dashboard</h3>
+                      <p>Finally get real insights into what your child is learning. Track progress, identify strengths, and spot areas needing support.</p>
+                    </div>
+                    
+                    <div className="feature-card glass">
+                      <div className="card-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 2C6.48 2 2 6.48 2 12S6.48 22 12 22S22 17.52 22 12S17.52 2 12 2ZM13 17H11V11H13V17ZM13 9H11V7H13V9Z" fill="currentColor" opacity="0.8"/>
+                        </svg>
+                      </div>
+                      <h3>Unlimited Growth</h3>
+                      <p>No time limits, no content restrictions. Let your child explore and learn at their own pace, as much as they want.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="solution-content">
+                    <h2 className="section-title">Real Results for Real Families</h2>
+                    <div className="solution-text">
+                      {sections.solution.map((paragraph, index) => (
+                        <p key={index} className="content-paragraph">{paragraph}</p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </section>
 
-          {generating ? (
-            <div className="generating">
-              <div className="generating-text">Creating your question... ✨</div>
-            </div>
-          ) : currentQuestion && (
-            <QuestionCard 
-              question={currentQuestion}
-              topic={selectedTopic}
-              difficulty={currentQuestion.difficulty}
-              proficiency={currentQuestion.proficiency}
-              onAnswer={handleAnswer}
-              onNext={handleNext}
-              userId={user.id}
-              getSession={getSession}
-            />
+              {/* Benefits Section */}
+              <section className="benefits-section">
+                <div className="content-wrapper">
+                  <h2 className="section-title">Built by Educators, for Families</h2>
+                  <div className="benefits-grid">
+                    <div className="benefit-card glass">
+                      <div className="card-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 2L2 7L12 12L22 7L12 2ZM2 17L12 22L22 17V7L12 12L2 7V17Z" fill="currentColor" opacity="0.8"/>
+                        </svg>
+                      </div>
+                      <h3>20+ Years Teaching</h3>
+                      <p>Built with deep understanding of how students actually learn, not how we think they should learn.</p>
+                    </div>
+                    
+                    <div className="benefits-content">
+                      {sections.benefits.map((paragraph, index) => (
+                        <p key={index} className="content-paragraph">{paragraph}</p>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="cta-container">
+                    <button 
+                      className="cta-button glass"
+                      onClick={() => router.push('/signup')}
+                    >
+                      Start Learning Free
+                    </button>
+                    <p className="cta-subtitle">All features free for two weeks • $8/month or $70*/year</p>
+                  </div>
+                </div>
+              </section>
+            </>
           )}
-        </div>
-      )}
+        </main>
+        
+        <Footer />
+      </div>
 
       <style jsx>{`
-        .container {
-          padding: 20px;
-          width: 100%;
-          max-width: 1400px;
-          margin: 0 auto;
+        :root {
+          /* Default colors */
+          --bg-primary: #1a1a2e;
+          --bg-secondary: #2d2d4e;
+          --accent-primary: #00ff88;
+          --accent-secondary: #0088ff;
+          --text-primary: #ffffff;
+          --text-secondary: #e0e0e0;
+          --glass-bg: rgba(0, 0, 0, 0.3);
+          --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Time-based themes */
+        [data-time="morning"] {
+          --bg-primary: #2d3561;
+          --bg-secondary: #3d4571;
+          --accent-primary: #ffd700;
+          --accent-secondary: #ff6b6b;
+        }
+
+        [data-time="noon"] {
+          --bg-primary: #1a2332;
+          --bg-secondary: #2a3342;
+          --accent-primary: #00d4ff;
+          --accent-secondary: #0099cc;
+        }
+
+        [data-time="evening"] {
+          --bg-primary: #2d1b4e;
+          --bg-secondary: #3d2b5e;
+          --accent-primary: #ff6b9d;
+          --accent-secondary: #c44569;
+        }
+
+        [data-time="night"] {
+          --bg-primary: #1a1a2e;
+          --bg-secondary: #2d2d4e;
+          --accent-primary: #00ff88;
+          --accent-secondary: #0088ff;
+        }
+
+        /* Seasonal modifiers */
+        [data-season="spring"] {
+          --accent-primary: #88ff00;
+          --accent-secondary: #00ff88;
+        }
+
+        [data-season="summer"] {
+          --accent-primary: #ffd700;
+          --accent-secondary: #ff8c00;
+        }
+
+        [data-season="fall"] {
+          --accent-primary: #ff6b35;
+          --accent-secondary: #d35400;
+        }
+
+        [data-season="winter"] {
+          --accent-primary: #00d4ff;
+          --accent-secondary: #0066cc;
+        }
+
+        .page-wrapper {
+          min-height: 100vh;
+          background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+          transition: background 1s ease;
+        }
+
+        .landing-container {
+          overflow-x: hidden;
         }
 
         .loading-container {
+          min-height: 80vh;
           display: flex;
-          flex-direction: column;
           align-items: center;
           justify-content: center;
-          min-height: 100vh;
-          gap: 20px;
         }
 
         .loading-text {
           color: var(--text-secondary);
-          animation: pulse 2s ease-in-out infinite;
+          font-size: 1.2rem;
         }
 
-        .header {
-          text-align: center;
-          margin-bottom: 40px;
-          animation: fadeIn 0.8s ease-out;
+        /* Glass morphism effect */
+        .glass {
+          background: rgba(30, 30, 30, 0.4);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 20px;
         }
 
-        .logo {
+        /* Floating shapes */
+        .floating-shapes {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .shape {
+          position: absolute;
+          background: radial-gradient(circle at center, var(--accent-primary), var(--accent-secondary));
+          opacity: 0.5;
+          filter: blur(30px);
+          animation: float 20s infinite ease-in-out;
+          box-shadow: 0 0 120px var(--accent-primary), 0 0 60px var(--accent-secondary);
+          mix-blend-mode: screen;
+        }
+
+        .shape.circle {
+          border-radius: 50%;
+        }
+
+        .shape.square {
+          border-radius: 20%;
+        }
+
+        .shape-1 {
+          width: 300px;
+          height: 300px;
+          top: 10%;
+          left: 10%;
+          animation-duration: 25s;
+        }
+
+        .shape-2 {
+          width: 200px;
+          height: 200px;
+          top: 60%;
+          right: 15%;
+          animation-duration: 30s;
+          animation-delay: -5s;
+        }
+
+        .shape-3 {
+          width: 250px;
+          height: 250px;
+          bottom: 20%;
+          left: 30%;
+          animation-duration: 35s;
+          animation-delay: -10s;
+        }
+
+        .shape-4 {
+          width: 150px;
+          height: 150px;
+          top: 30%;
+          right: 30%;
+          animation-duration: 20s;
+          animation-delay: -15s;
+        }
+
+        .shape-5 {
+          width: 350px;
+          height: 350px;
+          bottom: 10%;
+          right: 5%;
+          animation-duration: 40s;
+          animation-delay: -20s;
+        }
+
+        @keyframes float {
+          0%, 100% {
+            transform: translate(0, 0) rotate(0deg);
+          }
+          33% {
+            transform: translate(30px, -30px) rotate(120deg);
+          }
+          66% {
+            transform: translate(-20px, 20px) rotate(240deg);
+          }
+        }
+
+        /* Interactive particles */
+        .particles-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .particle {
+          position: absolute;
+          width: 10px;
+          height: 10px;
+          background: radial-gradient(circle, var(--accent-primary), transparent);
+          border-radius: 50%;
+          opacity: 1;
+          transition: transform 0.3s ease-out;
+          box-shadow: 0 0 20px var(--accent-primary), 0 0 40px var(--accent-primary);
+          mix-blend-mode: screen;
+          transform: translate(
+            calc(var(--mouse-x) * 0.15 * calc(var(--index) - 10) * 0.15),
+            calc(var(--mouse-y) * 0.15 * calc(var(--index) - 10) * 0.15)
+          );
+        }
+
+        .particle:nth-child(even) {
+          background: radial-gradient(circle, var(--accent-secondary), transparent);
+          width: 8px;
+          height: 8px;
+          box-shadow: 0 0 20px var(--accent-secondary), 0 0 40px var(--accent-secondary);
+        }
+
+        .particle:nth-child(3n) {
+          opacity: 0.7;
+          width: 6px;
+          height: 6px;
+        }
+
+        /* Hero Section */
+        .hero-section {
+          padding: 80px 20px;
+          max-width: 1400px;
+          margin: 0 auto;
+        }
+
+        .content-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 60px;
+          align-items: start;
+        }
+
+        .hero-title {
           font-size: 2.5rem;
           font-weight: 800;
-          background: linear-gradient(90deg, var(--accent-neon), var(--accent-blue));
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          margin-bottom: 8px;
+          color: var(--text-primary);
+          margin-bottom: 32px;
+          line-height: 1.2;
         }
 
-        .subtitle {
-          color: var(--text-secondary);
-          font-size: 1.1rem;
-          font-weight: 300;
+        .hero-text {
+          margin-bottom: 32px;
         }
 
-        .session-stats {
-          color: var(--accent-neon);
-          font-size: 0.9rem;
-          margin-top: 8px;
-        }
-
-        .topics-section {
-          animation: fadeIn 0.8s ease-out 0.4s both;
-        }
-
-        .section-title {
+        .hero-paragraph {
           font-size: 1.5rem;
-          font-weight: 700;
+          line-height: 1.8;
+          color: #ffffff;
           margin-bottom: 20px;
-          text-align: center;
+          text-align: left;
+          font-weight: 400;
         }
 
-        .topics-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+
+        .feature-cards-container {
+          display: flex;
+          flex-direction: column;
           gap: 24px;
         }
 
-        .topic-card {
-          background: var(--glass-bg);
-          backdrop-filter: blur(20px);
-          border: 1px solid var(--glass-border);
-          border-radius: 24px;
-          padding: 24px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          position: relative;
-          overflow: hidden;
+        .feature-card {
+          padding: 32px;
+          transition: transform 0.3s ease;
         }
 
-        .topic-card::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(135deg, var(--accent-blue), var(--accent-pink));
-          opacity: 0;
-          transition: opacity 0.3s ease;
-          z-index: -1;
+        .feature-card:hover {
+          transform: translateY(-4px);
         }
 
-        .topic-card:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 16px 48px rgba(0, 127, 255, 0.2);
-        }
-
-        .topic-card:hover::before {
-          opacity: 0.1;
-        }
-
-        .topic-header {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-bottom: 16px;
-        }
-
-        .topic-icon {
-          font-size: 2rem;
-        }
-
-        .topic-title {
-          font-size: 1.3rem;
-          font-weight: 700;
-        }
-
-        .topic-subtitle {
-          color: var(--text-secondary);
-          font-size: 0.9rem;
-        }
-
-        .start-btn {
-          background: linear-gradient(135deg, var(--accent-neon), var(--accent-blue));
-          border: none;
+        .card-icon {
+          width: 64px;
+          height: 64px;
+          background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
           border-radius: 16px;
-          padding: 12px 24px;
-          color: white;
-          font-weight: 600;
-          font-size: 0.9rem;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          width: 100%;
-          margin-top: 16px;
-        }
-
-        .start-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(0, 255, 136, 0.4);
-        }
-
-        .question-view {
-          max-width: 800px;
-          margin: 0 auto;
-          animation: fadeIn 0.6s ease-out;
-        }
-
-        .question-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 32px;
-          background: var(--glass-bg);
-          backdrop-filter: blur(20px);
-          border: 1px solid var(--glass-border);
-          border-radius: 20px;
-          padding: 16px 24px;
-        }
-
-        .back-btn {
-          background: none;
-          border: none;
-          color: var(--text-secondary);
-          font-size: 1.5rem;
-          cursor: pointer;
-          transition: color 0.3s ease;
-        }
-
-        .back-btn:hover {
-          color: var(--accent-neon);
-        }
-
-        .topic-info {
-          text-align: center;
-        }
-
-        .question-count {
-          font-size: 0.9rem;
-          color: var(--text-secondary);
-        }
-
-        .streak-badge {
-          background: linear-gradient(135deg, var(--accent-neon), var(--accent-blue));
-          border-radius: 12px;
-          padding: 8px 16px;
-          font-weight: 600;
-          font-size: 0.9rem;
-        }
-
-        .progress-section {
-          margin-bottom: 32px;
-        }
-
-        .generating {
           display: flex;
           align-items: center;
           justify-content: center;
-          min-height: 300px;
+          margin-bottom: 20px;
+          color: white;
         }
 
-        .generating-text {
-          font-size: 1.2rem;
+        .feature-card h3 {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #ffffff;
+          margin-bottom: 12px;
+        }
+
+        .feature-card p {
+          font-size: 1.1rem;
+          line-height: 1.6;
+          color: #e0e0e0;
+        }
+
+        /* Problem Section */
+        .problem-section {
+          padding: 80px 20px;
+          background: rgba(0, 0, 0, 0.3);
+        }
+
+        .content-wrapper {
+          max-width: 1400px;
+          margin: 0 auto;
+        }
+
+        .problem-grid {
+          display: grid;
+          grid-template-columns: 400px 1fr;
+          gap: 60px;
+          align-items: start;
+        }
+
+        .problem-cards-stack {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+
+        .problem-card {
+          padding: 32px;
+          height: fit-content;
+        }
+
+        .problem-card h3 {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #ffffff;
+          margin-bottom: 12px;
+        }
+
+        .problem-card p {
+          font-size: 1.1rem;
+          line-height: 1.6;
+          color: #e0e0e0;
+        }
+
+        .section-content {
+          padding: 48px;
+        }
+
+        .content-paragraph {
+          font-size: 1.5rem;
+          line-height: 1.8;
+          color: #ffffff;
+          margin-bottom: 24px;
+        }
+
+        .content-paragraph:last-child {
+          margin-bottom: 0;
+        }
+
+        /* Solution Section */
+        .solution-section {
+          padding: 80px 20px;
+          max-width: 1400px;
+          margin: 0 auto;
+        }
+
+        .content-grid.reverse {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .section-title {
+          font-size: 2.5rem;
+          font-weight: 800;
+          color: #ffffff;
+          margin-bottom: 32px;
+          line-height: 1.2;
+        }
+
+        .solution-text {
+          margin-bottom: 32px;
+        }
+
+        /* Benefits Section */
+        .benefits-section {
+          padding: 80px 20px;
+          background: rgba(0, 0, 0, 0.3);
+        }
+
+        .benefits-grid {
+          display: grid;
+          grid-template-columns: 350px 1fr;
+          gap: 48px;
+          margin-bottom: 48px;
+        }
+
+        .benefit-card {
+          padding: 32px;
+          height: fit-content;
+        }
+
+        .benefits-content {
+          padding: 0 24px;
+        }
+
+        /* CTA */
+        .cta-container {
+          text-align: center;
+          margin-top: 60px;
+        }
+
+        .cta-button {
+          padding: 20px 48px;
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: var(--text-primary);
+          cursor: pointer;
+          transition: all 0.3s ease;
+          border: 2px solid var(--accent-primary);
+        }
+
+        .cta-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 20px 40px rgba(0, 255, 136, 0.3);
+          background: rgba(0, 255, 136, 0.1);
+        }
+
+        .cta-subtitle {
+          margin-top: 16px;
           color: var(--text-secondary);
-          animation: pulse 2s ease-in-out infinite;
+          font-size: 1rem;
         }
 
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+        /* Responsive */
+        @media (max-width: 1024px) {
+          .content-grid,
+          .content-grid.reverse,
+          .problem-grid {
+            grid-template-columns: 1fr;
+            gap: 40px;
+          }
 
-        @keyframes pulse {
-          0%, 100% { opacity: 0.6; }
-          50% { opacity: 1; }
+          .benefits-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .hero-title {
+            font-size: 2.5rem;
+          }
+
+          .section-title {
+            font-size: 2rem;
+          }
         }
 
         @media (max-width: 768px) {
-          .container { padding: 16px; }
-          .logo { font-size: 2rem; }
-          .topics-grid { grid-template-columns: 1fr; }
+          .hero-section,
+          .problem-section,
+          .solution-section,
+          .benefits-section {
+            padding: 40px 20px;
+          }
+
+          .section-content {
+            padding: 32px 24px;
+          }
+
+          .hero-title {
+            font-size: 2rem;
+          }
+
+          .hero-paragraph,
+          .content-paragraph {
+            font-size: 1.1rem;
+          }
+
+          .feature-card,
+          .benefit-card {
+            padding: 24px;
+          }
+
+          .cta-button {
+            padding: 16px 32px;
+            font-size: 1.1rem;
+          }
         }
       `}</style>
-
-      <style jsx global>{`
-        :root {
-          --bg-primary: #0a0a0f;
-          --bg-secondary: #1a1a2e;
-          --bg-card: rgba(30, 30, 60, 0.6);
-          --accent-neon: #00ff88;
-          --accent-blue: #007fff;
-          --accent-pink: #ff0080;
-          --accent-orange: #ff6b35;
-          --glass-bg: rgba(255, 255, 255, 0.1);
-          --glass-border: rgba(255, 255, 255, 0.2);
-          --text-primary: #ffffff;
-          --text-secondary: #b0b0b0;
-          --correct: #00ff88;
-          --incorrect: #ff4757;
-        }
-
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-
-        body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, #2a1a4a 100%);
-          min-height: 100vh;
-          color: var(--text-primary);
-          overflow-x: hidden;
-        }
-        .page-wrapper {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .container {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-      `}</style>
-        </div>
-        <Footer />
-      </div>
     </>
   );
 }

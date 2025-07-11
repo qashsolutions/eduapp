@@ -20,7 +20,7 @@ export default function ParentDashboard() {
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'parent')) {
-      router.push('/');
+      router.push('/dashboard');
     }
   }, [user, authLoading, router]);
 
