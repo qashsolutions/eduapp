@@ -155,10 +155,26 @@ export default function ParentVerify() {
 
       if (parentError) throw parentError;
 
+      // Create parent user record (since we removed the trigger)
+      const { error: parentInsertError } = await supabase
+        .from('users')
+        .insert({
+          id: parentAuth.user.id,
+          email: studentInfo.email.toLowerCase(),
+          role: 'parent',
+          account_type: 'parent',
+          first_name: parentName,
+          consent_date: new Date().toISOString()
+        });
+
+      if (parentInsertError) throw parentInsertError;
+
       // Create student record linked to parent
       const { error: studentError } = await supabase
         .from('users')
         .insert({
+          id: crypto.randomUUID(), // Generate a UUID for the student
+          email: `${studentInfo.name.toLowerCase().replace(/\s/g, '')}_${Date.now()}@student.local`, // Create a unique email for student
           first_name: studentInfo.name,
           grade: parseInt(studentInfo.grade),
           role: 'student',
@@ -171,18 +187,6 @@ export default function ParentVerify() {
         });
 
       if (studentError) throw studentError;
-
-      // Update parent record
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({
-          role: 'parent',
-          account_type: 'parent',
-          consent_date: new Date().toISOString()
-        })
-        .eq('id', parentAuth.user.id);
-
-      if (updateError) throw updateError;
 
       // Show success with passcode
       setPasscode(newPasscode);

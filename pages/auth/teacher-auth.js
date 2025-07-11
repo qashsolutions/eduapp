@@ -69,11 +69,14 @@ export default function TeacherAuth() {
 
       if (authError) throw authError;
 
-      // Update user profile with teacher-specific data
+      // Create user profile with teacher-specific data
       if (authData.user) {
-        const { error: profileError } = await supabase
+        // Insert the user record (since we removed the trigger)
+        const { error: insertError } = await supabase
           .from('users')
-          .update({
+          .insert({
+            id: authData.user.id,
+            email: formData.email.toLowerCase(),
             role: 'teacher',
             first_name: formData.firstName,
             account_type: 'teacher',
@@ -81,10 +84,12 @@ export default function TeacherAuth() {
             subscription_status: 'teacher',
             trial_started_at: new Date().toISOString(),
             trial_expires_at: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString() // 15 days trial
-          })
-          .eq('id', authData.user.id);
+          });
 
-        if (profileError) throw profileError;
+        if (insertError) {
+          console.error('Error creating user profile:', insertError);
+          throw new Error('Failed to create user profile. Please try again.');
+        }
 
         // Refresh user context and redirect
         await refreshUser();
