@@ -422,7 +422,7 @@ export default function Landing() {
         }
 
         .hero-title {
-          font-size: 2.5rem;
+          font-size: 3rem;
           font-weight: 700;
           color: #1a1a1a;
           margin-bottom: 2rem;
@@ -434,7 +434,7 @@ export default function Landing() {
         }
 
         .hero-paragraph {
-          font-size: 1.3rem;
+          font-size: 1.6rem;
           line-height: 1.8;
           color: #1a1a1a !important;
           margin-bottom: 1.5rem;
@@ -501,15 +501,15 @@ export default function Landing() {
         }
 
         .feature-card h3 {
-          font-size: 1.4rem;
+          font-size: 1.8rem;
           font-weight: 700;
           color: #1a1a1a !important;
-          margin-bottom: 0.8rem;
+          margin-bottom: 1rem;
         }
 
         .feature-card p {
-          font-size: 1.15rem;
-          line-height: 1.6;
+          font-size: 1.4rem;
+          line-height: 1.7;
           color: #1a1a1a !important;
         }
 
@@ -553,15 +553,15 @@ export default function Landing() {
         }
 
         .problem-card h3 {
-          font-size: 1.4rem;
+          font-size: 1.8rem;
           font-weight: 700;
           color: #1a1a1a !important;
-          margin-bottom: 0.8rem;
+          margin-bottom: 1rem;
         }
 
         .problem-card p {
-          font-size: 1.15rem;
-          line-height: 1.6;
+          font-size: 1.4rem;
+          line-height: 1.7;
           color: #1a1a1a !important;
         }
 
@@ -570,7 +570,7 @@ export default function Landing() {
         }
 
         .content-paragraph {
-          font-size: 1.3rem;
+          font-size: 1.6rem;
           line-height: 1.8;
           color: #1a1a1a !important;
           margin-bottom: 1.5rem;
@@ -591,7 +591,7 @@ export default function Landing() {
         }
 
         .section-title {
-          font-size: 2.5rem;
+          font-size: 3rem;
           font-weight: 700;
           color: #1a1a1a;
           margin-bottom: 2rem;
@@ -685,11 +685,11 @@ export default function Landing() {
           }
 
           .hero-title {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
           }
 
           .section-title {
-            font-size: 2rem;
+            font-size: 2.5rem;
           }
         }
 
@@ -711,12 +711,16 @@ export default function Landing() {
           }
 
           .hero-title {
-            font-size: 1.8rem;
+            font-size: 2.2rem;
+          }
+
+          .section-title {
+            font-size: 2.2rem;
           }
 
           .hero-paragraph,
           .content-paragraph {
-            font-size: 1.1rem;
+            font-size: 1.3rem;
           }
 
           .feature-card,
@@ -727,12 +731,12 @@ export default function Landing() {
           
           .feature-card h3,
           .problem-card h3 {
-            font-size: 1.2rem;
+            font-size: 1.5rem;
           }
           
           .feature-card p,
           .problem-card p {
-            font-size: 1rem;
+            font-size: 1.2rem;
           }
 
           .cta-button {
