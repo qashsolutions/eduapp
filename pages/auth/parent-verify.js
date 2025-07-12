@@ -71,17 +71,16 @@ export default function ParentVerify() {
         throw new Error(data.error || 'Payment verification failed');
       }
       
-      // Set student info from payment data
-      setStudentInfo({
-        name: data.studentName,
-        grade: data.studentGrade,
-        email: data.parentEmail
-      });
+      // Pass data directly to completeVerification
+      const verificationData = {
+        email: data.parentEmail,
+        parentName: data.parentName,
+        studentName: data.studentName,
+        studentGrade: data.studentGrade,
+        consentId: consentId
+      };
       
-      setParentName(data.parentName);
-      
-      // Now complete the verification
-      await completeVerification(consentId);
+      await completeVerification(verificationData);
       
     } catch (err) {
       console.error('Payment return error:', err);
@@ -188,14 +187,21 @@ export default function ParentVerify() {
   /**
    * Complete the verification process after payment
    */
-  const completeVerification = async (consentId) => {
+  const completeVerification = async (verificationData) => {
     try {
+      // Extract data from parameter
+      const { email, parentName, studentName, studentGrade, consentId } = verificationData;
+      
+      // Validate required data
+      if (!email || !parentName || !studentName) {
+        throw new Error('Missing required information. Please try again.');
+      }
+      
       // Generate student passcode
       const newPasscode = generatePasscode();
-
       // Create parent account
       const { data: parentAuth, error: parentError } = await supabase.auth.signUp({
-        email: studentInfo.email,
+        email: email,
         password: Math.random().toString(36).slice(-12), // Random password for parent
         options: {
           data: {
@@ -212,7 +218,7 @@ export default function ParentVerify() {
         .from('users')
         .insert({
           id: parentAuth.user.id,
-          email: studentInfo.email.toLowerCase(),
+          email: email.toLowerCase(),
           role: 'parent',
           account_type: 'parent',
           first_name: parentName,
@@ -229,9 +235,9 @@ export default function ParentVerify() {
         .from('users')
         .insert({
           id: studentId,
-          email: `${studentInfo.name.toLowerCase().replace(/\s/g, '')}_${Date.now()}@student.local`, // Create a unique email for student
-          first_name: studentInfo.name,
-          grade: parseInt(studentInfo.grade),
+          email: `${studentName.toLowerCase().replace(/\s/g, '')}_${Date.now()}@student.local`, // Create a unique email for student
+          first_name: studentName,
+          grade: parseInt(studentGrade),
           role: 'student',
           account_type: 'student',
           parent_id: parentAuth.user.id,
@@ -256,6 +262,14 @@ export default function ParentVerify() {
         console.error('Error updating consent record:', consentUpdateError);
       }
 
+      // Set state for success display
+      setStudentInfo({
+        name: studentName,
+        grade: studentGrade,
+        email: email
+      });
+      setParentName(parentName);
+      
       // Show success with passcode
       setPasscode(newPasscode);
       setVerificationComplete(true);
