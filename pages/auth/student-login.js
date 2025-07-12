@@ -11,7 +11,7 @@ import { supabase } from '../../lib/db';
  */
 export default function StudentLogin() {
   const router = useRouter();
-  const { refreshUser } = useAuth();
+  const { refreshUser, setStudentSession } = useAuth();
   
   // Form state management
   const [loading, setLoading] = useState(false);
@@ -69,22 +69,23 @@ export default function StudentLogin() {
         throw new Error(data.error || 'Login failed');
       }
 
-      // Students don't use Supabase Auth - API already verified their credentials
-      // For now, we'll just redirect to dashboard
-      // TODO: Implement proper session management for students
-      
+      // Students don't use Supabase Auth - use our custom session handler
       console.log('Student login successful:', data);
       
-      // Store student data temporarily (dashboard will need to handle student sessions differently)
-      sessionStorage.setItem('studentData', JSON.stringify({
+      // Set student session through AuthContext
+      const result = await setStudentSession({
         id: data.studentId,
         email: data.email,
         firstName: firstName.trim(),
         role: 'student'
-      }));
+      });
 
-      // Redirect to dashboard
-      router.push('/dashboard');
+      if (result.success) {
+        // Navigate to dashboard after session is set
+        router.push('/dashboard');
+      } else {
+        throw new Error('Failed to set student session');
+      }
     } catch (err) {
       console.error('Login error:', err);
       setError(err.message || 'Failed to login. Please check your details and try again.');
