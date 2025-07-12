@@ -32,6 +32,8 @@ export default async function handler(req, res) {
       .insert({
         child_first_name: studentName,
         child_grade: parseInt(studentGrade),
+        parent_email: parentEmail,
+        parent_name: parentName,
         // parent_id and child_id will be updated after payment success
       })
       .select()
