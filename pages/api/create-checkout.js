@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { type, parentEmail, studentName, studentGrade, parentName } = req.body;
+    const { type, parentEmail, studentName, studentGrade, parentName, parentPassword } = req.body;
 
     // Validate required fields
     if (!parentEmail || !studentName || !studentGrade || !parentName) {
@@ -65,6 +65,7 @@ export default async function handler(req, res) {
         consent_id: consentData.id,
         parent_email: parentEmail,
         parent_name: parentName,
+        parent_password: parentPassword,
         student_name: studentName,
         student_grade: studentGrade,
       },

@@ -40,6 +40,7 @@ export default async function handler(req, res) {
       consentId: consentId,
       parentEmail: session.metadata.parent_email,
       parentName: session.metadata.parent_name,
+      parentPassword: session.metadata.parent_password,
       studentName: session.metadata.student_name,
       studentGrade: session.metadata.student_grade
     });

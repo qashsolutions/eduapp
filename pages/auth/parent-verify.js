@@ -21,6 +21,7 @@ export default function ParentVerify() {
   const [error, setError] = useState('');
   const [studentInfo, setStudentInfo] = useState(null);
   const [parentName, setParentName] = useState('');
+  const [parentPassword, setParentPassword] = useState('');
   const [passcode, setPasscode] = useState('');
   const [verificationComplete, setVerificationComplete] = useState(false);
 
@@ -75,6 +76,7 @@ export default function ParentVerify() {
       const verificationData = {
         email: data.parentEmail,
         parentName: data.parentName,
+        parentPassword: data.parentPassword,
         studentName: data.studentName,
         studentGrade: data.studentGrade,
         consentId: consentId
@@ -153,7 +155,8 @@ export default function ParentVerify() {
           parentEmail: studentInfo.email,
           studentName: studentInfo.name,
           studentGrade: studentInfo.grade,
-          parentName: parentName.trim()
+          parentName: parentName.trim(),
+          parentPassword: parentPassword
         })
       });
 
@@ -190,10 +193,10 @@ export default function ParentVerify() {
   const completeVerification = async (verificationData) => {
     try {
       // Extract data from parameter
-      const { email, parentName, studentName, studentGrade, consentId } = verificationData;
+      const { email, parentName, parentPassword, studentName, studentGrade, consentId } = verificationData;
       
       // Validate required data
-      if (!email || !parentName || !studentName) {
+      if (!email || !parentName || !studentName || !parentPassword) {
         throw new Error('Missing required information. Please try again.');
       }
       
@@ -202,7 +205,7 @@ export default function ParentVerify() {
       // Create parent account
       const { data: parentAuth, error: parentError } = await supabase.auth.signUp({
         email: email,
-        password: Math.random().toString(36).slice(-12), // Random password for parent
+        password: parentPassword, // Use parent's chosen password
         options: {
           data: {
             first_name: parentName,
@@ -547,6 +550,23 @@ export default function ParentVerify() {
                 onChange={(e) => setParentName(e.target.value)}
                 disabled={processing}
                 required
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="parentPassword">
+                Create a password
+              </label>
+              <input
+                type="password"
+                id="parentPassword"
+                className="form-input"
+                placeholder="8+ chars: a-z, A-Z, 0-9, special char"
+                value={parentPassword}
+                onChange={(e) => setParentPassword(e.target.value)}
+                disabled={processing}
+                required
+                minLength={8}
               />
             </div>
 
