@@ -202,33 +202,65 @@ export default function ParentVerify() {
       
       // Generate student passcode
       const newPasscode = generatePasscode();
-      // Create parent account
-      const { data: parentAuth, error: parentError } = await supabase.auth.signUp({
-        email: email,
-        password: parentPassword, // Use parent's chosen password
-        options: {
-          data: {
-            first_name: parentName,
-            role: 'parent'
-          }
-        }
-      });
-
-      if (parentError) throw parentError;
-
-      // Create parent user record (since we removed the trigger)
-      const { error: parentInsertError } = await supabase
+      // Check if parent already exists
+      const { data: existingParent, error: checkError } = await supabase
         .from('users')
-        .insert({
-          id: parentAuth.user.id,
-          email: email.toLowerCase(),
-          role: 'parent',
-          account_type: 'parent',
-          first_name: parentName,
-          consent_date: new Date().toISOString()
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .eq('role', 'parent')
+        .single();
+
+      let parentId;
+      
+      if (existingParent) {
+        // Parent exists - check how many children they have
+        const { count, error: countError } = await supabase
+          .from('parent_consents')
+          .select('*', { count: 'exact', head: true })
+          .eq('parent_id', existingParent.id);
+          
+        if (count >= 2) {
+          throw new Error('You have reached the maximum limit of 2 children per parent account. Please contact support if you need assistance.');
+        }
+        
+        parentId = existingParent.id;
+        console.log('Parent already exists, using existing account');
+      } else {
+        // Create new parent account
+        const { data: parentAuth, error: parentError } = await supabase.auth.signUp({
+          email: email,
+          password: parentPassword,
+          options: {
+            data: {
+              first_name: parentName,
+              role: 'parent'
+            }
+          }
         });
 
-      if (parentInsertError) throw parentInsertError;
+        if (parentError) {
+          if (parentError.message.includes('already registered')) {
+            throw new Error('This email is already registered. Please sign in to your existing account to add another child.');
+          }
+          throw parentError;
+        }
+
+        parentId = parentAuth.user.id;
+
+        // Create parent user record (since we removed the trigger)
+        const { error: parentInsertError } = await supabase
+          .from('users')
+          .insert({
+            id: parentAuth.user.id,
+            email: email.toLowerCase(),
+            role: 'parent',
+            account_type: 'parent',
+            first_name: parentName,
+            consent_date: new Date().toISOString()
+          });
+
+        if (parentInsertError) throw parentInsertError;
+      }
 
       // Generate student ID to use in both places
       const studentId = crypto.randomUUID();
@@ -243,7 +275,7 @@ export default function ParentVerify() {
           grade: parseInt(studentGrade),
           role: 'student',
           account_type: 'student',
-          parent_id: parentAuth.user.id,
+          parent_id: parentId,
           passcode: newPasscode,
           consent_date: new Date().toISOString(),
           added_by_parent: true,
@@ -256,7 +288,7 @@ export default function ParentVerify() {
       const { error: consentUpdateError } = await supabase
         .from('parent_consents')
         .update({
-          parent_id: parentAuth.user.id,
+          parent_id: parentId,
           child_id: studentId
         })
         .eq('id', consentId);
@@ -278,7 +310,17 @@ export default function ParentVerify() {
       setVerificationComplete(true);
     } catch (err) {
       console.error('Verification completion error:', err);
-      setError('Failed to complete verification. Please contact support.');
+      // Show user-friendly error messages
+      if (err.message.includes('maximum limit of 2 children')) {
+        setError(err.message);
+      } else if (err.message.includes('already registered')) {
+        setError(err.message);
+      } else if (err.message.includes('duplicate key')) {
+        setError('This account already exists. Please sign in to continue.');
+      } else {
+        setError(err.message || 'Failed to complete verification. Please contact support.');
+      }
+      setLoading(false);
     }
   };
 
