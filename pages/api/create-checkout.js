@@ -1,13 +1,6 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
-console.log('API Route - Stripe Secret Key Check:', {
-  hasKey: !!process.env.STRIPE_SECRET_KEY,
-  keyLength: process.env.STRIPE_SECRET_KEY?.length,
-  firstChars: process.env.STRIPE_SECRET_KEY?.substring(0, 10),
-  lastChars: process.env.STRIPE_SECRET_KEY?.substring(process.env.STRIPE_SECRET_KEY.length - 5)
-});
-
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Use service role for server-side operations
@@ -20,12 +13,6 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-
-  // Debug: Check if environment variable is loaded
-  console.log('Environment check:', {
-    hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
-    nodeEnv: process.env.NODE_ENV
-  });
 
   if (!process.env.STRIPE_SECRET_KEY) {
     return res.status(500).json({ error: 'Stripe configuration error - secret key not found' });

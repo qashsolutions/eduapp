@@ -5,13 +5,6 @@ import { supabase } from '../../lib/db';
 import { loadStripe } from '@stripe/stripe-js';
 
 // Initialize Stripe with publishable key from environment
-console.log('Stripe Publishable Key Check:', {
-  key: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-  hasKey: !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-  keyLength: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.length,
-  firstChars: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.substring(0, 10)
-});
-
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 /**
@@ -35,10 +28,67 @@ export default function ParentVerify() {
    * Verify token and load student information on mount
    */
   useEffect(() => {
-    if (token) {
+    // Check if returning from successful payment first
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentSuccess = urlParams.get('payment_success') === 'true';
+    
+    if (paymentSuccess) {
+      // Handle payment success case
+      handlePaymentReturn();
+    } else if (token) {
+      // Normal flow - verify token
       verifyToken();
+    } else {
+      // No token and no payment success
+      setError('Invalid verification link');
+      setLoading(false);
     }
-  }, [token]);
+  }, [token, router.query]);
+
+  /**
+   * Handle return from Stripe payment
+   */
+  const handlePaymentReturn = async () => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionId = urlParams.get('session_id');
+      const consentId = urlParams.get('consent_id');
+      
+      if (!sessionId || !consentId) {
+        throw new Error('Missing payment information');
+      }
+      
+      // Verify payment and get student info from API
+      const response = await fetch('/api/verify-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, consentId })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok || !data.paid) {
+        throw new Error(data.error || 'Payment verification failed');
+      }
+      
+      // Set student info from payment data
+      setStudentInfo({
+        name: data.studentName,
+        grade: data.studentGrade,
+        email: data.parentEmail
+      });
+      
+      setParentName(data.parentName);
+      
+      // Now complete the verification
+      await completeVerification(consentId);
+      
+    } catch (err) {
+      console.error('Payment return error:', err);
+      setError(err.message || 'Failed to process payment. Please contact support.');
+      setLoading(false);
+    }
+  };
 
   /**
    * Verify the magic link token and retrieve student data
@@ -115,18 +165,7 @@ export default function ParentVerify() {
       }
 
       // Redirect to Stripe Checkout
-      console.log('About to load Stripe:', {
-        stripePromise: stripePromise,
-        sessionId: sessionId
-      });
-      
       const stripe = await stripePromise;
-      
-      console.log('Stripe loaded:', {
-        stripe: stripe,
-        hasStripe: !!stripe,
-        stripeType: typeof stripe
-      });
       
       if (!stripe) {
         throw new Error('Stripe failed to initialize. Check your publishable key.');
@@ -144,47 +183,7 @@ export default function ParentVerify() {
     }
   };
 
-  /**
-   * Complete verification after successful payment
-   * This would typically be called after returning from Stripe
-   */
-  useEffect(() => {
-    // Check if returning from successful payment
-    const urlParams = new URLSearchParams(window.location.search);
-    const paymentSuccess = urlParams.get('payment_success') === 'true';
-    const sessionId = urlParams.get('session_id');
-    const consentId = urlParams.get('consent_id');
-    
-    if (paymentSuccess && sessionId && consentId && studentInfo) {
-      verifyPaymentAndComplete(sessionId, consentId);
-    }
-  }, [studentInfo]);
 
-  /**
-   * Verify payment with Stripe and complete the verification
-   */
-  const verifyPaymentAndComplete = async (sessionId, consentId) => {
-    try {
-      // Verify payment was successful via API
-      const response = await fetch('/api/verify-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, consentId })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.paid) {
-        throw new Error('Payment verification failed');
-      }
-
-      // Payment verified, now complete the process
-      await completeVerification(consentId);
-    } catch (err) {
-      console.error('Payment verification error:', err);
-      setError('Payment verification failed. Please contact support.');
-    }
-  };
 
   /**
    * Complete the verification process after payment
