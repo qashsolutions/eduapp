@@ -69,19 +69,21 @@ export default function StudentLogin() {
         throw new Error(data.error || 'Login failed');
       }
 
-      // Sign in with Supabase using the returned email and constructed password
-      const password = passcode + data.passwordHint;
-      const { error: authError } = await supabase.auth.signInWithPassword({
+      // Students don't use Supabase Auth - API already verified their credentials
+      // For now, we'll just redirect to dashboard
+      // TODO: Implement proper session management for students
+      
+      console.log('Student login successful:', data);
+      
+      // Store student data temporarily (dashboard will need to handle student sessions differently)
+      sessionStorage.setItem('studentData', JSON.stringify({
+        id: data.studentId,
         email: data.email,
-        password: password
-      });
+        firstName: firstName.trim(),
+        role: 'student'
+      }));
 
-      if (authError) {
-        throw new Error('Authentication failed. Please try again.');
-      }
-
-      // Refresh auth context and redirect to dashboard
-      await refreshUser();
+      // Redirect to dashboard
       router.push('/dashboard');
     } catch (err) {
       console.error('Login error:', err);
