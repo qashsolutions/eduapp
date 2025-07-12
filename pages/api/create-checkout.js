@@ -1,6 +1,13 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
+console.log('API Route - Stripe Secret Key Check:', {
+  hasKey: !!process.env.STRIPE_SECRET_KEY,
+  keyLength: process.env.STRIPE_SECRET_KEY?.length,
+  firstChars: process.env.STRIPE_SECRET_KEY?.substring(0, 10),
+  lastChars: process.env.STRIPE_SECRET_KEY?.substring(process.env.STRIPE_SECRET_KEY.length - 5)
+});
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Use service role for server-side operations

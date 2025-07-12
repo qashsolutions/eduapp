@@ -5,6 +5,13 @@ import { supabase } from '../../lib/db';
 import { loadStripe } from '@stripe/stripe-js';
 
 // Initialize Stripe with publishable key from environment
+console.log('Stripe Publishable Key Check:', {
+  key: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+  hasKey: !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+  keyLength: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.length,
+  firstChars: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.substring(0, 10)
+});
+
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 /**
@@ -108,7 +115,23 @@ export default function ParentVerify() {
       }
 
       // Redirect to Stripe Checkout
+      console.log('About to load Stripe:', {
+        stripePromise: stripePromise,
+        sessionId: sessionId
+      });
+      
       const stripe = await stripePromise;
+      
+      console.log('Stripe loaded:', {
+        stripe: stripe,
+        hasStripe: !!stripe,
+        stripeType: typeof stripe
+      });
+      
+      if (!stripe) {
+        throw new Error('Stripe failed to initialize. Check your publishable key.');
+      }
+      
       const { error: stripeError } = await stripe.redirectToCheckout({ sessionId });
 
       if (stripeError) {
