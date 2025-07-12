@@ -14,6 +14,16 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Debug: Check if environment variable is loaded
+  console.log('Environment check:', {
+    hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
+    nodeEnv: process.env.NODE_ENV
+  });
+
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return res.status(500).json({ error: 'Stripe configuration error - secret key not found' });
+  }
+
   try {
     const { type, parentEmail, studentName, studentGrade, parentName } = req.body;
 
