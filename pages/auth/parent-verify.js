@@ -234,112 +234,31 @@ export default function ParentVerify() {
       // Generate student passcode
       const newPasscode = generatePasscode();
       console.log('Generated passcode:', newPasscode);
-      // Check if parent already exists
-      const { data: existingParent, error: checkError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('email', email.toLowerCase())
-        .eq('role', 'parent')
-        .single();
-
-      let parentId;
       
-      if (existingParent) {
-        // Parent exists - check how many children they have
-        const { count, error: countError } = await supabase
-          .from('parent_consents')
-          .select('*', { count: 'exact', head: true })
-          .eq('parent_id', existingParent.id);
-          
-        if (count >= 2) {
-          throw new Error('You have reached the maximum limit of 2 children per parent account. Please contact support if you need assistance.');
-        }
-        
-        parentId = existingParent.id;
-        console.log('Parent already exists, using existing account');
-      } else {
-        // Create new parent account
-        console.log('Creating new parent account for:', email);
-        const { data: parentAuth, error: parentError } = await supabase.auth.signUp({
-          email: email,
-          password: parentPassword,
-          options: {
-            data: {
-              first_name: parentName,
-              role: 'parent'
-            }
-          }
-        });
-
-        console.log('Parent signup result:', { 
-          success: !!parentAuth?.user, 
-          error: parentError?.message,
-          userId: parentAuth?.user?.id 
-        });
-
-        if (parentError) {
-          console.error('Parent signup error:', parentError);
-          if (parentError.message.includes('already registered')) {
-            throw new Error('This email is already registered. Please sign in to your existing account to add another child.');
-          }
-          throw parentError;
-        }
-
-        parentId = parentAuth.user.id;
-
-        // Create parent user record (since we removed the trigger)
-        const { error: parentInsertError } = await supabase
-          .from('users')
-          .insert({
-            id: parentAuth.user.id,
-            email: email.toLowerCase(),
-            role: 'parent',
-            account_type: 'parent',
-            first_name: parentName,
-            consent_date: new Date().toISOString()
-          });
-
-        if (parentInsertError) throw parentInsertError;
-      }
-
-      // Generate student ID to use in both places
-      const studentId = crypto.randomUUID();
-
-      // Create student record linked to parent
-      const { error: studentError } = await supabase
-        .from('users')
-        .insert({
-          id: studentId,
-          email: `${studentName.toLowerCase().replace(/\s/g, '')}_${Date.now()}@student.local`, // Create a unique email for student
-          first_name: studentName,
-          grade: parseInt(studentGrade),
-          role: 'student',
-          account_type: 'student',
-          parent_id: parentId,
-          passcode: newPasscode,
-          consent_date: new Date().toISOString(),
-          added_by_parent: true,
-          subscription_status: 'free' // Students start with free tier
-        });
-
-      if (studentError) throw studentError;
-
-      // Update parent_consents record with parent_id and child_id
-      console.log('Updating parent_consents with:', { parentId, studentId, consentId });
-      const { error: consentUpdateError } = await supabase
-        .from('parent_consents')
-        .update({
-          parent_id: parentId,
-          child_id: studentId
+      // Call API to complete verification (server-side with service role)
+      console.log('Calling complete-verification API...');
+      const response = await fetch('/api/complete-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          parentName,
+          parentPassword,
+          studentName,
+          studentGrade,
+          consentId,
+          passcode: newPasscode
         })
-        .eq('id', consentId);
-
-      if (consentUpdateError) {
-        console.error('Error updating consent record:', consentUpdateError);
-        console.error('Update error details:', JSON.stringify(consentUpdateError, null, 2));
+      });
+      
+      const result = await response.json();
+      console.log('API response:', result);
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to complete verification');
       }
-
-      // Set state for success display
+      
+      // Set success state
       setStudentInfo({
         name: studentName,
         grade: studentGrade,
