@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { validateStudentSession } from '../../lib/studentAuth';
+import { validateStudentSession } from '../../lib/studentAuthServer';
 
 // Use service role key to bypass RLS
 const supabase = createClient(

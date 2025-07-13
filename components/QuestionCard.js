@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { setCachedProficiency } from '../lib/utils';
-import { retrieveSessionData } from '../lib/studentAuth';
+import { retrieveSessionData } from '../lib/studentSession';
 
 export default function QuestionCard({ 
   question, 

@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/db';
-import { createStudentSession } from '../../lib/studentAuth';
+import { createStudentSession } from '../../lib/studentAuthServer';
 
 /**
  * API endpoint for student login using first name and passcode

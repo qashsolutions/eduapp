@@ -9,7 +9,7 @@ import QuestionCard from '../components/QuestionCard';
 import { useAuth } from '../lib/AuthContext';
 import { getUser, getSessionStats } from '../lib/db';
 import { MOOD_TOPICS, formatTopicName, getCachedProficiency } from '../lib/utils';
-import { retrieveSessionData, refreshStudentSession, storeSessionData } from '../lib/studentAuth';
+import { retrieveSessionData, storeSessionData, checkSessionExpiry } from '../lib/studentSession';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -35,25 +35,31 @@ export default function Dashboard() {
       if (user.role === 'student') {
         const studentData = retrieveSessionData();
         if (studentData && studentData.expiresAt) {
-          const expiresAt = new Date(studentData.expiresAt);
-          const now = new Date();
-          const daysUntilExpiry = (expiresAt - now) / (1000 * 60 * 60 * 24);
+          const expiryStatus = checkSessionExpiry(studentData.expiresAt);
           
           // Refresh session if less than 2 days until expiry
-          if (daysUntilExpiry < 2 && daysUntilExpiry > 0) {
-            refreshStudentSession(studentData.sessionToken)
-              .then(result => {
+          if (expiryStatus.shouldRefresh) {
+            fetch('/api/refresh-student-session', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Student ${studentData.sessionToken}`
+              }
+            })
+            .then(res => res.json())
+            .then(result => {
+              if (result.success) {
                 // Update stored session with new expiry
                 const updatedData = { ...studentData, expiresAt: result.expiresAt };
                 const keepSignedIn = localStorage.getItem('studentData') !== null;
                 storeSessionData(updatedData, keepSignedIn);
-              })
-              .catch(err => console.error('Failed to refresh session:', err));
+              }
+            })
+            .catch(err => console.error('Failed to refresh session:', err));
           }
           
           // Show warning if less than 5 minutes until expiry
-          const minutesUntilExpiry = (expiresAt - now) / (1000 * 60);
-          if (minutesUntilExpiry < 5 && minutesUntilExpiry > 0) {
+          if (expiryStatus.isExpiring) {
             setShowExpiryWarning(true);
           }
         }

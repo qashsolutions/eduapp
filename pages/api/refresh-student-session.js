@@ -1,5 +1,5 @@
-import { refreshStudentSession } from '../../lib/studentAuth';
 import { authMiddleware } from '../../lib/authMiddleware';
+import { supabase } from '../../lib/db';
 
 /**
  * API endpoint to refresh student session
@@ -21,12 +21,26 @@ export default async function handler(req, res) {
     const authHeader = req.headers.authorization;
     const token = authHeader.replace('Student ', '');
 
-    // Refresh the session
-    const result = await refreshStudentSession(token);
+    // Calculate new expiry (7 days from now)
+    const newExpiresAt = new Date();
+    newExpiresAt.setDate(newExpiresAt.getDate() + 7);
+    
+    // Update session expiry in database
+    const { data, error } = await supabase
+      .from('student_sessions')
+      .update({ 
+        expires_at: newExpiresAt.toISOString(),
+        last_accessed: new Date().toISOString()
+      })
+      .eq('session_token', token)
+      .select()
+      .single();
+    
+    if (error) throw error;
     
     return res.status(200).json({
       success: true,
-      expiresAt: result.expiresAt,
+      expiresAt: newExpiresAt.toISOString(),
       message: 'Session refreshed successfully'
     });
 
