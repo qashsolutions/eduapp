@@ -8,7 +8,7 @@ import ProgressBar from '../components/ProgressBar';
 import QuestionCard from '../components/QuestionCard';
 import { useAuth } from '../lib/AuthContext';
 import { getUser, getSessionStats } from '../lib/db';
-import { MOOD_TOPICS, formatTopicName, getCachedProficiency } from '../lib/utils';
+import { MOOD_TOPICS, formatTopicName, getCachedProficiency, setCachedProficiency } from '../lib/utils';
 import { retrieveSessionData, storeSessionData, checkSessionExpiry } from '../lib/studentSession';
 
 export default function Dashboard() {
@@ -176,11 +176,8 @@ export default function Dashboard() {
       if (response.ok) {
         const data = await response.json();
         
-        // Update local user state with new proficiency
-        setUser(prev => ({
-          ...prev,
-          [selectedTopic]: data.newProficiency
-        }));
+        // Update cached proficiency immediately
+        setCachedProficiency(selectedTopic, data.newProficiency);
 
         // Update session stats
         setSessionStats(prev => ({

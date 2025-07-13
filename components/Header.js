@@ -64,7 +64,17 @@ export default function Header() {
             <>
               <div className="user-info">
                 <span className="user-email">
-                  {user.role === 'student' && user.first_name ? user.first_name : user.email}
+                  {(() => {
+                    if (user.role === 'student') {
+                      // If we have first_name and it doesn't look like an email
+                      if (user.first_name && !user.first_name.includes('@')) {
+                        return user.first_name;
+                      }
+                      // Otherwise extract from email
+                      return user.email.split('_')[0];
+                    }
+                    return user.email;
+                  })()}
                 </span>
                 {trialDaysLeft === 'pending' && (
                   <span className="pending-badge">
