@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/db';
+import { createStudentSession } from '../../lib/studentAuth';
 
 /**
  * API endpoint for student login using first name and passcode
@@ -29,14 +30,18 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Invalid first name or passcode' });
     }
 
-    // Return student data and let frontend handle auth
-    // Frontend will use the email and a standard password pattern
+    // Create a secure session token for the student
+    const { token, expiresAt } = await createStudentSession(student.id);
+    
+    // Return student data with session token
     return res.status(200).json({ 
       success: true, 
       email: student.email,
       studentId: student.id,
-      // Frontend will construct password as passcode + 'Student!'
-      passwordHint: 'Student!'
+      sessionToken: token,
+      expiresAt: expiresAt,
+      firstName: student.first_name,
+      grade: student.grade
     });
 
   } catch (error) {

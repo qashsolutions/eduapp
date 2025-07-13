@@ -49,15 +49,28 @@ export default function Dashboard() {
     setGenerating(true);
 
     try {
-      // Get Supabase session token for authentication
-      const session = await getSession();
-      const token = session?.access_token;
+      // Get appropriate auth token
+      let authHeader = '';
+      if (user.role === 'student') {
+        // Get student session token from sessionStorage
+        const studentData = sessionStorage.getItem('studentData');
+        if (studentData) {
+          const { sessionToken } = JSON.parse(studentData);
+          authHeader = `Student ${sessionToken}`;
+        }
+      } else {
+        // Get Supabase session token for parents/teachers
+        const session = await getSession();
+        if (session?.access_token) {
+          authHeader = `Bearer ${session.access_token}`;
+        }
+      }
       
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
+          'Authorization': authHeader
         },
         body: JSON.stringify({
           action: 'generate',
@@ -84,14 +97,26 @@ export default function Dashboard() {
 
   const handleAnswer = async (correct, timeSpent, hintsUsed, selectedAnswer) => {
     try {
-      const session = await getSession();
-      const token = session?.access_token;
+      // Get appropriate auth token (same logic as handleTopicSelect)
+      let authHeader = '';
+      if (user.role === 'student') {
+        const studentData = sessionStorage.getItem('studentData');
+        if (studentData) {
+          const { sessionToken } = JSON.parse(studentData);
+          authHeader = `Student ${sessionToken}`;
+        }
+      } else {
+        const session = await getSession();
+        if (session?.access_token) {
+          authHeader = `Bearer ${session.access_token}`;
+        }
+      }
       
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
+          'Authorization': authHeader
         },
         body: JSON.stringify({
           action: 'submit',

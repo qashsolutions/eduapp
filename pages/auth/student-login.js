@@ -76,8 +76,11 @@ export default function StudentLogin() {
       const result = await setStudentSession({
         id: data.studentId,
         email: data.email,
-        firstName: firstName.trim(),
-        role: 'student'
+        firstName: data.firstName,
+        grade: data.grade,
+        role: 'student',
+        sessionToken: data.sessionToken,
+        expiresAt: data.expiresAt
       });
 
       if (result.success) {

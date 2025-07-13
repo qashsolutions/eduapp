@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { generateWithOpenAI, generateWithClaude, validateQuestion, createQuestionPrompt, generateSocraticFollowup } from '../../lib/ai-service';
 import { getUser, updateUserProficiency, logQuestionAttempt, getCachedQuestion, cacheQuestion, checkQuestionHash } from '../../lib/db';
 import { mapProficiencyToDifficulty, updateProficiency, AI_ROUTING, EDUCATIONAL_TOPICS, getRandomContext, generateQuestionHash } from '../../lib/utils';
+import { validateAuth } from '../../lib/authMiddleware';
 
 // Rate limiting store - tracks requests per user per minute
 const rateLimitStore = new Map();
@@ -45,28 +46,8 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY // Use service role for RLS bypass
 );
-
-// Verify Supabase token
-async function verifySupabaseToken(token) {
-  if (!token) return null;
-  
-  try {
-    // Get user from token
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    
-    if (error || !user) {
-      console.error('Token verification failed:', error);
-      return null;
-    }
-    
-    return user.id; // This is the Supabase user ID
-  } catch (error) {
-    console.error('Error verifying Supabase token:', error);
-    return null;
-  }
-}
 
 // Initialize AI clients server-side only
 const openaiKey = process.env.OPENAI_API_KEY;
@@ -128,24 +109,25 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
   try {
     const { action, userId, topic, answer, timeSpent, hintsUsed } = req.body;
 
-    // Extract and verify Supabase token
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'No authorization token provided' });
+    // Validate authentication using middleware
+    const authResult = await validateAuth(req);
+    
+    if (!authResult.authenticated) {
+      return res.status(401).json({ error: authResult.error || 'Authentication required' });
     }
     
-    const token = authHeader.split('Bearer ')[1];
-    const verifiedUserId = await verifySupabaseToken(token);
-    
-    if (!verifiedUserId) {
-      return res.status(401).json({ error: 'Invalid or expired token' });
-    }
-    
-    // The verifiedUserId from Supabase should match the userId in request body
-    // userId in our database is the Supabase user ID stored as text
-    if (verifiedUserId !== userId) {
-      console.error('Token mismatch:', { verifiedUserId, requestUserId: userId });
-      return res.status(401).json({ error: 'Token mismatch' });
+    // For students, verify the userId matches their session
+    if (authResult.isStudent) {
+      if (authResult.user.id !== userId) {
+        console.error('Student ID mismatch:', { sessionId: authResult.user.id, requestId: userId });
+        return res.status(403).json({ error: 'Unauthorized access' });
+      }
+    } else {
+      // For parents/teachers using Supabase auth
+      const { data: { user }, error } = await supabase.auth.getUser(req.headers.authorization.split('Bearer ')[1]);
+      if (error || !user || user.id !== userId) {
+        return res.status(401).json({ error: 'Invalid token' });
+      }
     }
     
     // Check rate limit
