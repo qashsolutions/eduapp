@@ -60,15 +60,27 @@ export default function QuestionCard({
       
       // Otherwise, fetch a new hint
       try {
-        // Get Supabase session token for authentication
-        const session = await getSession();
-        const token = session?.access_token;
+        // Get appropriate auth token
+        let authHeader = '';
+        
+        // Check if this is a student user
+        const studentData = sessionStorage.getItem('studentData');
+        if (studentData) {
+          const { sessionToken } = JSON.parse(studentData);
+          authHeader = `Student ${sessionToken}`;
+        } else {
+          // Get Supabase session token for parents/teachers
+          const session = await getSession();
+          if (session?.access_token) {
+            authHeader = `Bearer ${session.access_token}`;
+          }
+        }
         
         const response = await fetch('/api/generate', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'Authorization': token ? `Bearer ${token}` : ''
+            'Authorization': authHeader
           },
           body: JSON.stringify({
             action: 'socratic',
