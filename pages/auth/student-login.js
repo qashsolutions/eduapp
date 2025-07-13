@@ -20,6 +20,7 @@ export default function StudentLogin() {
   // Form field states
   const [firstName, setFirstName] = useState('');
   const [passcode, setPasscode] = useState('');
+  const [keepSignedIn, setKeepSignedIn] = useState(false);
 
   /**
    * Handle passcode input with auto-formatting
@@ -80,7 +81,8 @@ export default function StudentLogin() {
         grade: data.grade,
         role: 'student',
         sessionToken: data.sessionToken,
-        expiresAt: data.expiresAt
+        expiresAt: data.expiresAt,
+        keepSignedIn: keepSignedIn
       });
 
       if (result.success) {
@@ -175,6 +177,23 @@ export default function StudentLogin() {
               />
               <p className="input-hint">
                 Your parent gave you this 6-digit code
+              </p>
+            </div>
+
+            {/* Keep me signed in checkbox */}
+            <div className="form-group checkbox-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={keepSignedIn}
+                  onChange={(e) => setKeepSignedIn(e.target.checked)}
+                  disabled={loading}
+                  className="checkbox-input"
+                />
+                <span className="checkbox-text">Keep me signed in</span>
+              </label>
+              <p className="checkbox-hint">
+                Only check this on your personal device
               </p>
             </div>
 
@@ -444,6 +463,38 @@ export default function StudentLogin() {
           font-size: 0.9rem;
           color: rgba(255,255,255,0.6);
           margin-top: 0.5rem;
+        }
+
+        /* Checkbox styling */
+        .checkbox-group {
+          margin-bottom: 1rem;
+        }
+
+        .checkbox-label {
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+          user-select: none;
+        }
+
+        .checkbox-input {
+          width: 20px;
+          height: 20px;
+          margin-right: 0.75rem;
+          cursor: pointer;
+          accent-color: #3b82f6;
+        }
+
+        .checkbox-text {
+          color: white;
+          font-size: 1rem;
+        }
+
+        .checkbox-hint {
+          font-size: 0.85rem;
+          color: rgba(255,255,255,0.5);
+          margin-top: 0.25rem;
+          margin-left: 2rem;
         }
 
         /* Info box styling */

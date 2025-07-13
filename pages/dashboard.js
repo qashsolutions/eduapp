@@ -9,6 +9,7 @@ import QuestionCard from '../components/QuestionCard';
 import { useAuth } from '../lib/AuthContext';
 import { getUser, getSessionStats } from '../lib/db';
 import { MOOD_TOPICS, formatTopicName, getCachedProficiency } from '../lib/utils';
+import { retrieveSessionData, refreshStudentSession, storeSessionData } from '../lib/studentAuth';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [sessionStats, setSessionStats] = useState({ totalQuestions: 0, correctAnswers: 0 });
+  const [showExpiryWarning, setShowExpiryWarning] = useState(false);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
@@ -28,6 +30,34 @@ export default function Dashboard() {
       }).catch(error => {
         console.error('Error loading session stats:', error);
       });
+      
+      // Check session expiry for students
+      if (user.role === 'student') {
+        const studentData = retrieveSessionData();
+        if (studentData && studentData.expiresAt) {
+          const expiresAt = new Date(studentData.expiresAt);
+          const now = new Date();
+          const daysUntilExpiry = (expiresAt - now) / (1000 * 60 * 60 * 24);
+          
+          // Refresh session if less than 2 days until expiry
+          if (daysUntilExpiry < 2 && daysUntilExpiry > 0) {
+            refreshStudentSession(studentData.sessionToken)
+              .then(result => {
+                // Update stored session with new expiry
+                const updatedData = { ...studentData, expiresAt: result.expiresAt };
+                const keepSignedIn = localStorage.getItem('studentData') !== null;
+                storeSessionData(updatedData, keepSignedIn);
+              })
+              .catch(err => console.error('Failed to refresh session:', err));
+          }
+          
+          // Show warning if less than 5 minutes until expiry
+          const minutesUntilExpiry = (expiresAt - now) / (1000 * 60);
+          if (minutesUntilExpiry < 5 && minutesUntilExpiry > 0) {
+            setShowExpiryWarning(true);
+          }
+        }
+      }
     }
   }, [user, authLoading, isAuthenticated]);
 
@@ -52,10 +82,10 @@ export default function Dashboard() {
       // Get appropriate auth token
       let authHeader = '';
       if (user.role === 'student') {
-        // Get student session token from sessionStorage
-        const studentData = sessionStorage.getItem('studentData');
+        // Get student session token from storage
+        const studentData = retrieveSessionData();
         if (studentData) {
-          const { sessionToken } = JSON.parse(studentData);
+          const { sessionToken } = studentData;
           authHeader = `Student ${sessionToken}`;
         }
       } else {
@@ -101,9 +131,9 @@ export default function Dashboard() {
       // Get appropriate auth token (same logic as handleTopicSelect)
       let authHeader = '';
       if (user.role === 'student') {
-        const studentData = sessionStorage.getItem('studentData');
+        const studentData = retrieveSessionData();
         if (studentData) {
-          const { sessionToken } = JSON.parse(studentData);
+          const { sessionToken } = studentData;
           authHeader = `Student ${sessionToken}`;
         }
       } else {
@@ -271,6 +301,14 @@ export default function Dashboard() {
         <div className="bg-morphing"></div>
         
         <Header />
+        
+        {/* Session expiry warning for students */}
+        {showExpiryWarning && user?.role === 'student' && (
+          <div className="expiry-warning">
+            <p>⚠️ Your session will expire in less than 5 minutes. Please save your work!</p>
+            <button onClick={() => setShowExpiryWarning(false)} className="dismiss-btn">Dismiss</button>
+          </div>
+        )}
         
         <div className="container">
           {!selectedTopic ? (
@@ -699,6 +737,54 @@ export default function Dashboard() {
               .adventure-grid {
                 gap: 1rem;
               }
+            }
+            
+            /* Session expiry warning */
+            .expiry-warning {
+              position: fixed;
+              top: 0;
+              left: 0;
+              right: 0;
+              background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+              color: white;
+              padding: 1rem 2rem;
+              box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+              z-index: 1000;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              animation: slideDown 0.3s ease;
+            }
+            
+            @keyframes slideDown {
+              from {
+                transform: translateY(-100%);
+              }
+              to {
+                transform: translateY(0);
+              }
+            }
+            
+            .expiry-warning p {
+              margin: 0;
+              font-size: 1rem;
+              font-weight: 500;
+            }
+            
+            .dismiss-btn {
+              background: rgba(255, 255, 255, 0.2);
+              border: 1px solid rgba(255, 255, 255, 0.3);
+              color: white;
+              padding: 0.5rem 1rem;
+              border-radius: 8px;
+              cursor: pointer;
+              font-size: 0.9rem;
+              transition: all 0.2s ease;
+            }
+            
+            .dismiss-btn:hover {
+              background: rgba(255, 255, 255, 0.3);
+              transform: translateY(-1px);
             }
           `}</style>
 

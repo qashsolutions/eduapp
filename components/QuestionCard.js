@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { setCachedProficiency } from '../lib/utils';
+import { retrieveSessionData } from '../lib/studentAuth';
 
 export default function QuestionCard({ 
   question, 
@@ -64,9 +65,9 @@ export default function QuestionCard({
         let authHeader = '';
         
         // Check if this is a student user
-        const studentData = sessionStorage.getItem('studentData');
+        const studentData = retrieveSessionData();
         if (studentData) {
-          const { sessionToken } = JSON.parse(studentData);
+          const { sessionToken } = studentData;
           authHeader = `Student ${sessionToken}`;
         } else {
           // Get Supabase session token for parents/teachers
