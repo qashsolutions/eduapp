@@ -392,6 +392,294 @@ export default function ParentVerify() {
     );
   }
 
+  // Success state - show passcode (check this BEFORE error state)
+  if (verificationComplete) {
+    return (
+      <>
+        <Head>
+          <title>Verification Complete - Socratic AI Tutor</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Head>
+
+        <div className="auth-container">
+          <div className="bg-element"></div>
+          <div className="bg-element"></div>
+          <div className="bg-element"></div>
+          <div className="bg-element"></div>
+
+          <div className="form-container success-container">
+            <div className="form-header">
+              <div className="icon-container">
+                <span className="glow-icon glow-complete">✅</span>
+              </div>
+              <h1 className="form-title">Verification Complete!</h1>
+              <p className="form-subtitle">Your child's account is ready</p>
+            </div>
+
+            <div className="passcode-display">
+              <p className="passcode-label">Student Login Passcode:</p>
+              <div className="passcode-box">
+                {passcode}
+              </div>
+              <p className="passcode-hint">
+                Write this down! Your child will need this code along with their first name to login.
+              </p>
+            </div>
+
+            <div className="info-box success-box">
+              <p className="info-text">
+                <strong>What's next?</strong>
+              </p>
+              <ul className="next-steps">
+                <li>Give this passcode to {studentInfo?.name || 'your child'}</li>
+                <li>They can login with their first name and this code</li>
+                <li>You'll receive email updates about their progress</li>
+                <li>Access your parent dashboard anytime</li>
+              </ul>
+            </div>
+
+            <button 
+              onClick={() => router.push('/auth/student-login')}
+              className="btn btn-secondary"
+            >
+              Go to Student Login
+            </button>
+
+            <button 
+              onClick={() => router.push('/login')}
+              className="btn btn-primary"
+              style={{ marginTop: '1rem' }}
+            >
+              Go to Parent Dashboard
+            </button>
+          </div>
+
+          <style jsx>{`
+            /* Container styles */
+            .auth-container {
+              min-height: calc(100vh - 140px);
+              background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 3rem 1rem;
+              position: relative;
+              overflow: hidden;
+            }
+
+            /* Success-specific styles */
+            .success-container {
+              text-align: center;
+            }
+
+            .passcode-display {
+              background: rgba(52, 211, 153, 0.1);
+              border: 2px solid rgba(52, 211, 153, 0.3);
+              border-radius: 16px;
+              padding: 2rem;
+              margin: 2rem 0;
+            }
+
+            .passcode-label {
+              color: rgba(255,255,255,0.8);
+              font-size: 1.1rem;
+              margin-bottom: 1rem;
+            }
+
+            .passcode-box {
+              background: rgba(255,255,255,0.1);
+              border: 2px solid rgba(255,255,255,0.3);
+              border-radius: 12px;
+              padding: 1.5rem;
+              font-size: 2.5rem;
+              font-weight: bold;
+              color: #34d399;
+              font-family: monospace;
+              letter-spacing: 0.5rem;
+              margin: 1rem 0;
+            }
+
+            .passcode-hint {
+              color: rgba(255,255,255,0.7);
+              font-size: 0.95rem;
+              margin-top: 1rem;
+            }
+
+            .success-box {
+              background: rgba(59, 130, 246, 0.1);
+              border: 1px solid rgba(59, 130, 246, 0.3);
+            }
+
+            .next-steps {
+              text-align: left;
+              margin: 1rem 0;
+              padding-left: 1.5rem;
+              color: rgba(255,255,255,0.9);
+            }
+
+            .next-steps li {
+              margin: 0.5rem 0;
+            }
+
+            /* Icon styling */
+            .glow-complete {
+              color: #34d399;
+              filter: drop-shadow(0 0 20px #34d399);
+            }
+
+            /* Floating background elements (reuse from earlier) */
+            .bg-element {
+              position: absolute;
+              border-radius: 50%;
+              background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 70%, transparent 100%);
+              animation: float 20s ease-in-out infinite;
+            }
+
+            .bg-element:nth-child(1) {
+              width: 300px;
+              height: 300px;
+              top: -50px;
+              left: -50px;
+            }
+
+            .bg-element:nth-child(2) {
+              width: 200px;
+              height: 200px;
+              bottom: -30px;
+              right: -30px;
+              animation-delay: 5s;
+            }
+
+            .bg-element:nth-child(3) {
+              width: 150px;
+              height: 150px;
+              top: 50%;
+              left: 20%;
+              animation-delay: 10s;
+            }
+
+            .bg-element:nth-child(4) {
+              width: 250px;
+              height: 250px;
+              bottom: 20%;
+              right: 10%;
+              animation-delay: 15s;
+            }
+
+            @keyframes float {
+              0%, 100% { transform: translateY(0px) rotate(0deg); }
+              50% { transform: translateY(-20px) rotate(180deg); }
+            }
+
+            /* Button styles */
+            .btn-secondary {
+              background: rgba(156, 163, 175, 0.8);
+              color: white;
+            }
+
+            .btn-secondary:hover {
+              background: rgba(156, 163, 175, 1);
+            }
+
+            /* Form and input styles (reuse) */
+            .form-container {
+              background: rgba(255, 255, 255, 0.1);
+              backdrop-filter: blur(20px);
+              border: 1px solid rgba(255, 255, 255, 0.2);
+              border-radius: 24px;
+              padding: 2.5rem;
+              width: 100%;
+              max-width: 500px;
+              box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            }
+
+            .form-header {
+              text-align: center;
+              margin-bottom: 2rem;
+            }
+
+            .icon-container {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              width: 80px;
+              height: 80px;
+              background: rgba(52, 211, 153, 0.2);
+              border-radius: 20px;
+              margin-bottom: 1rem;
+              font-size: 2.5rem;
+            }
+
+            .form-title {
+              font-size: 2rem;
+              font-weight: 700;
+              color: white;
+              margin-bottom: 0.5rem;
+            }
+
+            .form-subtitle {
+              font-size: 1.2rem;
+              color: rgba(255,255,255,0.8);
+            }
+
+            .info-box {
+              background: rgba(59, 130, 246, 0.1);
+              border: 1px solid rgba(59, 130, 246, 0.3);
+              border-radius: 12px;
+              padding: 1rem;
+              margin: 2rem 0;
+            }
+
+            .info-text {
+              color: white;
+              font-size: 1rem;
+              line-height: 1.6;
+            }
+
+            .btn {
+              width: 100%;
+              padding: 1rem 2rem;
+              border: none;
+              border-radius: 12px;
+              font-size: 1.1rem;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.3s ease;
+            }
+
+            .btn-primary {
+              background: rgba(52, 211, 153, 0.8);
+              color: white;
+            }
+
+            .btn-primary:hover:not(:disabled) {
+              background: rgba(52, 211, 153, 1);
+              transform: translateY(-2px);
+              box-shadow: 0 10px 20px rgba(52, 211, 153, 0.3);
+            }
+
+            .btn:disabled {
+              opacity: 0.7;
+              cursor: not-allowed;
+            }
+
+            /* Mobile responsiveness */
+            @media (max-width: 500px) {
+              .form-container {
+                padding: 2rem 1.5rem;
+              }
+
+              .passcode-box {
+                font-size: 2rem;
+                letter-spacing: 0.3rem;
+              }
+            }
+          `}</style>
+        </div>
+      </>
+    );
+  }
+
   // Error state - invalid token
   if (!studentInfo) {
     return (
@@ -448,137 +736,6 @@ export default function ParentVerify() {
     );
   }
 
-  // Success state - show passcode
-  if (verificationComplete) {
-    return (
-      <>
-        <Head>
-          <title>Verification Complete - Socratic AI Tutor</title>
-          <meta name="robots" content="noindex, nofollow" />
-        </Head>
-
-        <div className="auth-container">
-          <div className="bg-element"></div>
-          <div className="bg-element"></div>
-          <div className="bg-element"></div>
-          <div className="bg-element"></div>
-
-          <div className="form-container success-container">
-            <div className="form-header">
-              <div className="icon-container">
-                <span className="glow-icon glow-complete">✅</span>
-              </div>
-              <h1 className="form-title">Verification Complete!</h1>
-              <p className="form-subtitle">Your child's account is ready</p>
-            </div>
-
-            <div className="passcode-display">
-              <p className="passcode-label">Student Login Passcode:</p>
-              <div className="passcode-box">
-                {passcode}
-              </div>
-              <p className="passcode-hint">
-                Write this down! Your child will need this code along with their first name to login.
-              </p>
-            </div>
-
-            <div className="info-box success-box">
-              <p className="info-text">
-                <strong>What's next?</strong>
-              </p>
-              <ul className="next-steps">
-                <li>Give this passcode to {studentInfo.name}</li>
-                <li>They can login with their first name and this code</li>
-                <li>You'll receive email updates about their progress</li>
-                <li>Access your parent dashboard anytime</li>
-              </ul>
-            </div>
-
-            <button 
-              onClick={() => router.push('/auth/student-login')} 
-              className="btn btn-primary"
-            >
-              Go to Student Login
-            </button>
-          </div>
-        </div>
-
-        <style jsx>{`
-          ${getStyles()}
-          
-          /* Success-specific styles */
-          .success-container {
-            text-align: center;
-          }
-
-          .passcode-display {
-            background: rgba(52, 211, 153, 0.1);
-            border: 2px solid rgba(52, 211, 153, 0.3);
-            border-radius: 16px;
-            padding: 2rem;
-            margin: 2rem 0;
-          }
-
-          .passcode-label {
-            color: rgba(255,255,255,0.8);
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-          }
-
-          .passcode-box {
-            background: rgba(255,255,255,0.15);
-            border: 2px solid rgba(52, 211, 153, 0.5);
-            border-radius: 12px;
-            padding: 1.5rem;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #34d399;
-            letter-spacing: 0.5rem;
-            font-family: monospace;
-            margin-bottom: 1rem;
-          }
-
-          .passcode-hint {
-            color: #fbbf24;
-            font-size: 1rem;
-            font-weight: 600;
-          }
-
-          .success-box {
-            background: rgba(52, 211, 153, 0.1);
-            border-color: rgba(52, 211, 153, 0.3);
-            text-align: left;
-          }
-
-          .next-steps {
-            list-style: none;
-            padding: 0;
-            margin: 1rem 0 0 0;
-          }
-
-          .next-steps li {
-            padding: 0.5rem 0;
-            color: white;
-            font-size: 1rem;
-            position: relative;
-            padding-left: 1.5rem;
-          }
-
-          .next-steps li:before {
-            content: "→";
-            position: absolute;
-            left: 0;
-            color: #34d399;
-          }
-
-          .glow-complete {
-            color: #34d399;
-            filter: drop-shadow(0 0 12px #34d399);
-          }
-        `}</style>
-      </>
-    );
-  }
 
   // Main verification form
   return (
