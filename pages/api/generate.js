@@ -107,7 +107,7 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
   }
 
   try {
-    const { action, userId, topic, answer, timeSpent, hintsUsed } = req.body;
+    const { action, userId, topic, answer, timeSpent, hintsUsed, mood } = req.body;
 
     // Validate authentication using middleware
     const authResult = await validateAuth(req);
@@ -206,7 +206,7 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
         const subtopic = topicConfig.subtopics[Math.floor(Math.random() * topicConfig.subtopics.length)];
         
         // Create the prompt
-        const prompt = createQuestionPrompt(topic, difficulty, grade, context, subtopic);
+        const prompt = createQuestionPrompt(topic, difficulty, grade, context, subtopic, mood);
         
         // Generate question with appropriate AI
         let generatedQuestion;

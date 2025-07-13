@@ -75,7 +75,8 @@ export default function Dashboard() {
         body: JSON.stringify({
           action: 'generate',
           userId: user.id,
-          topic: topic
+          topic: topic,
+          mood: selectedMood
         })
       });
 
@@ -151,7 +152,12 @@ export default function Dashboard() {
   };
 
   const handleNext = () => {
-    handleTopicSelect(selectedTopic);
+    // Clear current question before fetching new one
+    setCurrentQuestion(null);
+    // Small delay to ensure state update
+    setTimeout(() => {
+      handleTopicSelect(selectedTopic);
+    }, 50);
   };
 
   const handleBack = () => {
