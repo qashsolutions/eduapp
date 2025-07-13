@@ -33,14 +33,22 @@ export default function ParentVerify() {
     const urlParams = new URLSearchParams(window.location.search);
     const paymentSuccess = urlParams.get('payment_success') === 'true';
     
+    console.log('=== PARENT VERIFY PAGE LOAD ===');
+    console.log('URL params:', window.location.search);
+    console.log('Payment success:', paymentSuccess);
+    console.log('Token:', token);
+    
     if (paymentSuccess) {
       // Handle payment success case
+      console.log('Handling payment return...');
       handlePaymentReturn();
     } else if (token) {
       // Normal flow - verify token
+      console.log('Verifying token...');
       verifyToken();
     } else {
       // No token and no payment success
+      console.log('No token or payment success');
       setError('Invalid verification link');
       setLoading(false);
     }
@@ -50,15 +58,19 @@ export default function ParentVerify() {
    * Handle return from Stripe payment
    */
   const handlePaymentReturn = async () => {
+    console.log('=== HANDLE PAYMENT RETURN START ===');
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const sessionId = urlParams.get('session_id');
       const consentId = urlParams.get('consent_id');
       
+      console.log('Payment return params:', { sessionId, consentId });
+      
       if (!sessionId || !consentId) {
         throw new Error('Missing payment information');
       }
       
+      console.log('Calling verify-payment API...');
       // Verify payment and get student info from API
       const response = await fetch('/api/verify-payment', {
         method: 'POST',
@@ -66,7 +78,9 @@ export default function ParentVerify() {
         body: JSON.stringify({ sessionId, consentId })
       });
       
+      console.log('Response status:', response.status);
       const data = await response.json();
+      console.log('Verify payment response:', JSON.stringify(data, null, 2));
       
       if (!response.ok || !data.paid) {
         throw new Error(data.error || 'Payment verification failed');
@@ -82,10 +96,15 @@ export default function ParentVerify() {
         consentId: consentId
       };
       
+      console.log('Calling completeVerification with:', JSON.stringify(verificationData, null, 2));
       await completeVerification(verificationData);
+      console.log('completeVerification completed successfully');
       
     } catch (err) {
-      console.error('Payment return error:', err);
+      console.error('=== PAYMENT RETURN ERROR ===');
+      console.error('Error details:', err);
+      console.error('Error message:', err.message);
+      console.error('Error stack:', err.stack);
       setError(err.message || 'Failed to process payment. Please contact support.');
       setLoading(false);
     }
@@ -191,17 +210,30 @@ export default function ParentVerify() {
    * Complete the verification process after payment
    */
   const completeVerification = async (verificationData) => {
+    console.log('=== COMPLETE VERIFICATION START ===');
+    console.log('Received data:', JSON.stringify(verificationData, null, 2));
+    
     try {
       // Extract data from parameter
       const { email, parentName, parentPassword, studentName, studentGrade, consentId } = verificationData;
       
       // Validate required data
+      console.log('Validating data:', { 
+        hasEmail: !!email, 
+        hasParentName: !!parentName, 
+        hasPassword: !!parentPassword,
+        hasStudentName: !!studentName,
+        hasGrade: !!studentGrade,
+        hasConsentId: !!consentId
+      });
+      
       if (!email || !parentName || !studentName || !parentPassword) {
         throw new Error('Missing required information. Please try again.');
       }
       
       // Generate student passcode
       const newPasscode = generatePasscode();
+      console.log('Generated passcode:', newPasscode);
       // Check if parent already exists
       const { data: existingParent, error: checkError } = await supabase
         .from('users')
@@ -227,6 +259,7 @@ export default function ParentVerify() {
         console.log('Parent already exists, using existing account');
       } else {
         // Create new parent account
+        console.log('Creating new parent account for:', email);
         const { data: parentAuth, error: parentError } = await supabase.auth.signUp({
           email: email,
           password: parentPassword,
@@ -238,7 +271,14 @@ export default function ParentVerify() {
           }
         });
 
+        console.log('Parent signup result:', { 
+          success: !!parentAuth?.user, 
+          error: parentError?.message,
+          userId: parentAuth?.user?.id 
+        });
+
         if (parentError) {
+          console.error('Parent signup error:', parentError);
           if (parentError.message.includes('already registered')) {
             throw new Error('This email is already registered. Please sign in to your existing account to add another child.');
           }
@@ -285,6 +325,7 @@ export default function ParentVerify() {
       if (studentError) throw studentError;
 
       // Update parent_consents record with parent_id and child_id
+      console.log('Updating parent_consents with:', { parentId, studentId, consentId });
       const { error: consentUpdateError } = await supabase
         .from('parent_consents')
         .update({
@@ -295,6 +336,7 @@ export default function ParentVerify() {
 
       if (consentUpdateError) {
         console.error('Error updating consent record:', consentUpdateError);
+        console.error('Update error details:', JSON.stringify(consentUpdateError, null, 2));
       }
 
       // Set state for success display
@@ -306,8 +348,11 @@ export default function ParentVerify() {
       setParentName(parentName);
       
       // Show success with passcode
+      console.log('=== VERIFICATION SUCCESS ===');
+      console.log('Setting passcode:', newPasscode);
       setPasscode(newPasscode);
       setVerificationComplete(true);
+      setLoading(false);
     } catch (err) {
       console.error('Verification completion error:', err);
       // Show user-friendly error messages
