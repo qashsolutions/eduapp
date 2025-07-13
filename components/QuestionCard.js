@@ -19,6 +19,7 @@ export default function QuestionCard({
   const [currentHintLevel, setCurrentHintLevel] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [startTime] = useState(Date.now());
+  const [isLoadingHint, setIsLoadingHint] = useState(false);
   const MAX_HINTS = 4;
 
   const handleAnswerSelect = (option) => {
@@ -47,7 +48,7 @@ export default function QuestionCard({
   };
 
   const handleHint = async () => {
-    if (!showResult && currentHintLevel < MAX_HINTS) {
+    if (!showResult && currentHintLevel < MAX_HINTS && !isLoadingHint) {
       const nextLevel = currentHintLevel + 1;
       
       // If we already have this hint level, just show it
@@ -60,6 +61,7 @@ export default function QuestionCard({
       }
       
       // Otherwise, fetch a new hint
+      setIsLoadingHint(true);
       try {
         // Get appropriate auth token
         let authHeader = '';
@@ -109,6 +111,8 @@ export default function QuestionCard({
         }
       } catch (error) {
         console.error('Error getting hint:', error);
+      } finally {
+        setIsLoadingHint(false);
       }
     }
   };
@@ -184,9 +188,11 @@ export default function QuestionCard({
             <button 
               className="btn btn-secondary" 
               onClick={handleHint}
-              disabled={currentHintLevel >= MAX_HINTS}
+              disabled={currentHintLevel >= MAX_HINTS || isLoadingHint}
+              style={{ position: 'relative', zIndex: 1 }}
             >
-              {currentHintLevel === 0 ? 'Need a hint? 💭' : 
+              {isLoadingHint ? 'Getting hint...' :
+               currentHintLevel === 0 ? 'Need a hint? 💭' : 
                currentHintLevel < MAX_HINTS ? 'Need more help? 🤔' : 
                'No more hints available'}
             </button>
@@ -376,6 +382,9 @@ export default function QuestionCard({
           font-size: 1rem;
           cursor: pointer;
           transition: all 0.3s ease;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+          user-select: none;
         }
         
         .btn-primary {

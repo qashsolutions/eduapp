@@ -68,6 +68,9 @@ export default function Dashboard() {
   }, [user, authLoading, isAuthenticated]);
 
   const handleTopicSelect = async (topic) => {
+    console.log('Topic selected:', topic);
+    console.log('Available topics for mood:', selectedMood, MOOD_TOPICS[selectedMood]);
+    
     if (!user || !user.id) {
       console.error('No user data available');
       setGenerating(false);
@@ -124,6 +127,9 @@ export default function Dashboard() {
           difficulty: data.difficulty,
           proficiency: data.currentProficiency
         });
+      } else {
+        console.error('API Error:', data.error || 'Failed to generate question');
+        alert(data.error || 'Failed to generate question. Please try again.');
       }
     } catch (error) {
       console.error('Error generating question:', error);
@@ -394,7 +400,7 @@ export default function Dashboard() {
 
               {generating ? (
                 <div className="generating">
-                  <div className="generating-text">Creating your question... ✨</div>
+                  <div className="generating-text">Loading your next question... ✨</div>
                 </div>
               ) : currentQuestion && (
                 <QuestionCard 

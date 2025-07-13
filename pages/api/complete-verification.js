@@ -85,6 +85,13 @@ export default async function handler(req, res) {
             error: 'This email is already registered. Please sign in to your existing account.' 
           });
         }
+        // Check for password validation error
+        if (authError.message?.includes('Password should contain') || 
+            authError.message?.includes('password') && authError.message?.includes('character')) {
+          return res.status(400).json({ 
+            error: 'Password must be at least 8 characters with at least one of each: lowercase (a-z), uppercase (A-Z), number (0-9), and special character.' 
+          });
+        }
         return res.status(400).json({ error: authError.message });
       }
 

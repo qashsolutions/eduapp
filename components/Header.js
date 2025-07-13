@@ -63,7 +63,9 @@ export default function Header() {
           {user && (
             <>
               <div className="user-info">
-                <span className="user-email">{user.email}</span>
+                <span className="user-email">
+                  {user.role === 'student' && user.first_name ? user.first_name : user.email}
+                </span>
                 {trialDaysLeft === 'pending' && (
                   <span className="pending-badge">
                     Pending

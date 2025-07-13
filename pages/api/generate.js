@@ -172,7 +172,9 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
       const topicConfig = EDUCATIONAL_TOPICS[topic];
       
       if (!topicConfig) {
-        return res.status(400).json({ error: 'Invalid topic' });
+        console.error(`Topic not found in EDUCATIONAL_TOPICS: ${topic}`);
+        console.error('Available topics:', Object.keys(EDUCATIONAL_TOPICS));
+        return res.status(400).json({ error: `Invalid topic: ${topic}` });
       }
       
       // Try to get cached question first
@@ -181,23 +183,10 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
       let attempts = 0;
       const maxAttempts = 3;
       
-      // Check cache first
-      const cached = await getCachedQuestion(topic, difficulty, grade);
+      // Always generate fresh questions - no caching
+      // This ensures users never see repeated questions
       
-      if (cached && cached.question) {
-        question = cached.question;
-        // Still need to check if user has seen this exact question
-        const tempHash = generateQuestionHash(topic, '', '', difficulty, question.question);
-        const isDuplicate = await checkQuestionHash(userId, tempHash);
-        
-        if (!isDuplicate) {
-          questionHash = tempHash;
-        } else {
-          question = null; // Force generation
-        }
-      }
-      
-      // Generate new question if not cached or duplicate
+      // Generate new question
       while (!question && attempts < maxAttempts) {
         attempts++;
         
@@ -210,6 +199,8 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
         
         // Generate question with appropriate AI
         let generatedQuestion;
+        console.log(`Generating question with ${aiModel} for topic: ${topic}`);
+        
         if (aiModel === 'openai') {
           if (!openai) throw new Error('OpenAI client not initialized');
           generatedQuestion = await generateWithOpenAI(openai, prompt);
@@ -217,6 +208,8 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
           if (!anthropic) throw new Error('Anthropic client not initialized');
           generatedQuestion = await generateWithClaude(anthropic, prompt);
         }
+        
+        console.log('Generated question:', JSON.stringify(generatedQuestion, null, 2));
         
         // Validate question format
         if (!validateQuestion(generatedQuestion)) {
@@ -231,8 +224,7 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
           question = generatedQuestion;
           questionHash = hash;
           
-          // Cache the question for future use
-          await cacheQuestion(topic, difficulty, grade, question, aiModel);
+          // No caching - always generate fresh questions
         }
       }
       
