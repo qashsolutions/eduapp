@@ -365,9 +365,9 @@ export default function Dashboard() {
             /* Container and Layout */
             .container {
               container-type: inline-size;
-              max-width: 1200px;
+              width: 100%;
               margin: 0 auto;
-              padding: 2rem;
+              padding: 2rem 3rem;
               position: relative;
               z-index: 10;
             }
@@ -422,6 +422,10 @@ export default function Dashboard() {
               display: grid;
               grid-template-rows: auto 1fr;
               gap: 3rem;
+              width: 100%;
+              max-width: 1400px;
+              margin-left: auto;
+              margin-right: auto;
             }
 
             .adventure-title {
@@ -580,7 +584,8 @@ export default function Dashboard() {
 
             /* Question View */
             .question-view {
-              max-width: 800px;
+              width: 100%;
+              max-width: 1400px;
               margin: 0 auto;
               animation: fadeIn 0.6s ease-out;
             }
@@ -664,7 +669,7 @@ export default function Dashboard() {
             /* Responsive */
             @media (max-width: 768px) {
               .container { 
-                padding: 1rem;
+                padding: 1rem 1.5rem;
               }
               .adventure-grid { 
                 grid-template-columns: 1fr; 
@@ -672,6 +677,9 @@ export default function Dashboard() {
               .adventure-card {
                 padding: 2rem;
                 min-height: 250px;
+              }
+              .question-view {
+                padding: 0 1rem;
               }
             }
 
