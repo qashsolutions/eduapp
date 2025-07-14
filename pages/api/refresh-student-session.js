@@ -1,4 +1,4 @@
-import { authMiddleware } from '../../lib/authMiddleware';
+import { validateAuth } from '../../lib/authMiddleware';
 import { supabase } from '../../lib/db';
 
 /**
@@ -12,8 +12,8 @@ export default async function handler(req, res) {
 
   try {
     // Verify student authentication
-    const auth = authMiddleware(req);
-    if (!auth.user || auth.user.role !== 'student') {
+    const auth = await validateAuth(req);
+    if (!auth.authenticated || !auth.isStudent) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
