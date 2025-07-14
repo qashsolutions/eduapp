@@ -1085,27 +1085,52 @@ export default function Dashboard() {
             }
             
             .question-card .answer-option {
-              background: rgba(80, 80, 80, 0.9) !important;
-              border: 1px solid rgba(0, 0, 0, 0.1) !important;
+              background: transparent !important;
+              border: 2px solid transparent !important;
               cursor: pointer !important;
               pointer-events: auto !important;
+              padding: 16px !important;
+              transition: all 0.2s ease !important;
             }
             
             .question-card .answer-option span:not(.answer-letter) {
-              color: #ffffff !important;
+              color: #1a1a1a !important;
               font-size: 1.1rem !important;
-              font-weight: 600 !important;
+              font-weight: 500 !important;
+              font-style: italic !important;
               pointer-events: none !important;
             }
             
             .question-card .answer-option:hover {
-              background: rgba(90, 90, 90, 0.95) !important;
+              background: rgba(102, 126, 234, 0.1) !important;
               border-color: #667eea !important;
+            }
+            
+            .question-card .answer-option.selected {
+              background: rgba(102, 126, 234, 0.2) !important;
+              border-color: #667eea !important;
+            }
+            
+            .question-card .answer-option.selected span:not(.answer-letter) {
+              font-style: normal !important;
+              font-weight: 600 !important;
             }
             
             .question-card .answer-letter {
               background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
               pointer-events: none !important;
+              color: white !important;
+              font-weight: 700 !important;
+            }
+            
+            .question-card .answer-option.correct {
+              background: rgba(16, 185, 129, 0.2) !important;
+              border-color: #10b981 !important;
+            }
+            
+            .question-card .answer-option.incorrect {
+              background: rgba(239, 68, 68, 0.2) !important;
+              border-color: #ef4444 !important;
             }
             
             .question-card .hint-section,
