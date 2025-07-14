@@ -8,7 +8,12 @@ export default function Footer() {
           D-U-N-S® Number: 119536275</p>
         </div>
         <div className="footer-right">
-          <p>USA • India</p>
+          <p>USA</p>
+          <div className="footer-links">
+            <a href="#">Privacy Policy</a>
+            <span className="separator">•</span>
+            <a href="#">Terms & Conditions</a>
+          </div>
         </div>
       </div>
 
@@ -40,20 +45,33 @@ export default function Footer() {
           font-weight: 600;
         }
 
-        .footer-left a {
+        .footer-left a,
+        .footer-links a {
           color: #4a5568 !important;
           text-decoration: none;
           transition: color 0.3s ease;
           font-weight: 600;
         }
 
-        .footer-left a:hover {
+        .footer-left a:hover,
+        .footer-links a:hover {
           color: #5a67d8;
           text-decoration: underline;
         }
 
         .footer-right {
           text-align: right;
+        }
+        
+        .footer-links {
+          margin-top: 8px;
+          font-size: 1.1rem;
+        }
+        
+        .footer-links .separator {
+          color: #4a5568;
+          margin: 0 8px;
+          font-weight: 600;
         }
 
         @media (max-width: 768px) {
