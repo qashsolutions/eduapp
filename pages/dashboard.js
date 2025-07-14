@@ -142,8 +142,8 @@ export default function Dashboard() {
         
         console.log('First question loaded, generating remaining 4 in background...');
         
-        // Generate remaining 4 questions in parallel
-        generateRemainingQuestions([firstData.question], topic, selectedMood, authHeader, firstData.currentProficiency);
+        // For now, just load 1 question to test validation fixes
+        // generateRemainingQuestions([firstData.question], topic, selectedMood, authHeader, firstData.currentProficiency);
       } else {
         // Fallback: Try batch generation
         console.log('First question generation failed, trying batch generation');
@@ -565,7 +565,7 @@ export default function Dashboard() {
                 <div className="topic-info">
                   <div className="topic-title">{formatTopicName(selectedTopic)}</div>
                   <div className="question-count">
-                    Question {currentQuestionIndex + 1} of {questionBatch.length || '...'} • Grade {user?.grade || '8'}
+                    Question 1 of 1 • Grade {user?.grade || '8'}
                     {questionBatch.length < 5 && questionBatch.length > 0 && (
                       <span className="loading-indicator"> (Loading more...)</span>
                     )}
