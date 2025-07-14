@@ -1128,6 +1128,13 @@ export default function Dashboard() {
               font-size: 1.1rem !important;
               line-height: 1.6 !important;
               font-style: normal !important;
+              display: block !important;
+              visibility: visible !important;
+              opacity: 1 !important;
+              max-height: none !important;
+              overflow: visible !important;
+              white-space: normal !important;
+              word-wrap: break-word !important;
             }
           `}</style>
         </div>
