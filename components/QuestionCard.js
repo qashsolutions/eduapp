@@ -133,11 +133,11 @@ export default function QuestionCard({
     <div className="question-card">
       <div className="question-type">{getQuestionType()}</div>
       
-      <div className="question-text">{question.question}</div>
-      
-      {question.context && (
+      {question.context && question.context.length > 20 && (
         <div className="question-context">{question.context}</div>
       )}
+      
+      <div className="question-text">{question.question}</div>
       
       <div className="answers-grid">
         {Object.entries(question.options).map(([key, value]) => (
@@ -247,11 +247,13 @@ export default function QuestionCard({
         .question-context {
           color: #e0e0e0;
           font-size: 1rem;
-          margin-bottom: 28px;
+          margin-bottom: 20px;
           line-height: 1.6;
-          padding: 16px;
-          background: rgba(0, 0, 0, 0.3);
+          padding: 20px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 12px;
+          font-style: italic;
         }
         
         .answers-grid {
@@ -398,15 +400,18 @@ export default function QuestionCard({
         }
         
         .btn-secondary {
-          background: var(--glass-bg);
+          background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
           backdrop-filter: blur(15px);
-          border: 1px solid var(--glass-border);
-          color: var(--text-primary);
+          border: none;
+          color: white;
+          font-weight: 600;
+          box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
         }
         
         .btn-secondary:hover {
-          border-color: var(--accent-neon);
+          background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
           transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
         
         .btn:disabled {
