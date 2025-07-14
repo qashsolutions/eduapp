@@ -10,6 +10,7 @@ import { useAuth } from '../lib/AuthContext';
 import { getUser, getSessionStats } from '../lib/db';
 import { MOOD_TOPICS, formatTopicName, getCachedProficiency, setCachedProficiency } from '../lib/utils';
 import { retrieveSessionData, storeSessionData, checkSessionExpiry } from '../lib/studentSession';
+import { questionRateLimiter } from '../lib/rateLimiter';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -88,6 +89,13 @@ export default function Dashboard() {
       return;
     }
     
+    // Check rate limit before proceeding
+    if (!questionRateLimiter.canMakeRequest()) {
+      const waitTime = questionRateLimiter.getWaitTime();
+      alert(`Please wait ${waitTime} seconds before generating new questions. This helps ensure quality responses.`);
+      return;
+    }
+    
     setSelectedTopic(topic);
     setGenerating(true);
     setQuestionBatch([]); // Clear previous batch
@@ -128,6 +136,15 @@ export default function Dashboard() {
         })
       });
 
+      // Handle rate limiting (429 error)
+      if (firstResponse.status === 429) {
+        const retryAfter = firstResponse.headers.get('Retry-After') || '60';
+        console.log(`Rate limited. Retry after ${retryAfter} seconds`);
+        setGenerating(false);
+        alert(`Too many requests. Please wait ${retryAfter} seconds before trying again.`);
+        return;
+      }
+      
       if (firstResponse.ok) {
         const firstData = await firstResponse.json();
         
@@ -451,6 +468,15 @@ export default function Dashboard() {
         })
       });
 
+      // Handle rate limiting (429 error)
+      if (response.status === 429) {
+        const retryAfter = response.headers.get('Retry-After') || '60';
+        console.log(`Rate limited. Retry after ${retryAfter} seconds`);
+        setGenerating(false);
+        alert(`Too many requests. Please wait ${retryAfter} seconds before trying again.`);
+        return;
+      }
+
       if (response.ok) {
         const data = await response.json();
         
@@ -667,7 +693,7 @@ export default function Dashboard() {
                 <div className="topic-info">
                   <div className="topic-title">{formatTopicName(selectedTopic)}</div>
                   <div className="question-count">
-                    Question {topicQuestionCount + 1} of 10 • Grade {user?.grade || '8'}
+                    Grade {user?.grade || '8'}
                     {generating && (
                       <span className="loading-indicator"> (Generating...)</span>
                     )}
