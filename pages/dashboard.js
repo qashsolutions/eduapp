@@ -529,8 +529,8 @@ export default function Dashboard() {
       {/* Dynamic meta tags for when user is in a topic */}
       {selectedTopic && (
         <Head>
-          <title>Socratic Learning - Learning {formatTopicName(selectedTopic)} | Level {getProficiency(selectedTopic)}</title>
-          <meta name="description" content={`Practice ${formatTopicName(selectedTopic)} with AI-generated questions. Currently at level ${getProficiency(selectedTopic)}/9.`} />
+          <title>Socratic Learning - Learning {formatTopicName(selectedTopic)} | Level {getProficiency(selectedTopic).toFixed(1)}</title>
+          <meta name="description" content={`Practice ${formatTopicName(selectedTopic)} with AI-generated questions. Currently at level ${getProficiency(selectedTopic).toFixed(1)}/9.`} />
         </Head>
       )}
       
@@ -551,14 +551,6 @@ export default function Dashboard() {
         <div className="container">
           {!selectedTopic ? (
             <>
-              {sessionStats.totalQuestions > 0 && (
-                <div className="user-info">
-                  <p className="session-stats">
-                    Today: {sessionStats.correctAnswers}/{sessionStats.totalQuestions} correct
-                  </p>
-                </div>
-              )}
-
               <MoodSelector 
                 selectedMood={selectedMood} 
                 onMoodSelect={setSelectedMood} 
@@ -580,7 +572,7 @@ export default function Dashboard() {
                           <div className="adventure-details">
                             <h3>{formatTopicName(topic)}</h3>
                           </div>
-                          <div className="level-badge">Level {proficiency}</div>
+                          <div className="level-badge">Level {proficiency.toFixed(1)}</div>
                         </div>
                         
                         <div className="level-info">
