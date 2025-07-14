@@ -6,8 +6,7 @@ export default function ProgressBar({ proficiency, topic, showLevel = true }) {
     <div className="progress-container">
       {showLevel && (
         <div className="progress-label">
-          <span>Level: <strong>{proficiency}</strong></span>
-          {topic && <span className="topic-label">{topic}</span>}
+          <span>Level: <strong>{proficiency.toFixed(1)}</strong></span>
         </div>
       )}
       <div className="progress-bar">

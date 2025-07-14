@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [questionBatch, setQuestionBatch] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [batchId, setBatchId] = useState(null);
+  const [topicQuestionCount, setTopicQuestionCount] = useState(0);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
@@ -91,6 +92,7 @@ export default function Dashboard() {
     setGenerating(true);
     setQuestionBatch([]); // Clear previous batch
     setCurrentQuestionIndex(0);
+    setTopicQuestionCount(0); // Reset question count for new topic
 
     try {
       // Get appropriate auth token
@@ -352,27 +354,73 @@ export default function Dashboard() {
     }
   };
 
-  const handleNext = () => {
-    // Check if we have more questions in the batch
-    if (currentQuestionIndex < questionBatch.length - 1) {
-      // Move to next question in batch
-      const nextIndex = currentQuestionIndex + 1;
-      setCurrentQuestionIndex(nextIndex);
-      
-      const nextQuestion = questionBatch[nextIndex];
-      setCurrentQuestion({
-        ...nextQuestion,
-        topic: selectedTopic,
-        difficulty: nextQuestion.difficulty,
-        proficiency: nextQuestion.proficiency || getProficiency(selectedTopic)
-      });
-      
-      console.log(`Moving to question ${nextIndex + 1}/5`);
-    } else {
-      // Completed all 5 questions - show completion or generate new batch
-      console.log('Completed all 5 questions in batch');
-      alert('Great job! You\'ve completed all 5 questions. Select a new topic to continue.');
+  const handleNext = async () => {
+    const nextQuestionNumber = topicQuestionCount + 1;
+    
+    // Check if reached maximum questions per topic (10)
+    if (nextQuestionNumber >= 10) {
+      alert(`Great job! You've completed 10 questions in ${formatTopicName(selectedTopic)}. Select a new topic to continue.`);
       handleBack();
+      return;
+    }
+    
+    // Check if minimum questions reached (5) and offer option to continue or change
+    if (nextQuestionNumber === 5) {
+      const continueWithTopic = confirm(`You've completed 5 questions in ${formatTopicName(selectedTopic)}. Would you like to continue with this topic (up to 10 questions) or select a new one?\n\nClick OK to continue, Cancel to select a new topic.`);
+      if (!continueWithTopic) {
+        handleBack();
+        return;
+      }
+    }
+    
+    // Generate next question
+    setGenerating(true);
+    setTopicQuestionCount(nextQuestionNumber);
+    
+    try {
+      // Get auth token
+      let authHeader = '';
+      if (user.role === 'student') {
+        const studentData = retrieveSessionData();
+        if (studentData) {
+          const { sessionToken } = studentData;
+          authHeader = `Student ${sessionToken}`;
+        }
+      } else {
+        const session = await getSession();
+        if (session?.access_token) {
+          authHeader = `Bearer ${session.access_token}`;
+        }
+      }
+      
+      // Generate next question
+      const response = await fetch('/api/generate-stream', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': authHeader
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          topic: selectedTopic,
+          mood: selectedMood,
+          position: nextQuestionNumber + 1
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentQuestion({
+          ...data.question,
+          topic: selectedTopic,
+          difficulty: data.question.difficulty,
+          proficiency: data.currentProficiency
+        });
+      }
+    } catch (error) {
+      console.error('Error generating next question:', error);
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -382,6 +430,7 @@ export default function Dashboard() {
     setQuestionBatch([]);
     setCurrentQuestionIndex(0);
     setBatchId(null);
+    setTopicQuestionCount(0);
   };
 
   const getAvailableTopics = () => {
@@ -562,19 +611,19 @@ export default function Dashboard() {
                 <div className="topic-info">
                   <div className="topic-title">{formatTopicName(selectedTopic)}</div>
                   <div className="question-count">
-                    Question {currentQuestionIndex + 1} of {Math.max(questionBatch.length, 5)} • Grade {user?.grade || '8'}
+                    Question {topicQuestionCount + 1} of 10 • Grade {user?.grade || '8'}
                     {generating && (
                       <span className="loading-indicator"> (Generating...)</span>
                     )}
                   </div>
                 </div>
-                <div className="level-badge">Level {getProficiency(selectedTopic)}</div>
+                <div className="level-badge">Level {getProficiency(selectedTopic).toFixed(1)}</div>
               </header>
 
               <div className="progress-section">
                 <ProgressBar 
                   proficiency={getProficiency(selectedTopic)} 
-                  topic={formatTopicName(selectedTopic)}
+                  showLevel={false}
                 />
               </div>
 
