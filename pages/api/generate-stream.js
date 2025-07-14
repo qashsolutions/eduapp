@@ -145,7 +145,7 @@ ${position === 1 ? 'Start with foundational concepts.' :
             hash,
             difficulty,
             position,
-            context,
+            contextType: context,
             subtopic
           };
           
