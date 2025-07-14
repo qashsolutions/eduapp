@@ -1074,10 +1074,11 @@ export default function Dashboard() {
             }
             
             .question-card .btn-secondary {
-              background: rgba(255, 255, 255, 0.9) !important;
-              color: #666666 !important;
-              border: 1px solid rgba(0, 0, 0, 0.1) !important;
-              font-style: italic !important;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+              color: white !important;
+              border: none !important;
+              font-size: 1.1rem !important;
+              font-weight: 600 !important;
             }
             
             .question-card .btn-primary {
@@ -1086,14 +1087,19 @@ export default function Dashboard() {
               font-size: 1.2rem !important;
             }
             
-            .question-card .answer-button {
-              background: rgba(255, 255, 255, 0.9) !important;
-              border: 1px solid rgba(0, 0, 0, 0.08) !important;
-              color: #1a1a1a !important;
+            .question-card .answer-option {
+              background: rgba(80, 80, 80, 0.9) !important;
+              border: 1px solid rgba(0, 0, 0, 0.1) !important;
             }
             
-            .question-card .answer-button:hover {
-              background: rgba(255, 255, 255, 0.95) !important;
+            .question-card .answer-option span:not(.answer-letter) {
+              color: #ffffff !important;
+              font-size: 1.1rem !important;
+              font-weight: 600 !important;
+            }
+            
+            .question-card .answer-option:hover {
+              background: rgba(90, 90, 90, 0.95) !important;
               border-color: #667eea !important;
             }
             

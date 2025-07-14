@@ -122,18 +122,14 @@ export default function QuestionCard({
   };
 
   const getQuestionType = () => {
-    if (topic.includes('comprehension')) return 'Reading Passage 📚';
-    if (topic.includes('grammar')) return 'Grammar Rules ✍️';
-    if (topic.includes('vocabulary')) return '';
-    if (topic.includes('math')) return '';
-    return 'Question';
+    return '';
   };
 
   return (
     <div className="question-card">
       {getQuestionType() && <div className="question-type">{getQuestionType()}</div>}
       
-      {question.context && question.context.length > 20 && (
+      {question.context && question.context.trim().length > 0 && (
         <div className="question-context">{question.context}</div>
       )}
       
@@ -192,8 +188,8 @@ export default function QuestionCard({
               style={{ position: 'relative', zIndex: 1 }}
             >
               {isLoadingHint ? 'Getting hint...' :
-               currentHintLevel === 0 ? 'Need a hint? 💭' : 
-               currentHintLevel < MAX_HINTS ? 'Need more help? 🤔' : 
+               currentHintLevel === 0 ? 'Need a hint?' : 
+               currentHintLevel < MAX_HINTS ? 'Need more help?' : 
                'No more hints available'}
             </button>
             <button 
