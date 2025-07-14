@@ -115,33 +115,63 @@ ${position === 1 ? 'Start with foundational concepts.' :
   'Build on previous concepts.'}`;
       
       try {
-        // Generate question
-        let generatedQuestion;
+        // Generate question(s)
+        let generatedContent;
         
         if (aiModel === 'openai') {
           if (!openai) throw new Error('OpenAI client not initialized');
-          generatedQuestion = await generateWithOpenAI(openai, enhancedPrompt);
+          generatedContent = await generateWithOpenAI(openai, enhancedPrompt);
         } else {
           if (!anthropic) throw new Error('Anthropic client not initialized');
-          generatedQuestion = await generateWithClaude(anthropic, enhancedPrompt);
+          generatedContent = await generateWithClaude(anthropic, enhancedPrompt);
         }
         
+        // Check if we got multiple questions
+        if (generatedContent.questions && Array.isArray(generatedContent.questions)) {
+          console.log(`Generated ${generatedContent.questions.length} questions for passage`);
+          
+          // Store all questions with the same passage
+          const questionsWithPassage = generatedContent.questions.map((q, idx) => {
+            const uniqueElements = `${topic}-${subtopic}-${context}-${difficulty}-${q.question}-${Date.now()}-${position}-${idx}`;
+            const hash = generateQuestionHash(topic, subtopic, context, difficulty, uniqueElements);
+            
+            return {
+              ...q,
+              context: generatedContent.context,
+              hash,
+              difficulty,
+              position: position + idx,
+              contextType: context,
+              subtopic
+            };
+          });
+          
+          // Return all questions
+          return res.status(200).json({
+            questions: questionsWithPassage,
+            position,
+            currentProficiency,
+            multiQuestion: true
+          });
+        }
+        
+        // Handle single question (legacy)
         // Validate with topic and grade
-        if (!validateQuestion(generatedQuestion, topic, grade)) {
+        if (!validateQuestion(generatedContent, topic, grade)) {
           console.log(`Question validation failed, attempt ${attempts}`);
           continue;
         }
         
         // Check for duplicates against existing questions
-        const isDuplicate = existingQuestions.some(q => q === generatedQuestion.question);
+        const isDuplicate = existingQuestions.some(q => q === generatedContent.question);
         
         if (!isDuplicate) {
           // Generate unique hash
-          const uniqueElements = `${topic}-${subtopic}-${context}-${difficulty}-${generatedQuestion.question}-${Date.now()}-${position}`;
+          const uniqueElements = `${topic}-${subtopic}-${context}-${difficulty}-${generatedContent.question}-${Date.now()}-${position}`;
           const hash = generateQuestionHash(topic, subtopic, context, difficulty, uniqueElements);
           
           question = {
-            ...generatedQuestion,
+            ...generatedContent,
             hash,
             difficulty,
             position,
@@ -149,7 +179,7 @@ ${position === 1 ? 'Start with foundational concepts.' :
             subtopic
           };
           
-          console.log(`Generated question ${position} successfully`);
+          console.log(`Generated single question ${position} successfully`);
         }
       } catch (error) {
         console.error(`Error generating question ${position}:`, error);

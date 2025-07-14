@@ -131,18 +131,38 @@ export default function Dashboard() {
       if (firstResponse.ok) {
         const firstData = await firstResponse.json();
         
-        // Set first question immediately so user can start
-        setCurrentQuestion({
-          ...firstData.question,
-          topic: topic,
-          difficulty: firstData.question.difficulty,
-          proficiency: firstData.currentProficiency
-        });
-        setQuestionBatch([firstData.question]);
-        setCurrentQuestionIndex(0);
-        setGenerating(false); // Stop loading indicator - user sees first question
+        // Check if we got multiple questions
+        if (firstData.multiQuestion && firstData.questions) {
+          console.log(`Received ${firstData.questions.length} questions for the passage`);
+          
+          // Set all questions in batch
+          setQuestionBatch(firstData.questions);
+          setCurrentQuestionIndex(0);
+          
+          // Set first question as current
+          setCurrentQuestion({
+            ...firstData.questions[0],
+            topic: topic,
+            difficulty: firstData.questions[0].difficulty,
+            proficiency: firstData.currentProficiency
+          });
+          
+          // Update question count for multiple questions
+          setTopicQuestionCount(firstData.questions.length - 1);
+        } else {
+          // Handle single question (legacy)
+          setCurrentQuestion({
+            ...firstData.question,
+            topic: topic,
+            difficulty: firstData.question.difficulty,
+            proficiency: firstData.currentProficiency
+          });
+          setQuestionBatch([firstData.question]);
+          setCurrentQuestionIndex(0);
+        }
         
-        console.log('First question loaded - single question mode for testing');
+        setGenerating(false); // Stop loading indicator
+        console.log('Questions loaded successfully');
       } else {
         // Fallback: Try batch generation
         console.log('First question generation failed, trying batch generation');
@@ -355,27 +375,46 @@ export default function Dashboard() {
   };
 
   const handleNext = async () => {
-    const nextQuestionNumber = topicQuestionCount + 1;
+    // Check if we have more questions in the current batch
+    if (currentQuestionIndex < questionBatch.length - 1) {
+      // Move to next question in batch
+      const nextIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(nextIndex);
+      setTopicQuestionCount(topicQuestionCount + 1);
+      
+      const nextQuestion = questionBatch[nextIndex];
+      setCurrentQuestion({
+        ...nextQuestion,
+        topic: selectedTopic,
+        difficulty: nextQuestion.difficulty,
+        proficiency: nextQuestion.proficiency || getProficiency(selectedTopic)
+      });
+      
+      console.log(`Moving to question ${nextIndex + 1} of ${questionBatch.length} in current passage`);
+      return;
+    }
+    
+    // All questions in current batch completed
+    const totalQuestionsCompleted = topicQuestionCount + 1;
     
     // Check if reached maximum questions per topic (10)
-    if (nextQuestionNumber >= 10) {
+    if (totalQuestionsCompleted >= 10) {
       alert(`Great job! You've completed 10 questions in ${formatTopicName(selectedTopic)}. Select a new topic to continue.`);
       handleBack();
       return;
     }
     
     // Check if minimum questions reached (5) and offer option to continue or change
-    if (nextQuestionNumber === 5) {
-      const continueWithTopic = confirm(`You've completed 5 questions in ${formatTopicName(selectedTopic)}. Would you like to continue with this topic (up to 10 questions) or select a new one?\n\nClick OK to continue, Cancel to select a new topic.`);
+    if (totalQuestionsCompleted >= 5 && totalQuestionsCompleted < 10) {
+      const continueWithTopic = confirm(`You've completed ${totalQuestionsCompleted} questions in ${formatTopicName(selectedTopic)}. Would you like to continue with this topic (up to 10 questions) or select a new one?\n\nClick OK to continue, Cancel to select a new topic.`);
       if (!continueWithTopic) {
         handleBack();
         return;
       }
     }
     
-    // Generate next question
+    // Generate next batch of questions
     setGenerating(true);
-    setTopicQuestionCount(nextQuestionNumber);
     
     try {
       // Get auth token
@@ -393,7 +432,7 @@ export default function Dashboard() {
         }
       }
       
-      // Generate next question
+      // Generate next batch of questions
       const response = await fetch('/api/generate-stream', {
         method: 'POST',
         headers: { 
@@ -404,18 +443,39 @@ export default function Dashboard() {
           userId: user.id,
           topic: selectedTopic,
           mood: selectedMood,
-          position: nextQuestionNumber + 1
+          position: totalQuestionsCompleted + 1
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        setCurrentQuestion({
-          ...data.question,
-          topic: selectedTopic,
-          difficulty: data.question.difficulty,
-          proficiency: data.currentProficiency
-        });
+        
+        // Check if we got multiple questions
+        if (data.multiQuestion && data.questions) {
+          console.log(`Received ${data.questions.length} new questions for next passage`);
+          
+          // Reset batch with new questions
+          setQuestionBatch(data.questions);
+          setCurrentQuestionIndex(0);
+          
+          // Set first question of new batch
+          setCurrentQuestion({
+            ...data.questions[0],
+            topic: selectedTopic,
+            difficulty: data.questions[0].difficulty,
+            proficiency: data.currentProficiency
+          });
+        } else {
+          // Handle single question (legacy)
+          setCurrentQuestion({
+            ...data.question,
+            topic: selectedTopic,
+            difficulty: data.question.difficulty,
+            proficiency: data.currentProficiency
+          });
+          setQuestionBatch([data.question]);
+          setCurrentQuestionIndex(0);
+        }
       }
     } catch (error) {
       console.error('Error generating next question:', error);
