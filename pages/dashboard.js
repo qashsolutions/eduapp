@@ -1117,6 +1117,18 @@ export default function Dashboard() {
             .question-card .explanation-title {
               color: #1a1a1a !important;
             }
+            
+            .question-card .question-context {
+              color: #1a1a1a !important;
+              background: rgba(255, 255, 255, 0.95) !important;
+              border: 1px solid rgba(0, 0, 0, 0.1) !important;
+              border-radius: 12px !important;
+              padding: 20px !important;
+              margin-bottom: 20px !important;
+              font-size: 1.1rem !important;
+              line-height: 1.6 !important;
+              font-style: normal !important;
+            }
           `}</style>
         </div>
         <Footer />
