@@ -23,8 +23,12 @@ export default function QuestionCard({
   const MAX_HINTS = 4;
 
   const handleAnswerSelect = (option) => {
+    console.log('Answer clicked:', option);
     if (!showResult) {
+      console.log('Setting selected answer to:', option);
       setSelectedAnswer(option);
+    } else {
+      console.log('Cannot select - result already shown');
     }
   };
 

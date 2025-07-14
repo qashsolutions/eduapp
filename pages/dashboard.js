@@ -562,9 +562,9 @@ export default function Dashboard() {
                 <div className="topic-info">
                   <div className="topic-title">{formatTopicName(selectedTopic)}</div>
                   <div className="question-count">
-                    Question 1 of 1 • Grade {user?.grade || '8'}
-                    {questionBatch.length < 5 && questionBatch.length > 0 && (
-                      <span className="loading-indicator"> (Loading more...)</span>
+                    Question {currentQuestionIndex + 1} of {Math.max(questionBatch.length, 5)} • Grade {user?.grade || '8'}
+                    {generating && (
+                      <span className="loading-indicator"> (Generating...)</span>
                     )}
                   </div>
                 </div>
@@ -1105,6 +1105,7 @@ export default function Dashboard() {
             
             .question-card .answer-letter {
               background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+              pointer-events: none !important;
             }
             
             .question-card .hint-section,
