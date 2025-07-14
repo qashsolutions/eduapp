@@ -40,7 +40,27 @@ export default async function handler(req, res) {
 
     // Get current proficiency and difficulty
     const currentProficiency = user[topic] || 5;
-    const baseDifficulty = mapProficiencyToDifficulty(currentProficiency, [1, 2, 3, 4, 5, 6, 7, 8]);
+    const grade = user.grade || 8;
+    
+    // Apply grade-based scaling to difficulty
+    let gradeMultiplier;
+    if (grade <= 6) {
+      gradeMultiplier = 0.8; // Grades 5 and 6 = 0.8x
+    } else if (grade === 7) {
+      gradeMultiplier = 0.9; // Grade 7 = 0.9x
+    } else if (grade === 8) {
+      gradeMultiplier = 1.0; // Grade 8 = 1.0x (baseline)
+    } else if (grade >= 9 && grade <= 10) {
+      gradeMultiplier = 1.2; // Grades 9 and 10 = 1.2x
+    } else if (grade >= 11) {
+      gradeMultiplier = 1.4; // Grade 11 and above = 1.4x
+    } else {
+      gradeMultiplier = 1.0; // Default
+    }
+    
+    const baseDifficulty = Math.min(8, Math.max(1, Math.round(
+      mapProficiencyToDifficulty(currentProficiency, [1, 2, 3, 4, 5, 6, 7, 8]) * gradeMultiplier
+    )));
     
     // Vary difficulty for each question
     const difficulties = [
@@ -52,7 +72,6 @@ export default async function handler(req, res) {
     ];
     const difficulty = difficulties[position - 1] || baseDifficulty;
     
-    const grade = user.grade || 8;
     const topicConfig = EDUCATIONAL_TOPICS[topic];
     
     if (!topicConfig) {

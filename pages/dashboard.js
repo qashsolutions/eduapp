@@ -110,48 +110,78 @@ export default function Dashboard() {
         }
       }
       
-      // Try batch generation first
-      const response = await fetch('/api/generate', {
+      // Generate first question immediately for better UX
+      const firstResponse = await fetch('/api/generate-stream', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': authHeader
         },
         body: JSON.stringify({
-          action: 'generate-batch',
           userId: user.id,
           topic: topic,
-          mood: selectedMood
+          mood: selectedMood,
+          position: 1,
+          existingQuestions: []
         })
       });
 
-      const data = await response.json();
-      
-      if (response.ok && data.questions && data.questions.length > 0) {
-        // Store the batch of questions
-        setQuestionBatch(data.questions);
-        setBatchId(data.batchId);
-        setCurrentQuestionIndex(0);
+      if (firstResponse.ok) {
+        const firstData = await firstResponse.json();
         
-        // Set the first question as current
-        const firstQuestion = data.questions[0];
+        // Set first question immediately so user can start
         setCurrentQuestion({
-          ...firstQuestion,
+          ...firstData.question,
           topic: topic,
-          difficulty: firstQuestion.difficulty,
-          proficiency: data.currentProficiency
+          difficulty: firstData.question.difficulty,
+          proficiency: firstData.currentProficiency
         });
+        setQuestionBatch([firstData.question]);
+        setCurrentQuestionIndex(0);
+        setGenerating(false); // Stop loading indicator - user sees first question
         
-        console.log(`Loaded batch of ${data.totalQuestions} questions`);
+        console.log('First question loaded, generating remaining 4 in background...');
         
-        // If we got less than 5 questions, generate more individually
-        if (data.questions.length < 5) {
-          generateRemainingQuestions(data.questions, topic, selectedMood, authHeader, data.currentProficiency);
-        }
+        // Generate remaining 4 questions in parallel
+        generateRemainingQuestions([firstData.question], topic, selectedMood, authHeader, firstData.currentProficiency);
       } else {
-        // Fallback: Generate questions one by one
-        console.log('Batch generation failed, falling back to streaming');
-        generateQuestionsIndividually(topic, selectedMood, authHeader);
+        // Fallback: Try batch generation
+        console.log('First question generation failed, trying batch generation');
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': authHeader
+          },
+          body: JSON.stringify({
+            action: 'generate-batch',
+            userId: user.id,
+            topic: topic,
+            mood: selectedMood
+          })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.questions && data.questions.length > 0) {
+          setQuestionBatch(data.questions);
+          setBatchId(data.batchId);
+          setCurrentQuestionIndex(0);
+          setCurrentQuestion({
+            ...data.questions[0],
+            topic: topic,
+            difficulty: data.questions[0].difficulty,
+            proficiency: data.currentProficiency
+          });
+          
+          if (data.questions.length < 5) {
+            generateRemainingQuestions(data.questions, topic, selectedMood, authHeader, data.currentProficiency);
+          }
+        } else {
+          // Final fallback: Generate questions one by one
+          console.log('Batch generation also failed, falling back to individual streaming');
+          generateQuestionsIndividually(topic, selectedMood, authHeader);
+        }
       }
     } catch (error) {
       console.error('Error generating questions:', error);
@@ -162,50 +192,63 @@ export default function Dashboard() {
     }
   };
   
-  // Generate remaining questions individually
+  // Generate remaining questions in parallel for speed
   const generateRemainingQuestions = async (existingQuestions, topic, mood, authHeader, proficiency) => {
     const existingCount = existingQuestions.length;
     const needed = 5 - existingCount;
     
-    console.log(`Generating ${needed} more questions individually`);
+    console.log(`Generating ${needed} more questions in parallel`);
     
+    // Create promises for all remaining questions
+    const promises = [];
     for (let i = 0; i < needed; i++) {
-      try {
-        const response = await fetch('/api/generate-stream', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': authHeader
-          },
-          body: JSON.stringify({
-            userId: user.id,
-            topic: topic,
-            mood: mood,
-            position: existingCount + i + 1,
-            existingQuestions: existingQuestions.map(q => q.question)
-          })
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          const newQuestion = {
+      const promise = fetch('/api/generate-stream', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': authHeader
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          topic: topic,
+          mood: mood,
+          position: existingCount + i + 1,
+          existingQuestions: existingQuestions.map(q => q.question)
+        })
+      })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => {
+        if (data) {
+          return {
             ...data.question,
             topic: topic,
             difficulty: data.question.difficulty,
             proficiency: proficiency
           };
-          
-          // Add to batch
-          setQuestionBatch(prev => [...prev, newQuestion]);
-          
-          // If this is the first question and we don't have a current question, set it
-          if (existingCount === 0 && i === 0) {
-            setCurrentQuestion(newQuestion);
-          }
         }
-      } catch (error) {
+        return null;
+      })
+      .catch(error => {
         console.error(`Error generating question ${existingCount + i + 1}:`, error);
-      }
+        return null;
+      });
+      
+      promises.push(promise);
+    }
+    
+    // Wait for all to complete and update batch
+    const results = await Promise.all(promises);
+    const validQuestions = results.filter(q => q !== null);
+    
+    if (validQuestions.length > 0) {
+      setQuestionBatch(prev => [...prev, ...validQuestions]);
+      console.log(`Successfully generated ${validQuestions.length} additional questions`);
+    }
+    
+    // Generate batch ID if we have all 5 questions
+    if (existingQuestions.length + validQuestions.length >= 5) {
+      const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      setBatchId(batchId);
     }
   };
   
@@ -462,18 +505,13 @@ export default function Dashboard() {
         <div className="container">
           {!selectedTopic ? (
             <>
-              <div className="user-info">
-                <p className="subtitle">
-                  {user?.role === 'student' ? 'Student' : 'Teacher'} | 
-                  Grade {user?.grade || '8'} | 
-                  ${user?.subscription_status === 'student' ? '70' : user?.subscription_status === 'teacher' ? '120' : '0'}/year
-                </p>
-                {sessionStats.totalQuestions > 0 && (
+              {sessionStats.totalQuestions > 0 && (
+                <div className="user-info">
                   <p className="session-stats">
                     Today: {sessionStats.correctAnswers}/{sessionStats.totalQuestions} correct
                   </p>
-                )}
-              </div>
+                </div>
+              )}
 
               <MoodSelector 
                 selectedMood={selectedMood} 
@@ -501,7 +539,10 @@ export default function Dashboard() {
                         
                         <div className="level-info">
                           <div className="progress-bar">
-                            <div className="progress-fill" style={{ width: `${progressPercentage}%` }}></div>
+                            <div 
+                              className={`progress-fill ${proficiency >= 9 ? 'progress-max' : ''}`} 
+                              style={{ width: `${progressPercentage}%` }}
+                            ></div>
                           </div>
                         </div>
                         
@@ -719,7 +760,15 @@ export default function Dashboard() {
               border-radius: 5px;
               position: relative;
               animation: progress-glow 2s ease-in-out infinite;
-              transition: width 0.3s ease;
+              transition: width 0.3s ease, background 0.5s ease;
+            }
+            
+            .progress-fill.progress-max {
+              background: 
+                linear-gradient(90deg, 
+                  #10b981 0%, 
+                  #059669 50%, 
+                  #047857 100%);
             }
 
             @keyframes progress-glow {

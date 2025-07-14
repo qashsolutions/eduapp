@@ -264,8 +264,25 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
       // Get current proficiency
       const currentProficiency = user[topic] || 5;
       
-      // Map proficiency to difficulty
-      const baseDifficulty = mapProficiencyToDifficulty(currentProficiency, [1, 2, 3, 4, 5, 6, 7, 8]);
+      // Map proficiency to difficulty with grade-based scaling
+      let gradeMultiplier;
+      if (grade <= 6) {
+        gradeMultiplier = 0.8; // Grades 5 and 6 = 0.8x
+      } else if (grade === 7) {
+        gradeMultiplier = 0.9; // Grade 7 = 0.9x
+      } else if (grade === 8) {
+        gradeMultiplier = 1.0; // Grade 8 = 1.0x (baseline)
+      } else if (grade >= 9 && grade <= 10) {
+        gradeMultiplier = 1.2; // Grades 9 and 10 = 1.2x
+      } else if (grade >= 11) {
+        gradeMultiplier = 1.4; // Grade 11 and above = 1.4x
+      } else {
+        gradeMultiplier = 1.0; // Default
+      }
+      
+      const baseDifficulty = Math.min(8, Math.max(1, Math.round(
+        mapProficiencyToDifficulty(currentProficiency, [1, 2, 3, 4, 5, 6, 7, 8]) * gradeMultiplier
+      )));
       
       // Extract grade from user data (default to 8 if not set)
       const grade = user.grade || 8;

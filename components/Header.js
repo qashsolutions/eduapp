@@ -42,7 +42,7 @@ export default function Header() {
         <div className="logo-section">
           <div onClick={() => router.push(user ? '/dashboard' : '/')} style={{ cursor: 'pointer' }}>
             <h1 className="logo">
-              Socratic Learning ✨
+              Socratic Thinking
             </h1>
             <p className="logo-subheader">
               <span className="gradient-text">Adaptive. Infinite. Personalized.</span>
@@ -63,19 +63,26 @@ export default function Header() {
           {user && (
             <>
               <div className="user-info">
-                <span className="user-email">
-                  {(() => {
-                    if (user.role === 'student') {
-                      // If we have first_name and it doesn't look like an email
-                      if (user.first_name && !user.first_name.includes('@')) {
-                        return user.first_name;
+                <div className="user-details">
+                  <span className="user-email">
+                    {(() => {
+                      if (user.role === 'student') {
+                        // If we have first_name and it doesn't look like an email
+                        if (user.first_name && !user.first_name.includes('@')) {
+                          return user.first_name;
+                        }
+                        // Otherwise extract from email
+                        return user.email.split('_')[0];
                       }
-                      // Otherwise extract from email
-                      return user.email.split('_')[0];
-                    }
-                    return user.email;
-                  })()}
-                </span>
+                      return user.email;
+                    })()}
+                  </span>
+                  <span className="user-meta">
+                    {user.role === 'student' ? 'Student' : 'Teacher'} | 
+                    Grade {user.grade || '8'} | 
+                    Monthly Plan
+                  </span>
+                </div>
                 {trialDaysLeft === 'pending' && (
                   <span className="pending-badge">
                     Pending
@@ -163,10 +170,23 @@ export default function Header() {
           gap: 12px;
         }
         
+        .user-details {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+        }
+        
         .user-email {
-          color: #4a5568;
+          color: #2d3748;
           font-size: 1rem;
           font-weight: 600;
+        }
+        
+        .user-meta {
+          color: #4a5568;
+          font-size: 0.85rem;
+          margin-top: 2px;
+          font-style: italic;
         }
         
         .trial-badge {
