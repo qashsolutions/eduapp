@@ -89,6 +89,8 @@ export default function Dashboard() {
     
     setSelectedTopic(topic);
     setGenerating(true);
+    setQuestionBatch([]); // Clear previous batch
+    setCurrentQuestionIndex(0);
 
     try {
       // Get appropriate auth token
@@ -108,6 +110,7 @@ export default function Dashboard() {
         }
       }
       
+      // Try batch generation first
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 
@@ -123,7 +126,8 @@ export default function Dashboard() {
       });
 
       const data = await response.json();
-      if (response.ok) {
+      
+      if (response.ok && data.questions && data.questions.length > 0) {
         // Store the batch of questions
         setQuestionBatch(data.questions);
         setBatchId(data.batchId);
@@ -139,15 +143,121 @@ export default function Dashboard() {
         });
         
         console.log(`Loaded batch of ${data.totalQuestions} questions`);
+        
+        // If we got less than 5 questions, generate more individually
+        if (data.questions.length < 5) {
+          generateRemainingQuestions(data.questions, topic, selectedMood, authHeader, data.currentProficiency);
+        }
       } else {
-        console.error('API Error:', data.error || 'Failed to generate questions');
-        alert(data.error || 'Failed to generate questions. Please try again.');
+        // Fallback: Generate questions one by one
+        console.log('Batch generation failed, falling back to streaming');
+        generateQuestionsIndividually(topic, selectedMood, authHeader);
       }
     } catch (error) {
-      console.error('Error generating question:', error);
+      console.error('Error generating questions:', error);
+      // Fallback to individual generation
+      generateQuestionsIndividually(topic, selectedMood, authHeader);
     } finally {
       setGenerating(false);
     }
+  };
+  
+  // Generate remaining questions individually
+  const generateRemainingQuestions = async (existingQuestions, topic, mood, authHeader, proficiency) => {
+    const existingCount = existingQuestions.length;
+    const needed = 5 - existingCount;
+    
+    console.log(`Generating ${needed} more questions individually`);
+    
+    for (let i = 0; i < needed; i++) {
+      try {
+        const response = await fetch('/api/generate-stream', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': authHeader
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            topic: topic,
+            mood: mood,
+            position: existingCount + i + 1,
+            existingQuestions: existingQuestions.map(q => q.question)
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const newQuestion = {
+            ...data.question,
+            topic: topic,
+            difficulty: data.question.difficulty,
+            proficiency: proficiency
+          };
+          
+          // Add to batch
+          setQuestionBatch(prev => [...prev, newQuestion]);
+          
+          // If this is the first question and we don't have a current question, set it
+          if (existingCount === 0 && i === 0) {
+            setCurrentQuestion(newQuestion);
+          }
+        }
+      } catch (error) {
+        console.error(`Error generating question ${existingCount + i + 1}:`, error);
+      }
+    }
+  };
+  
+  // Generate all questions individually (streaming)
+  const generateQuestionsIndividually = async (topic, mood, authHeader) => {
+    const questions = [];
+    
+    for (let i = 0; i < 5; i++) {
+      try {
+        const response = await fetch('/api/generate-stream', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': authHeader
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            topic: topic,
+            mood: mood,
+            position: i + 1,
+            existingQuestions: questions.map(q => q.question)
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const newQuestion = {
+            ...data.question,
+            topic: topic,
+            difficulty: data.question.difficulty,
+            proficiency: data.currentProficiency
+          };
+          
+          questions.push(newQuestion);
+          
+          // Update batch in real-time
+          setQuestionBatch([...questions]);
+          
+          // Set first question as current
+          if (i === 0) {
+            setCurrentQuestion(newQuestion);
+            setGenerating(false); // Stop showing loading after first question
+          }
+        }
+      } catch (error) {
+        console.error(`Error generating question ${i + 1}:`, error);
+      }
+    }
+    
+    // Generate batch ID
+    const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    setBatchId(batchId);
   };
 
   const handleAnswer = async (correct, timeSpent, hintsUsed, selectedAnswer) => {
@@ -414,7 +524,10 @@ export default function Dashboard() {
                 <div className="topic-info">
                   <div className="topic-title">{formatTopicName(selectedTopic)}</div>
                   <div className="question-count">
-                    Question {currentQuestionIndex + 1} of 5 • Grade {user?.grade || '8'}
+                    Question {currentQuestionIndex + 1} of {questionBatch.length || '...'} • Grade {user?.grade || '8'}
+                    {questionBatch.length < 5 && questionBatch.length > 0 && (
+                      <span className="loading-indicator"> (Loading more...)</span>
+                    )}
                   </div>
                 </div>
                 <div className="level-badge">Level {getProficiency(selectedTopic)}</div>
@@ -701,6 +814,12 @@ export default function Dashboard() {
               color: #666666;
               margin-top: 0.25rem;
               font-style: italic;
+            }
+            
+            .loading-indicator {
+              color: #667eea;
+              font-weight: normal;
+              animation: pulse 1.5s ease-in-out infinite;
             }
 
             .progress-section {

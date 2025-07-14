@@ -279,11 +279,12 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
         return res.status(400).json({ error: `Invalid topic: ${topic}` });
       }
       
-      // Generate batch of 5 questions
+      // Generate batch of 5 questions with improved logic
       const questions = [];
       const usedHashes = new Set();
       const usedCombos = new Set();
-      const maxAttempts = 30; // Enough attempts to get 5 unique questions
+      const maxAttemptsPerQuestion = 10; // Max attempts per individual question
+      const targetQuestions = 5;
       let totalAttempts = 0;
       
       // Get user's recent question hashes to avoid duplicates (last 100)
@@ -313,85 +314,113 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
         baseDifficulty
       ];
       
-      console.log(`Generating batch of 5 questions for topic: ${topic}, grade: ${grade}, base difficulty: ${baseDifficulty}`);
+      console.log(`Generating batch of ${targetQuestions} questions for topic: ${topic}, grade: ${grade}, base difficulty: ${baseDifficulty}`);
       
-      while (questions.length < 5 && totalAttempts < maxAttempts) {
-        totalAttempts++;
+      // Generate questions with improved logic
+      for (let questionNum = 0; questionNum < targetQuestions; questionNum++) {
+        let questionGenerated = false;
+        let attemptsForThisQuestion = 0;
         
-        // Use different context/subtopic combinations
-        const contextIndex = questions.length % shuffledContexts.length;
-        const subtopicIndex = questions.length % shuffledSubtopics.length;
-        const context = shuffledContexts[contextIndex];
-        const subtopic = shuffledSubtopics[subtopicIndex];
-        const combo = `${context}-${subtopic}`;
+        while (!questionGenerated && attemptsForThisQuestion < maxAttemptsPerQuestion) {
+          attemptsForThisQuestion++;
+          totalAttempts++;
+          
+          // Use different context/subtopic combinations with better distribution
+          const contextIndex = (questionNum + Math.floor(attemptsForThisQuestion / 2)) % shuffledContexts.length;
+          const subtopicIndex = (questionNum + Math.floor(attemptsForThisQuestion / 3)) % shuffledSubtopics.length;
+          const context = shuffledContexts[contextIndex];
+          const subtopic = shuffledSubtopics[subtopicIndex];
+          const combo = `${context}-${subtopic}-${attemptsForThisQuestion}`;
+          
+          // Get difficulty for this question
+          const difficulty = difficulties[questionNum];
+          
+          // Create enhanced prompt for batch generation with complexity requirements
+          const basePrompt = createQuestionPrompt(topic, difficulty, grade, context, subtopic, mood);
+          
+          // Add specific requirements for English topics
+          const isEnglishTopic = topic.startsWith('english_');
+          const complexityRequirements = isEnglishTopic ? `
+IMPORTANT COMPLEXITY REQUIREMENTS FOR ENGLISH:
+- For reading comprehension: Create a passage of AT LEAST 200-250 words with rich vocabulary
+- Make wrong answer choices plausible and contextually relevant
+- Avoid obviously incorrect options
+- Use sophisticated vocabulary appropriate for grade ${grade}
+- Wrong answers should represent common misconceptions or partial understanding
+- Ensure all options are grammatically correct and of similar length` : '';
+          
+          const enhancedPrompt = basePrompt + `\n\nAdditional Instructions:
+- This is question ${questionNum + 1} of ${targetQuestions} in a set
+- Make this question unique and different from others
+- ${questionNum === 0 ? 'Start with foundational concepts' : 
+             questionNum === 4 ? 'Create a synthesis or application question' : 
+             'Build on previous concepts'}
+${complexityRequirements}`;
         
-        // Skip if we've used this combo already (unless we have limited options)
-        if (usedCombos.has(combo) && shuffledContexts.length * shuffledSubtopics.length > 5) {
-          continue;
+          try {
+            // Generate question with appropriate AI
+            let generatedQuestion;
+            console.log(`Generating question ${questionNum + 1}/${targetQuestions} with ${aiModel}`);
+            
+            if (aiModel === 'openai') {
+              if (!openai) throw new Error('OpenAI client not initialized - API key missing');
+              generatedQuestion = await generateWithOpenAI(openai, enhancedPrompt);
+            } else {
+              if (!anthropic) throw new Error('Anthropic client not initialized - API key missing');
+              generatedQuestion = await generateWithClaude(anthropic, enhancedPrompt);
+            }
+            
+            // Validate question format
+            if (!validateQuestion(generatedQuestion)) {
+              console.log(`Question ${questionNum + 1} failed validation, retrying...`);
+              continue;
+            }
+            
+            // Generate hash with more unique elements to reduce collisions
+            const uniqueElements = `${topic}-${subtopic}-${context}-${difficulty}-${generatedQuestion.question}-${Date.now()}`;
+            const hash = generateQuestionHash(topic, subtopic, context, difficulty, uniqueElements);
+            
+            // More lenient duplicate check - only check exact question text
+            const isDuplicate = questions.some(q => q.question === generatedQuestion.question);
+            
+            if (!isDuplicate) {
+              questions.push({
+                ...generatedQuestion,
+                hash,
+                difficulty,
+                position: questionNum + 1,
+                context,
+                subtopic
+              });
+              usedHashes.add(hash);
+              questionGenerated = true;
+              
+              console.log(`Question ${questions.length}/${targetQuestions} generated successfully`);
+            } else {
+              console.log(`Question ${questionNum + 1} was a duplicate, retrying...`);
+            }
+          } catch (error) {
+            console.error(`Error generating question ${questionNum + 1}:`, error);
+            // Continue trying with next attempt
+          }
         }
         
-        // Get difficulty for this question
-        const difficulty = difficulties[questions.length];
-        
-        // Create enhanced prompt for batch generation
-        const basePrompt = createQuestionPrompt(topic, difficulty, grade, context, subtopic, mood);
-        const enhancedPrompt = basePrompt + `\n\nAdditional Instructions:
-- This is question ${questions.length + 1} of 5 in a set
-- Make this question unique and different from others
-- ${questions.length === 0 ? 'Start with foundational concepts' : 
-           questions.length === 4 ? 'Create a synthesis or application question' : 
-           'Build on previous concepts'}`;
-        
-        try {
-          // Generate question with appropriate AI
-          let generatedQuestion;
-          console.log(`Generating question ${questions.length + 1}/5 with ${aiModel}`);
-          
-          if (aiModel === 'openai') {
-            if (!openai) throw new Error('OpenAI client not initialized - API key missing');
-            generatedQuestion = await generateWithOpenAI(openai, enhancedPrompt);
-          } else {
-            if (!anthropic) throw new Error('Anthropic client not initialized - API key missing');
-            generatedQuestion = await generateWithClaude(anthropic, enhancedPrompt);
-          }
-          
-          // Validate question format
-          if (!validateQuestion(generatedQuestion)) {
-            console.log(`Question ${questions.length + 1} failed validation, retrying...`);
-            continue;
-          }
-          
-          // Generate hash and check for duplicates
-          const hash = generateQuestionHash(topic, subtopic, context, difficulty, generatedQuestion.question);
-          
-          // Check against current batch, user history, and combos
-          if (!usedHashes.has(hash) && !historicalHashes.has(hash)) {
-            questions.push({
-              ...generatedQuestion,
-              hash,
-              difficulty,
-              position: questions.length + 1,
-              context,
-              subtopic
-            });
-            usedHashes.add(hash);
-            usedCombos.add(combo);
-            
-            console.log(`Question ${questions.length}/5 generated successfully`);
-          } else {
-            console.log(`Question ${questions.length + 1} was a duplicate, retrying...`);
-          }
-        } catch (error) {
-          console.error(`Error generating question ${questions.length + 1}:`, error);
-          // Continue trying with next attempt
+        // If we couldn't generate this question after all attempts, log it
+        if (!questionGenerated) {
+          console.error(`Failed to generate question ${questionNum + 1} after ${attemptsForThisQuestion} attempts`);
         }
       }
       
-      if (questions.length < 5) {
-        console.error(`Only generated ${questions.length}/5 questions after ${totalAttempts} attempts`);
+      // Fallback: Always return what we have, even if less than 5
+      if (questions.length === 0) {
+        console.error(`Failed to generate any questions after ${totalAttempts} attempts`);
         return res.status(500).json({ 
-          error: `Could only generate ${questions.length} unique questions. Please try again.` 
+          error: 'Failed to generate questions. Please try again.' 
         });
+      }
+      
+      if (questions.length < targetQuestions) {
+        console.warn(`Only generated ${questions.length}/${targetQuestions} questions after ${totalAttempts} attempts`);
       }
       
       // Generate a batch ID for tracking
