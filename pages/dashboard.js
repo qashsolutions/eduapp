@@ -1087,12 +1087,15 @@ export default function Dashboard() {
             .question-card .answer-option {
               background: rgba(80, 80, 80, 0.9) !important;
               border: 1px solid rgba(0, 0, 0, 0.1) !important;
+              cursor: pointer !important;
+              pointer-events: auto !important;
             }
             
             .question-card .answer-option span:not(.answer-letter) {
               color: #ffffff !important;
               font-size: 1.1rem !important;
               font-weight: 600 !important;
+              pointer-events: none !important;
             }
             
             .question-card .answer-option:hover {
