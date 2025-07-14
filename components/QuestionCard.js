@@ -125,9 +125,19 @@ export default function QuestionCard({
     return '';
   };
 
+  // Debug logging
+  console.log('QuestionCard received question object:', question);
+  console.log('QuestionCard context field:', question.context);
+  console.log('QuestionCard context length:', question.context?.length);
+  
   return (
     <div className="question-card">
       {getQuestionType() && <div className="question-type">{getQuestionType()}</div>}
+      
+      {/* Debug: Always show context field content for testing */}
+      <div style={{background: 'yellow', padding: '10px', margin: '10px', color: 'black'}}>
+        DEBUG CONTEXT: {question.context || 'NO CONTEXT FIELD'}
+      </div>
       
       {question.context && question.context.trim().length > 0 && (
         <div className="question-context">{question.context}</div>

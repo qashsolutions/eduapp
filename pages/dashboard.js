@@ -140,10 +140,7 @@ export default function Dashboard() {
         setCurrentQuestionIndex(0);
         setGenerating(false); // Stop loading indicator - user sees first question
         
-        console.log('First question loaded, generating remaining 4 in background...');
-        
-        // For now, just load 1 question to test validation fixes
-        // generateRemainingQuestions([firstData.question], topic, selectedMood, authHeader, firstData.currentProficiency);
+        console.log('First question loaded - single question mode for testing');
       } else {
         // Fallback: Try batch generation
         console.log('First question generation failed, trying batch generation');
