@@ -124,14 +124,14 @@ export default function QuestionCard({
   const getQuestionType = () => {
     if (topic.includes('comprehension')) return 'Reading Passage 📚';
     if (topic.includes('grammar')) return 'Grammar Rules ✍️';
-    if (topic.includes('vocabulary')) return 'Word Power 🎯';
-    if (topic.includes('math')) return 'Math Problem 🔢';
+    if (topic.includes('vocabulary')) return '';
+    if (topic.includes('math')) return '';
     return 'Question';
   };
 
   return (
     <div className="question-card">
-      <div className="question-type">{getQuestionType()}</div>
+      {getQuestionType() && <div className="question-type">{getQuestionType()}</div>}
       
       {question.context && question.context.length > 20 && (
         <div className="question-context">{question.context}</div>
@@ -324,14 +324,14 @@ export default function QuestionCard({
         .answer-letter {
           background: linear-gradient(135deg, var(--accent-neon), var(--accent-blue));
           color: white;
-          width: 32px;
-          height: 32px;
+          width: 40px;
+          height: 40px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-weight: 700;
-          font-size: 0.9rem;
+          font-weight: 800;
+          font-size: 1.2rem;
           flex-shrink: 0;
         }
         
@@ -400,18 +400,13 @@ export default function QuestionCard({
         }
         
         .btn-secondary {
-          background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
-          backdrop-filter: blur(15px);
-          border: none;
+          background: linear-gradient(135deg, var(--accent-neon), var(--accent-blue));
           color: white;
-          font-weight: 600;
-          box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
         }
         
         .btn-secondary:hover {
-          background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+          box-shadow: 0 8px 24px rgba(0, 255, 136, 0.4);
         }
         
         .btn:disabled {
