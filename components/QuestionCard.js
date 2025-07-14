@@ -22,15 +22,6 @@ export default function QuestionCard({
   const [isLoadingHint, setIsLoadingHint] = useState(false);
   const MAX_HINTS = 4;
 
-  // Reset state when question changes
-  useEffect(() => {
-    setSelectedAnswer(null);
-    setShowResult(false);
-    setIsCorrect(false);
-    setHints([]);
-    setCurrentHintLevel(0);
-    setHintsUsed(0);
-  }, [question.hash]); // Reset when question hash changes
 
   const handleAnswerSelect = (option) => {
     console.log('Answer clicked:', option);

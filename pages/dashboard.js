@@ -687,6 +687,7 @@ export default function Dashboard() {
                 </div>
               ) : currentQuestion && (
                 <QuestionCard 
+                  key={currentQuestion.hash || `${currentQuestionIndex}-${currentQuestion.question}`}
                   question={currentQuestion}
                   topic={selectedTopic}
                   difficulty={currentQuestion.difficulty}
