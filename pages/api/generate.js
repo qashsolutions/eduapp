@@ -211,8 +211,8 @@ Sitemap: https://learnai.com/api/generate?sitemap`);
         
         console.log('Generated question:', JSON.stringify(generatedQuestion, null, 2));
         
-        // Validate question format
-        if (!validateQuestion(generatedQuestion)) {
+        // Validate question format with topic and grade
+        if (!validateQuestion(generatedQuestion, topic, grade)) {
           continue;
         }
         
@@ -387,8 +387,8 @@ ${complexityRequirements}`;
               generatedQuestion = await generateWithClaude(anthropic, enhancedPrompt);
             }
             
-            // Validate question format
-            if (!validateQuestion(generatedQuestion)) {
+            // Validate question format with topic and grade
+            if (!validateQuestion(generatedQuestion, topic, grade)) {
               console.log(`Question ${questionNum + 1} failed validation, retrying...`);
               continue;
             }

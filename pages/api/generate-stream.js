@@ -126,8 +126,8 @@ ${position === 1 ? 'Start with foundational concepts.' :
           generatedQuestion = await generateWithClaude(anthropic, enhancedPrompt);
         }
         
-        // Validate
-        if (!validateQuestion(generatedQuestion)) {
+        // Validate with topic and grade
+        if (!validateQuestion(generatedQuestion, topic, grade)) {
           console.log(`Question validation failed, attempt ${attempts}`);
           continue;
         }
