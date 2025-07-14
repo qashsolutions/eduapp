@@ -1106,14 +1106,17 @@ export default function Dashboard() {
               border-color: #667eea !important;
             }
             
-            .question-card .answer-option.selected {
-              background: rgba(102, 126, 234, 0.2) !important;
+            .question-card .answers-grid .answer-option.selected {
+              background: rgba(102, 126, 234, 0.5) !important;
               border-color: #667eea !important;
+              border-width: 3px !important;
+              box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3) !important;
             }
             
-            .question-card .answer-option.selected span:not(.answer-letter) {
+            .question-card .answers-grid .answer-option.selected span:not(.answer-letter) {
               font-style: normal !important;
-              font-weight: 600 !important;
+              font-weight: 700 !important;
+              color: #1a1a1a !important;
             }
             
             .question-card .answer-letter {

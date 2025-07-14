@@ -27,6 +27,7 @@ export default function QuestionCard({
     if (!showResult) {
       console.log('Setting selected answer to:', option);
       setSelectedAnswer(option);
+      console.log('Current selectedAnswer state:', selectedAnswer);
     } else {
       console.log('Cannot select - result already shown');
     }
@@ -158,10 +159,16 @@ export default function QuestionCard({
               showResult && selectedAnswer === key && !isCorrect ? 'incorrect' : ''
             }`}
             onClick={() => handleAnswerSelect(key)}
+            style={selectedAnswer === key && !showResult ? {
+              background: 'rgba(102, 126, 234, 0.4)',
+              borderColor: '#667eea',
+              borderWidth: '3px',
+              boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.2)'
+            } : {}}
           >
             <div className="answer-label">
               <span className="answer-letter">{key}</span>
-              <span>{value}</span>
+              <span style={selectedAnswer === key ? {fontStyle: 'normal', fontWeight: '700'} : {}}>{value}</span>
             </div>
           </div>
         ))}
