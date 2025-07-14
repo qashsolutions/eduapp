@@ -22,14 +22,20 @@ export default function QuestionCard({
   const [isLoadingHint, setIsLoadingHint] = useState(false);
   const MAX_HINTS = 4;
 
+  // Reset state when question changes
+  useEffect(() => {
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setIsCorrect(false);
+    setHints([]);
+    setCurrentHintLevel(0);
+    setHintsUsed(0);
+  }, [question.hash]); // Reset when question hash changes
+
   const handleAnswerSelect = (option) => {
     console.log('Answer clicked:', option);
     if (!showResult) {
-      console.log('Setting selected answer to:', option);
       setSelectedAnswer(option);
-      console.log('Current selectedAnswer state:', selectedAnswer);
-    } else {
-      console.log('Cannot select - result already shown');
     }
   };
 

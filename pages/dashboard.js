@@ -684,9 +684,6 @@ export default function Dashboard() {
                   <div className="generating-text">
                     Loading your personalized questions in real-time, please do not refresh...
                   </div>
-                  <div className="generating-subtext">
-                    Preparing 5 unique questions for your learning session
-                  </div>
                 </div>
               ) : currentQuestion && (
                 <QuestionCard 
