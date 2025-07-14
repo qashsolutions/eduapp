@@ -21,6 +21,9 @@ export default function Dashboard() {
   const [generating, setGenerating] = useState(false);
   const [sessionStats, setSessionStats] = useState({ totalQuestions: 0, correctAnswers: 0 });
   const [showExpiryWarning, setShowExpiryWarning] = useState(false);
+  const [questionBatch, setQuestionBatch] = useState([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [batchId, setBatchId] = useState(null);
 
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
@@ -112,7 +115,7 @@ export default function Dashboard() {
           'Authorization': authHeader
         },
         body: JSON.stringify({
-          action: 'generate',
+          action: 'generate-batch',
           userId: user.id,
           topic: topic,
           mood: selectedMood
@@ -121,15 +124,24 @@ export default function Dashboard() {
 
       const data = await response.json();
       if (response.ok) {
+        // Store the batch of questions
+        setQuestionBatch(data.questions);
+        setBatchId(data.batchId);
+        setCurrentQuestionIndex(0);
+        
+        // Set the first question as current
+        const firstQuestion = data.questions[0];
         setCurrentQuestion({
-          ...data.question,
+          ...firstQuestion,
           topic: topic,
-          difficulty: data.difficulty,
+          difficulty: firstQuestion.difficulty,
           proficiency: data.currentProficiency
         });
+        
+        console.log(`Loaded batch of ${data.totalQuestions} questions`);
       } else {
-        console.error('API Error:', data.error || 'Failed to generate question');
-        alert(data.error || 'Failed to generate question. Please try again.');
+        console.error('API Error:', data.error || 'Failed to generate questions');
+        alert(data.error || 'Failed to generate questions. Please try again.');
       }
     } catch (error) {
       console.error('Error generating question:', error);
@@ -191,17 +203,35 @@ export default function Dashboard() {
   };
 
   const handleNext = () => {
-    // Clear current question before fetching new one
-    setCurrentQuestion(null);
-    // Small delay to ensure state update
-    setTimeout(() => {
-      handleTopicSelect(selectedTopic);
-    }, 50);
+    // Check if we have more questions in the batch
+    if (currentQuestionIndex < questionBatch.length - 1) {
+      // Move to next question in batch
+      const nextIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(nextIndex);
+      
+      const nextQuestion = questionBatch[nextIndex];
+      setCurrentQuestion({
+        ...nextQuestion,
+        topic: selectedTopic,
+        difficulty: nextQuestion.difficulty,
+        proficiency: nextQuestion.proficiency || getProficiency(selectedTopic)
+      });
+      
+      console.log(`Moving to question ${nextIndex + 1}/5`);
+    } else {
+      // Completed all 5 questions - show completion or generate new batch
+      console.log('Completed all 5 questions in batch');
+      alert('Great job! You\'ve completed all 5 questions. Select a new topic to continue.');
+      handleBack();
+    }
   };
 
   const handleBack = () => {
     setSelectedTopic(null);
     setCurrentQuestion(null);
+    setQuestionBatch([]);
+    setCurrentQuestionIndex(0);
+    setBatchId(null);
   };
 
   const getAvailableTopics = () => {
@@ -383,7 +413,9 @@ export default function Dashboard() {
                 <button className="back-btn" onClick={handleBack}>←</button>
                 <div className="topic-info">
                   <div className="topic-title">{formatTopicName(selectedTopic)}</div>
-                  <div className="question-count">Grade {user?.grade || '8'} Student</div>
+                  <div className="question-count">
+                    Question {currentQuestionIndex + 1} of 5 • Grade {user?.grade || '8'}
+                  </div>
                 </div>
                 <div className="level-badge">Level {getProficiency(selectedTopic)}</div>
               </header>
@@ -397,7 +429,12 @@ export default function Dashboard() {
 
               {generating ? (
                 <div className="generating">
-                  <div className="generating-text">Loading your next question... ✨</div>
+                  <div className="generating-text">
+                    Loading your personalized questions in real-time, please do not refresh...
+                  </div>
+                  <div className="generating-subtext">
+                    Preparing 5 unique questions for your learning session
+                  </div>
                 </div>
               ) : currentQuestion && (
                 <QuestionCard 
@@ -432,21 +469,19 @@ export default function Dashboard() {
               justify-content: center;
               min-height: 100vh;
               gap: 20px;
-              background: linear-gradient(135deg, #f7f5f3 0%, #e8e2db 100%);
+              background: linear-gradient(135deg, #fdfcfa 0%, #f9f7f4 100%);
             }
 
             .logo {
-              font-size: 2.5rem;
+              font-size: 3rem;
               font-weight: 800;
-              background: linear-gradient(135deg, #374151 0%, #6b7280 50%, #9ca3af 100%);
-              background-clip: text;
-              -webkit-background-clip: text;
-              color: transparent;
+              color: #1a1a1a;
               margin-bottom: 8px;
             }
 
             .loading-text {
-              color: #6b7280;
+              color: #1a1a1a;
+              font-size: 1.4rem;
               animation: pulse 2s ease-in-out infinite;
             }
 
@@ -457,14 +492,14 @@ export default function Dashboard() {
             }
 
             .subtitle {
-              color: #4b5563;
-              font-size: 1.1rem;
+              color: #1a1a1a;
+              font-size: 1.3rem;
               font-weight: 500;
             }
 
             .session-stats {
-              color: #10b981;
-              font-size: 0.9rem;
+              color: #1a1a1a;
+              font-size: 1.1rem;
               margin-top: 8px;
               font-weight: 600;
             }
@@ -482,12 +517,9 @@ export default function Dashboard() {
             }
 
             .adventure-title {
-              font-size: clamp(2rem, 4vw, 3rem);
+              font-size: clamp(2.5rem, 4vw, 3.5rem);
               font-weight: 800;
-              background: linear-gradient(135deg, #374151 0%, #6b7280 50%, #9ca3af 100%);
-              background-clip: text;
-              -webkit-background-clip: text;
-              color: transparent;
+              color: #1a1a1a;
               text-align: center;
               position: relative;
             }
@@ -499,12 +531,10 @@ export default function Dashboard() {
             }
 
             .adventure-card {
-              background: 
-                linear-gradient(145deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.3)),
-                rgba(255, 255, 255, 0.2);
-              backdrop-filter: blur(30px) saturate(150%);
-              border: 1px solid rgba(255, 255, 255, 0.5);
-              border-radius: 28px;
+              background: rgba(255, 255, 255, 0.85);
+              backdrop-filter: blur(10px);
+              border: 1px solid rgba(0, 0, 0, 0.08);
+              border-radius: 20px;
               padding: 2.5rem;
               cursor: pointer;
               transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -515,19 +545,13 @@ export default function Dashboard() {
               flex-direction: column;
               justify-content: space-between;
               min-height: 300px;
-              box-shadow: 
-                0 15px 35px rgba(31, 38, 135, 0.12),
-                inset 0 2px 0 rgba(255, 255, 255, 0.9),
-                inset 0 -2px 0 rgba(255, 255, 255, 0.3);
+              box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
             }
 
             .adventure-card:hover {
-              transform: translateY(-15px) rotateX(5deg) rotateY(2deg) scale(1.03);
-              box-shadow: 
-                0 25px 50px rgba(31, 38, 135, 0.2),
-                0 0 30px rgba(59, 130, 246, 0.1),
-                inset 0 2px 0 rgba(255, 255, 255, 0.95);
-              backdrop-filter: blur(40px) saturate(180%);
+              transform: translateY(-10px) scale(1.02);
+              box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+              background: rgba(255, 255, 255, 0.95);
             }
 
             .adventure-header {
@@ -538,14 +562,9 @@ export default function Dashboard() {
             }
 
             .adventure-details h3 {
-              font-size: clamp(1.4rem, 3vw, 1.8rem);
+              font-size: clamp(1.8rem, 3vw, 2.2rem);
               font-weight: 800;
-              background: linear-gradient(45deg, #374151, #6b7280, #374151);
-              background-size: 200% 200%;
-              background-clip: text;
-              -webkit-background-clip: text;
-              color: transparent;
-              animation: gradient-shift 4s ease infinite;
+              color: #1a1a1a;
               margin-bottom: 0;
             }
 
@@ -555,26 +574,26 @@ export default function Dashboard() {
             }
 
             .level-badge {
-              background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-              color: #374151;
+              background: rgba(255, 255, 255, 0.8);
+              color: #1a1a1a;
               padding: 0.5rem 1rem;
               border-radius: 12px;
               font-weight: 700;
-              font-size: 0.9rem;
-              box-shadow: 
-                0 2px 4px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+              font-size: 1.1rem;
+              border: 1px solid rgba(0, 0, 0, 0.08);
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             }
 
             /* Progress Bar */
             .progress-bar {
               width: 100%;
-              height: 10px;
-              background: rgba(0, 0, 0, 0.1);
-              border-radius: 5px;
+              height: 12px;
+              background: rgba(0, 0, 0, 0.08);
+              border-radius: 6px;
               overflow: hidden;
               position: relative;
               margin-top: 0.5rem;
+              border: 1px solid rgba(0, 0, 0, 0.05);
             }
 
             .progress-fill {
@@ -606,21 +625,16 @@ export default function Dashboard() {
               width: 100%;
               padding: 1.2rem 2.5rem;
               border: none;
-              border-radius: 20px;
-              font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+              border-radius: 16px;
+              font-size: clamp(1.4rem, 2.5vw, 1.7rem);
               font-weight: 700;
               cursor: pointer;
-              transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-              background: 
-                linear-gradient(135deg, 
-                  #10b981 0%, 
-                  #3b82f6 100%);
+              transition: all 0.3s ease;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
               color: white;
               position: relative;
               z-index: 2;
-              box-shadow: 
-                0 8px 25px rgba(16, 185, 129, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+              box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
               transform-style: preserve-3d;
             }
 
@@ -648,23 +662,19 @@ export default function Dashboard() {
               justify-content: space-between;
               align-items: center;
               margin-bottom: 32px;
-              background: 
-                linear-gradient(145deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.2)),
-                rgba(255, 255, 255, 0.1);
-              backdrop-filter: blur(30px) saturate(150%);
-              border: 1px solid rgba(255, 255, 255, 0.4);
+              background: rgba(255, 255, 255, 0.85);
+              backdrop-filter: blur(10px);
+              border: 1px solid rgba(0, 0, 0, 0.08);
               border-radius: 20px;
-              padding: 16px 24px;
-              box-shadow: 
-                0 6px 20px rgba(31, 38, 135, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+              padding: 20px 28px;
+              box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
             }
 
             .back-btn {
               background: none;
               border: none;
-              color: #6b7280;
-              font-size: 1.5rem;
+              color: #1a1a1a;
+              font-size: 1.8rem;
               cursor: pointer;
               transition: all 0.3s ease;
               padding: 0.5rem;
@@ -672,7 +682,7 @@ export default function Dashboard() {
             }
 
             .back-btn:hover {
-              color: #374151;
+              color: #1a1a1a;
               background: rgba(0, 0, 0, 0.05);
             }
 
@@ -681,15 +691,16 @@ export default function Dashboard() {
             }
 
             .topic-title {
-              font-size: 1.3rem;
+              font-size: 1.6rem;
               font-weight: 700;
-              color: #374151;
+              color: #1a1a1a;
             }
 
             .question-count {
-              font-size: 0.9rem;
-              color: #6b7280;
+              font-size: 1.1rem;
+              color: #666666;
               margin-top: 0.25rem;
+              font-style: italic;
             }
 
             .progress-section {
@@ -698,15 +709,23 @@ export default function Dashboard() {
 
             .generating {
               display: flex;
+              flex-direction: column;
               align-items: center;
               justify-content: center;
               min-height: 300px;
             }
 
             .generating-text {
-              font-size: 1.2rem;
-              color: #6b7280;
+              font-size: 1.5rem;
+              color: #1a1a1a;
               animation: pulse 2s ease-in-out infinite;
+              margin-bottom: 0.5rem;
+            }
+            
+            .generating-subtext {
+              font-size: 1.1rem;
+              color: #666666;
+              font-style: italic;
             }
 
             @keyframes fadeIn {
@@ -798,42 +817,33 @@ export default function Dashboard() {
           `}</style>
 
           <style jsx global>{`
-            /* Morphing Background */
+            /* Paper texture background */
             .bg-morphing {
               position: fixed;
               top: 0;
               left: 0;
               width: 100%;
               height: 100%;
-              background: 
-                radial-gradient(circle at 20% 20%, rgba(156, 163, 175, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(209, 213, 219, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 60% 40%, rgba(243, 244, 246, 0.08) 0%, transparent 50%);
-              animation: morph-bg 25s ease-in-out infinite;
+              background-image: 
+                repeating-linear-gradient(
+                  0deg,
+                  transparent,
+                  transparent 1px,
+                  rgba(0, 0, 0, 0.03) 1px,
+                  rgba(0, 0, 0, 0.03) 2px
+                ),
+                repeating-linear-gradient(
+                  90deg,
+                  transparent,
+                  transparent 1px,
+                  rgba(0, 0, 0, 0.02) 1px,
+                  rgba(0, 0, 0, 0.02) 2px
+                );
               pointer-events: none;
               z-index: 1;
+              opacity: 0.4;
             }
 
-            @keyframes morph-bg {
-              0%, 100% {
-                background: 
-                  radial-gradient(circle at 20% 20%, rgba(156, 163, 175, 0.08) 0%, transparent 50%),
-                  radial-gradient(circle at 80% 80%, rgba(209, 213, 219, 0.08) 0%, transparent 50%),
-                  radial-gradient(circle at 60% 40%, rgba(243, 244, 246, 0.08) 0%, transparent 50%);
-              }
-              33% {
-                background: 
-                  radial-gradient(circle at 70% 30%, rgba(107, 114, 128, 0.08) 0%, transparent 50%),
-                  radial-gradient(circle at 30% 70%, rgba(229, 231, 235, 0.08) 0%, transparent 50%),
-                  radial-gradient(circle at 90% 10%, rgba(249, 250, 251, 0.08) 0%, transparent 50%);
-              }
-              66% {
-                background: 
-                  radial-gradient(circle at 10% 80%, rgba(75, 85, 99, 0.08) 0%, transparent 50%),
-                  radial-gradient(circle at 90% 20%, rgba(156, 163, 175, 0.08) 0%, transparent 50%),
-                  radial-gradient(circle at 50% 90%, rgba(229, 231, 235, 0.08) 0%, transparent 50%);
-              }
-            }
 
             /* Base styles */
             * {
@@ -844,9 +854,13 @@ export default function Dashboard() {
 
             body {
               font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-              background: linear-gradient(135deg, #f7f5f3 0%, #e8e2db 100%);
+              background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 116, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(120, 119, 116, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(120, 119, 116, 0.01) 0%, transparent 50%),
+                linear-gradient(135deg, #fdfcfa 0%, #f9f7f4 100%);
               min-height: 100vh;
-              color: #374151;
+              color: #1a1a1a;
               overflow-x: hidden;
             }
 
@@ -855,6 +869,7 @@ export default function Dashboard() {
               display: flex;
               flex-direction: column;
               position: relative;
+              background: transparent;
             }
 
             .container {
@@ -870,6 +885,61 @@ export default function Dashboard() {
                 animation-iteration-count: 1 !important;
                 transition-duration: 0.01ms !important;
               }
+            }
+            
+            /* Override QuestionCard styles for dashboard */
+            .question-card {
+              background: rgba(255, 255, 255, 0.85) !important;
+              backdrop-filter: blur(10px) !important;
+              border: 1px solid rgba(0, 0, 0, 0.08) !important;
+              color: #1a1a1a !important;
+            }
+            
+            .question-card h2,
+            .question-card p,
+            .question-card .question-type,
+            .question-card .hint-text,
+            .question-card .explanation-text {
+              color: #1a1a1a !important;
+            }
+            
+            .question-card .btn-secondary {
+              background: rgba(255, 255, 255, 0.9) !important;
+              color: #666666 !important;
+              border: 1px solid rgba(0, 0, 0, 0.1) !important;
+              font-style: italic !important;
+            }
+            
+            .question-card .btn-primary {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+              border: none !important;
+              font-size: 1.2rem !important;
+            }
+            
+            .question-card .answer-button {
+              background: rgba(255, 255, 255, 0.9) !important;
+              border: 1px solid rgba(0, 0, 0, 0.08) !important;
+              color: #1a1a1a !important;
+            }
+            
+            .question-card .answer-button:hover {
+              background: rgba(255, 255, 255, 0.95) !important;
+              border-color: #667eea !important;
+            }
+            
+            .question-card .answer-letter {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            }
+            
+            .question-card .hint-section,
+            .question-card .explanation-section {
+              background: rgba(255, 255, 255, 0.7) !important;
+              border: 1px solid rgba(0, 0, 0, 0.08) !important;
+            }
+            
+            .question-card .hint-title,
+            .question-card .explanation-title {
+              color: #1a1a1a !important;
             }
           `}</style>
         </div>

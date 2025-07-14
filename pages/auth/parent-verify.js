@@ -29,6 +29,12 @@ export default function ParentVerify() {
    * Verify token and load student information on mount
    */
   useEffect(() => {
+    // Wait for router to be ready before checking query parameters
+    if (!router.isReady) {
+      console.log('Router not ready yet, waiting...');
+      return;
+    }
+    
     // Check if returning from successful payment first
     const urlParams = new URLSearchParams(window.location.search);
     const paymentSuccess = urlParams.get('payment_success') === 'true';
@@ -37,6 +43,7 @@ export default function ParentVerify() {
     console.log('URL params:', window.location.search);
     console.log('Payment success:', paymentSuccess);
     console.log('Token:', token);
+    console.log('Router ready:', router.isReady);
     
     if (paymentSuccess) {
       // Handle payment success case
@@ -52,7 +59,7 @@ export default function ParentVerify() {
       setError('Invalid verification link');
       setLoading(false);
     }
-  }, [token, router.query]);
+  }, [token, router.query, router.isReady]);
 
   /**
    * Handle return from Stripe payment
