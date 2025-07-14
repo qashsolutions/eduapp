@@ -94,9 +94,9 @@ export default function Dashboard() {
     setCurrentQuestionIndex(0);
     setTopicQuestionCount(0); // Reset question count for new topic
 
+    // Get appropriate auth token (moved outside try block)
+    let authHeader = '';
     try {
-      // Get appropriate auth token
-      let authHeader = '';
       if (user.role === 'student') {
         // Get student session token from storage
         const studentData = retrieveSessionData();
@@ -204,10 +204,14 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('Error generating questions:', error);
-      // Fallback to individual generation
-      generateQuestionsIndividually(topic, selectedMood, authHeader);
-    } finally {
       setGenerating(false);
+      
+      // Handle network errors gracefully
+      if (error.message === 'Failed to fetch' || error.name === 'NetworkError') {
+        alert('Network connection issue. Please check your internet connection and try again.');
+      } else {
+        alert('Failed to generate questions. Please try again.');
+      }
     }
   };
   
