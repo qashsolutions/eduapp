@@ -67,7 +67,12 @@ class QuestionGenerator:
         # Vocabulary banks by grade level (5-11)
         self.vocabulary_banks = {
             5: {
-                "words": ["adventure", "mysterious", "courage", "challenge", "discover", "explore", "journey", "treasure", "ancient", "magical"],
+                "words": ["adventure", "mysterious", "courage", "challenge", "discover", "explore", "journey", "treasure", "ancient", "magical",
+                          "brave", "curious", "excited", "wonder", "imagine", "create", "surprise", "careful", "gentle", "peaceful",
+                          "accomplish", "achieve", "admire", "appreciate", "celebrate", "confident", "determined", "enthusiastic",
+                          "generous", "honest", "patient", "responsible", "successful", "thoughtful", "valuable",
+                          "abundant", "accurate", "astonish", "benefit", "capable", "concentrate", "dedicate", "efficient",
+                          "examine", "fascinate", "genuine", "hesitate", "illustrate", "impressive", "observe"],
                 "synonyms": {
                     "big": ["large", "huge", "enormous"],
                     "happy": ["joyful", "cheerful", "glad"],
@@ -81,7 +86,12 @@ class QuestionGenerator:
                 }
             },
             6: {
-                "words": ["significant", "demonstrate", "analyze", "observe", "conclude", "evidence", "hypothesis", "remarkable", "elaborate", "comprehensive"],
+                "words": ["significant", "demonstrate", "analyze", "observe", "conclude", "evidence", "hypothesis", "remarkable", "elaborate", "comprehensive",
+                          "compare", "predict", "solution", "strategy", "technique", "investigate", "evaluate",
+                          "accomplish", "alternative", "appropriate", "circumstance", "collaborate", "consequence", "contribute",
+                          "emphasize", "essential", "interpret", "modify", "perceive", "perspective", "persuade",
+                          "ambiguous", "contradict", "controversial", "criterion", "distinguish", "fundamental",
+                          "implication", "innovative", "integrate", "intervene", "justify", "legitimate", "manipulate", "phenomenon"],
                 "synonyms": {
                     "important": ["significant", "crucial", "essential"],
                     "show": ["demonstrate", "display", "exhibit"],
@@ -109,7 +119,13 @@ class QuestionGenerator:
                 }
             },
             8: {
-                "words": ["sophisticated", "phenomenon", "paradigm", "ambiguous", "hypothesis", "implications", "substantiate", "comprehensive", "perspective", "methodology"],
+                "words": ["sophisticated", "phenomenon", "paradigm", "ambiguous", "hypothesis", "implications", "substantiate", "comprehensive", "perspective", "methodology",
+                          "abstract", "acknowledge", "advocate", "analyze", "anticipate", "appreciate", "arbitrary",
+                          "assert", "assess", "assume", "attribute", "bias", "cite", "coherent",
+                          "alleviate", "amalgamate", "ameliorate", "anachronistic", "anomalous", "antipathy", "apocryphal",
+                          "approbation", "arduous", "articulate", "ascetic", "assiduous", "assuage", "attenuate", "audacious",
+                          "abstruse", "acerbic", "acrimony", "aesthetic", "alacrity", "amalgam", "ambivalent", "amelioration",
+                          "anachronism", "anathema", "antipodal", "aphorism", "apotheosis", "arcane"],
                 "synonyms": {
                     "complex": ["sophisticated", "intricate", "elaborate"],
                     "unclear": ["ambiguous", "vague", "indefinite"],
@@ -123,7 +139,13 @@ class QuestionGenerator:
                 }
             },
             9: {
-                "words": ["philosophical", "empirical", "theoretical", "paradigmatic", "hierarchical", "systematic", "conceptual", "fundamental", "transcendent", "ubiquitous"],
+                "words": ["philosophical", "empirical", "theoretical", "paradigmatic", "hierarchical", "systematic", "conceptual", "fundamental", "transcendent", "ubiquitous",
+                          "benevolent", "cacophony", "capricious", "catalyst", "censure", "chronicle", "circumspect", "clandestine",
+                          "coerce", "cognizant", "coherent", "collaborate", "compelling", "complacent", "conciliatory",
+                          "byzantine", "camaraderie", "capitulate", "castigate", "categorical", "caustic", "censorious",
+                          "chicanery", "circumlocution", "circumscribe", "clairvoyant", "clemency", "coalesce", "cogent", "commensurate",
+                          "bellicose", "blandishment", "bombastic", "bucolic", "burgeon", "buttress", "calumny",
+                          "canard", "canonical", "captious", "cardinal", "cataclysm"],
                 "synonyms": {
                     "fundamental": ["essential", "basic", "foundational"],
                     "systematic": ["methodical", "organized", "structured"],
@@ -137,7 +159,13 @@ class QuestionGenerator:
                 }
             },
             10: {
-                "words": ["epistemological", "phenomenological", "existential", "ontological", "dialectical", "hermeneutical", "categorical", "axiomatic", "transcendental", "metaphysical"],
+                "words": ["epistemological", "phenomenological", "existential", "ontological", "dialectical", "hermeneutical", "categorical", "axiomatic", "transcendental", "metaphysical",
+                          "debilitate", "deference", "delineate", "demur", "denigrate", "derivative", "desiccate", "desultory",
+                          "deter", "diatribe", "didactic", "diffident", "digress", "dilatory", "diminutive",
+                          "deleterious", "demagogue", "demarcation", "denouement", "deprecate", "derelict", "derision",
+                          "despoil", "desuetude", "deterrent", "diaphanous", "dichotomy", "diffuse", "dilettante", "din",
+                          "debacle", "decorum", "demotic", "denizen", "depredate", "deracinate",
+                          "dereliction", "derogate", "descry", "desideratum", "despot"],
                 "synonyms": {
                     "existential": ["experiential", "lived", "authentic"],
                     "dialectical": ["conversational", "argumentative", "reasoned"],
@@ -151,7 +179,13 @@ class QuestionGenerator:
                 }
             },
             11: {
-                "words": ["perspicacious", "sagacious", "perspicuous", "recondite", "abstruse", "erudite", "pedantic", "didactic", "heuristic", "paradigmatic"],
+                "words": ["perspicacious", "sagacious", "perspicuous", "recondite", "abstruse", "erudite", "pedantic", "didactic", "heuristic", "paradigmatic",
+                          "ebullient", "eclectic", "efficacious", "effrontery", "egregious", "elicit", "elucidate", "emaciate",
+                          "embellish", "empirical", "emulate", "enervate", "engender", "enigmatic", "ephemeral",
+                          "ebullience", "ecclesiastical", "ecumenical", "edacious", "effervescent", "effete", "effluvium",
+                          "effulgent", "egress", "elegiac", "elegy", "elocution", "emaciated", "emblazon", "emollient",
+                          "ebullition", "eclat", "edification", "efface", "effectual", "efficacy",
+                          "efflorescence", "effulgence", "eldritch", "eleemosynary", "elision"],
                 "synonyms": {
                     "perspicacious": ["insightful", "perceptive", "astute"],
                     "sagacious": ["wise", "prudent", "judicious"],
@@ -1201,24 +1235,75 @@ class QuestionGenerator:
         )
 
     def _generate_vocabulary_question(self, config: QuestionConfig) -> GeneratedQuestion:
-        """Generate vocabulary questions."""
+        """Generate vocabulary questions with mood-based contexts."""
         
         grade_words = self.vocabulary_banks.get(config.grade, self.vocabulary_banks[6])["words"]
-        target_word = random.choice(grade_words)
         
-        # Create context sentence
-        contexts = {
-            "adventure": "The brave explorer embarked on an exciting _____ through the unknown territory.",
-            "mysterious": "The old mansion had a _____ atmosphere that made everyone curious.",
-            "courage": "It takes great _____ to stand up for what you believe in.",
-            "significant": "The scientist made a _____ discovery that changed our understanding.",
-            "analyze": "Students must carefully _____ the data before drawing conclusions.",
-            "sophisticated": "The new technology uses a very _____ system of sensors.",
-            "phenomenon": "The northern lights are a natural _____ that amazes observers."
+        # Select words based on difficulty
+        word_count = len(grade_words)
+        if config.difficulty <= 3:
+            # Easy: first third of words
+            word_pool = grade_words[:word_count//3]
+        elif config.difficulty <= 6:
+            # Medium: middle third
+            word_pool = grade_words[word_count//3:2*word_count//3]
+        else:
+            # Hard: last third
+            word_pool = grade_words[2*word_count//3:]
+        
+        if not word_pool:
+            word_pool = grade_words
+            
+        target_word = random.choice(word_pool)
+        
+        # Mood-based context templates
+        mood_contexts = {
+            "adventurous": [
+                f"The explorer's _____ nature led them through uncharted territories.",
+                f"During the expedition, their _____ approach helped overcome obstacles.",
+                f"The adventurer needed to be _____ when facing the unknown."
+            ],
+            "analytical": [
+                f"The scientist's _____ methodology revealed surprising insights.",
+                f"Data analysis requires a _____ approach to identify patterns.",
+                f"Her _____ thinking helped solve the complex equation."
+            ],
+            "competitive": [
+                f"The debate champion's _____ argument secured victory.",
+                f"In business, being _____ provides a strategic advantage.",
+                f"The athlete's _____ spirit drove them to excellence."
+            ],
+            "cool": [
+                f"The startup's _____ innovation disrupted the industry.",
+                f"Their _____ response to criticism impressed everyone.",
+                f"The designer's _____ aesthetic appealed to millennials."
+            ],
+            "creative": [
+                f"The artist's _____ vision transformed ordinary materials.",
+                f"Creative writing demands a _____ imagination.",
+                f"Their _____ solution won the design competition."
+            ],
+            "curious": [
+                f"The researcher's _____ nature led to discoveries.",
+                f"A _____ mind questions conventional wisdom.",
+                f"The student's _____ inquiry revealed new connections."
+            ],
+            "practical": [
+                f"The engineer's _____ solution saved resources.",
+                f"Being _____ helps manage daily challenges.",
+                f"Their _____ advice proved invaluable."
+            ],
+            "relaxed": [
+                f"The instructor's _____ demeanor calmed students.",
+                f"A _____ approach often yields better outcomes.",
+                f"The garden's _____ atmosphere promoted healing."
+            ]
         }
         
-        context = contexts.get(target_word, f"The word _____ best completes this sentence about learning.")
-        question_text = f"Choose the word that best completes the sentence:\n\n{context}"
+        # Get context for current mood
+        mood = config.mood if config.mood in mood_contexts else "curious"
+        context_template = random.choice(mood_contexts[mood])
+        question_text = f"Choose the word that best completes the sentence:\n\n{context_template}"
         
         # Generate options
         other_words = [w for w in grade_words if w != target_word]
@@ -1227,7 +1312,20 @@ class QuestionGenerator:
         random.shuffle(options)
         
         correct_answer = target_word
-        explanation = f"'{target_word}' fits the context and meaning of the sentence."
+        
+        # Mood-specific explanations
+        mood_explanations = {
+            "adventurous": f"'{target_word}' captures the adventurous spirit described in the context.",
+            "analytical": f"'{target_word}' precisely fits the analytical scenario presented.",
+            "competitive": f"'{target_word}' best expresses the competitive element described.",
+            "cool": f"'{target_word}' aligns with the modern, stylish tone.",
+            "creative": f"'{target_word}' embodies the creative vision being described.",
+            "curious": f"'{target_word}' reflects the inquisitive nature of the subject.",
+            "practical": f"'{target_word}' is the most practical choice for this context.",
+            "relaxed": f"'{target_word}' conveys the calm atmosphere described."
+        }
+        
+        explanation = mood_explanations.get(config.mood, f"'{target_word}' is the most appropriate word for this context.")
 
         question_hash = self._generate_hash(question_text, config)
         
@@ -1237,7 +1335,12 @@ class QuestionGenerator:
             correct_answer=correct_answer,
             options=options,
             explanation=explanation,
-            hints=["Consider the context of the sentence", "Think about which word makes the most sense"],
+            hints=[
+                f"Consider words that relate to {config.mood} situations.",
+                f"The word starts with '{target_word[0]}' and has {len(target_word)} letters.",
+                "Eliminate options that don't fit the tone of the sentence.",
+                explanation
+            ],
             question_hash=question_hash
         )
 
@@ -1764,7 +1867,7 @@ def main():
     ]
     
     grades = [5, 6, 7, 8, 9, 10, 11]
-    difficulties = [5, 6, 7, 8, 9]  # Starting at 5 as requested
+    difficulties = [1, 2, 3, 4, 5, 6, 7, 8, 9]  # All difficulty levels for vocabulary
     moods = ["creative", "relaxed", "curious", "adventurous", "analytical", "practical", "competitive", "cool"]
     
     # Generate and populate
