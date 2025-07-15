@@ -8,9 +8,16 @@ import ProgressBar from '../components/ProgressBar';
 import QuestionCard from '../components/QuestionCard';
 import { useAuth } from '../lib/AuthContext';
 import { getUser, getSessionStats } from '../lib/db';
-import { MOOD_TOPICS, formatTopicName, getCachedProficiency, setCachedProficiency } from '../lib/utils';
+import { MOOD_TOPICS, formatTopicName, getCachedProficiency, setCachedProficiency, mapProficiencyToDifficulty } from '../lib/utils';
 import { retrieveSessionData, storeSessionData, checkSessionExpiry } from '../lib/studentSession';
 import { questionRateLimiter } from '../lib/rateLimiter';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 // Enable comprehensive logging for debugging cache-based system
 const DEBUG = true;
@@ -35,6 +42,7 @@ export default function Dashboard() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [batchId, setBatchId] = useState(null);
   const [topicQuestionCount, setTopicQuestionCount] = useState(0);
+  const [currentSessionId, setCurrentSessionId] = useState(null);
   
   // NEW: Timer state for cache-based system
   const [timerDuration, setTimerDuration] = useState(60); // Default 60 seconds
@@ -157,6 +165,58 @@ export default function Dashboard() {
       log('RATE_LIMIT', 'Rate limit exceeded', { waitTime });
       alert(`Please wait ${waitTime} seconds before generating new questions. This helps ensure quality responses.`);
       return;
+    }
+    
+    // Close any existing session before starting new one
+    if (currentSessionId) {
+      log('SESSION', 'Closing previous session', { sessionId: currentSessionId });
+      try {
+        const { error } = await supabase
+          .from('study_sessions')
+          .update({
+            session_end: new Date().toISOString(),
+            is_active: false
+          })
+          .eq('id', currentSessionId);
+          
+        if (error) {
+          log('ERROR', 'Failed to close previous session', error);
+        }
+      } catch (error) {
+        log('ERROR', 'Error closing session', error);
+      }
+    }
+    
+    // Create new study session
+    try {
+      log('SESSION', 'Creating new study session', { topic, userId: user.id });
+      
+      // Get current proficiency for difficulty level
+      const userProficiency = user[topic] || 5;
+      const difficulty = mapProficiencyToDifficulty(userProficiency, [1, 2, 3, 4, 5, 6, 7, 8]);
+      
+      const { data: sessionData, error } = await supabase
+        .from('study_sessions')
+        .insert({
+          student_id: user.id,
+          topic: topic,
+          session_type: 'practice',
+          difficulty_level: difficulty,
+          is_active: true
+        })
+        .select()
+        .single();
+        
+      if (error) {
+        log('ERROR', 'Failed to create study session', error);
+        console.error('Failed to create study session:', error);
+      } else {
+        log('SESSION', 'Study session created', { sessionId: sessionData.id });
+        setCurrentSessionId(sessionData.id);
+      }
+    } catch (error) {
+      log('ERROR', 'Error creating study session', error);
+      console.error('Error creating study session:', error);
     }
     
     setSelectedTopic(topic);
@@ -387,7 +447,8 @@ export default function Dashboard() {
           correct: correct,
           timeSpent: timeSpent,
           hintsUsed: hintsUsed,
-          questionHash: currentQuestion?.questionHash || null
+          questionHash: currentQuestion?.questionHash || null,
+          sessionId: currentSessionId
         })
       });
 
@@ -533,8 +594,30 @@ export default function Dashboard() {
     }
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
     log('NAVIGATION', 'Back button clicked');
+    
+    // Close current session if exists
+    if (currentSessionId) {
+      log('SESSION', 'Closing session on back', { sessionId: currentSessionId });
+      try {
+        const { error } = await supabase
+          .from('study_sessions')
+          .update({
+            session_end: new Date().toISOString(),
+            is_active: false
+          })
+          .eq('id', currentSessionId);
+          
+        if (error) {
+          log('ERROR', 'Failed to close session on back', error);
+        }
+        setCurrentSessionId(null);
+      } catch (error) {
+        log('ERROR', 'Error closing session on back', error);
+      }
+    }
+    
     setSelectedTopic(null);
     setCurrentQuestion(null);
     setQuestionBatch([]);

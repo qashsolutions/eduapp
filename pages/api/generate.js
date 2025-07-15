@@ -298,7 +298,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { action, userId, topic, answer, timeSpent, hintsUsed, mood } = req.body;
+    const { action, userId, topic, answer, timeSpent, hintsUsed, mood, sessionId } = req.body;
 
     // Validate authentication using middleware
     const authResult = await validateAuth(req);
@@ -503,8 +503,8 @@ export default async function handler(req, res) {
       // Check if answer is correct
       const { correct, questionHash } = req.body;
       
-      // Log the attempt
-      await logQuestionAttempt(userId, topic, correct, timeSpent, hintsUsed || 0, questionHash);
+      // Log the attempt with session ID
+      await logQuestionAttempt(userId, topic, correct, timeSpent, hintsUsed || 0, questionHash, sessionId);
 
       // NEW: Update answered_question_hashes to prevent seeing same question again
       if (questionHash) {
