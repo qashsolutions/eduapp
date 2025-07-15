@@ -252,10 +252,11 @@ export default function Dashboard() {
           'Authorization': authHeader
         },
         body: JSON.stringify({
-          action: 'generate-batch', // Try batch first for reading comprehension
+          action: topic === 'english_comprehension' ? 'generate-batch' : 'generate', // Only use batch for comprehension
           userId: user.id,
           topic: topic,
-          mood: selectedMood
+          mood: selectedMood,
+          sessionId: currentSessionId
         })
       });
 
@@ -558,10 +559,11 @@ export default function Dashboard() {
           'Authorization': authHeader
         },
         body: JSON.stringify({
-          action: 'generate-batch',
+          action: selectedTopic === 'english_comprehension' ? 'generate-batch' : 'generate',
           userId: user.id,
           topic: selectedTopic,
-          mood: selectedMood
+          mood: selectedMood,
+          sessionId: currentSessionId
         })
       });
 
