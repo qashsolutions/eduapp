@@ -550,24 +550,40 @@ export default async function handler(req, res) {
           })
           .eq('id', sessionId)
           .eq('student_id', userId)
-          .select()
-          .single();
+          .select();
         
         if (error) {
           console.error('Failed to end study session:', error);
           return res.status(500).json({ error: 'Failed to end study session' });
         }
         
+        // Check if we got a result (removed .single() to avoid error when no rows)
+        if (!data || data.length === 0) {
+          console.log('No active session found to close:', { sessionId, userId });
+          return res.status(200).json({
+            success: true,
+            message: 'Session already closed or not found',
+            sessionStats: {
+              duration: 0,
+              totalQuestions: 0,
+              correctAnswers: 0,
+              accuracy: 0
+            }
+          });
+        }
+        
+        const sessionData = data[0];
+        
         return res.status(200).json({
           success: true,
           message: 'Study session ended',
           sessionStats: {
-            duration: data.session_end && data.session_start ? 
-              Math.floor((new Date(data.session_end) - new Date(data.session_start)) / 1000) : 0,
-            totalQuestions: data.total_questions,
-            correctAnswers: data.correct_answers,
-            accuracy: data.total_questions > 0 ? 
-              Math.round((data.correct_answers / data.total_questions) * 100) : 0
+            duration: sessionData.session_end && sessionData.session_start ? 
+              Math.floor((new Date(sessionData.session_end) - new Date(sessionData.session_start)) / 1000) : 0,
+            totalQuestions: sessionData.total_questions,
+            correctAnswers: sessionData.correct_answers,
+            accuracy: sessionData.total_questions > 0 ? 
+              Math.round((sessionData.correct_answers / sessionData.total_questions) * 100) : 0
           }
         });
       } catch (error) {
