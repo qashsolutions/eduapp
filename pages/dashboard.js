@@ -217,8 +217,7 @@ export default function Dashboard() {
     setCurrentQuestionIndex(0);
     setTopicQuestionCount(0); // Reset question count for new topic
 
-    // Get appropriate auth token (moved outside try block)
-    let authHeader = '';
+    // Reuse authHeader from above
     try {
       if (user.role === 'student') {
         // Get student session token from storage
