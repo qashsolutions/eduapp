@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [batchId, setBatchId] = useState(null);
   const [topicQuestionCount, setTopicQuestionCount] = useState(0);
   const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [currentHintsUsed, setCurrentHintsUsed] = useState(0);
   
   // NEW: Timer state for cache-based system
   const [timerDuration, setTimerDuration] = useState(60); // Default 60 seconds
@@ -309,6 +310,9 @@ export default function Dashboard() {
           // Start timer
           setTimerActive(true);
           
+          // Reset hints tracking
+          setCurrentHintsUsed(0);
+          
           // Update question count
           setTopicQuestionCount(0);
         } else if (data.question) {
@@ -330,6 +334,9 @@ export default function Dashboard() {
           setTimerDuration(data.timerDuration || 60);
           setTimeRemaining(data.timerDuration || 60);
           setTimerActive(true);
+          
+          // Reset hints tracking
+          setCurrentHintsUsed(0);
         }
         
         setGenerating(false);
@@ -372,6 +379,9 @@ export default function Dashboard() {
           setTimeRemaining(singleData.timerDuration || 60);
           setTimerActive(true);
           
+          // Reset hints tracking
+          setCurrentHintsUsed(0);
+          
           setGenerating(false);
         } else {
           throw new Error(singleData.error || 'Failed to generate questions');
@@ -402,6 +412,9 @@ export default function Dashboard() {
       selectedAnswer,
       questionHash: currentQuestion?.questionHash 
     });
+    
+    // Update hints used tracking
+    setCurrentHintsUsed(hintsUsed);
     
     // Stop timer
     setTimerActive(false);
@@ -624,6 +637,7 @@ export default function Dashboard() {
             userId: user.id,
             topic: selectedTopic,
             timeSpent: timeSpent,
+            hintsUsed: currentHintsUsed,
             questionHash: currentQuestion?.questionHash || null,
             sessionId: currentSessionId
           })
@@ -907,6 +921,7 @@ export default function Dashboard() {
                   proficiency={currentQuestion.proficiency}
                   onAnswer={handleAnswer}
                   onNext={handleNext}
+                  onHintUsed={(count) => setCurrentHintsUsed(count)}
                   userId={user.id}
                   getSession={getSession}
                   timerDuration={timerDuration}

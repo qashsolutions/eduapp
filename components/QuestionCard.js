@@ -8,6 +8,7 @@ export default function QuestionCard({
   difficulty,
   onAnswer, 
   onNext,
+  onHintUsed,
   proficiency,
   userId,
   getSession 
@@ -61,8 +62,9 @@ export default function QuestionCard({
         newHints[nextLevel - 1] = progressiveHints[nextLevel - 1];
         setHints(newHints);
         setCurrentHintLevel(nextLevel);
-        if (nextLevel === 1) {
-          setHintsUsed(1);
+        setHintsUsed(nextLevel);  // Update hints used to current level
+        if (onHintUsed) {
+          onHintUsed(nextLevel);  // Notify parent of hint usage
         }
       }
     }

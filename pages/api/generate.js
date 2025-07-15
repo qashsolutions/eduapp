@@ -601,7 +601,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
       
-      const { questionHash } = req.body;
+      const { questionHash, hintsUsed = 0 } = req.body;
       
       try {
         // Log the abandoned attempt
@@ -610,7 +610,7 @@ export default async function handler(req, res) {
           topic, 
           null,  // correct is null for abandoned
           timeSpent, 
-          0,     // no hints used
+          hintsUsed,  // actual hints used
           questionHash, 
           sessionId,
           true   // abandoned = true
