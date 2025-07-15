@@ -644,10 +644,21 @@ export default async function handler(req, res) {
         
         // Increment questions_in_session counter even for abandoned questions
         if (sessionId) {
+          // First get current count
+          const { data: sessionData } = await supabase
+            .from('study_sessions')
+            .select('questions_in_session')
+            .eq('id', sessionId)
+            .eq('student_id', userId)
+            .single();
+          
+          const currentCount = sessionData?.questions_in_session || 0;
+          
+          // Then update with incremented value
           await supabase
             .from('study_sessions')
             .update({ 
-              questions_in_session: supabase.raw('questions_in_session + 1')
+              questions_in_session: currentCount + 1
             })
             .eq('id', sessionId)
             .eq('student_id', userId);
@@ -702,10 +713,21 @@ export default async function handler(req, res) {
 
       // Increment questions_in_session counter if we have a session
       if (sessionId) {
+        // First get current count
+        const { data: sessionData } = await supabase
+          .from('study_sessions')
+          .select('questions_in_session')
+          .eq('id', sessionId)
+          .eq('student_id', userId)
+          .single();
+        
+        const currentCount = sessionData?.questions_in_session || 0;
+        
+        // Then update with incremented value
         await supabase
           .from('study_sessions')
           .update({ 
-            questions_in_session: supabase.raw('questions_in_session + 1')
+            questions_in_session: currentCount + 1
           })
           .eq('id', sessionId)
           .eq('student_id', userId);
