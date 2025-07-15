@@ -269,7 +269,7 @@ class QuestionGenerator:
             }
         }
                 
-        # Grammar error patterns
+        # Grammar error patterns - Comprehensive from Grade 9 workbook
         self.grammar_patterns = {
             "subject_verb": {
                 "pattern": "The {subject} {verb} {object}.",
@@ -280,12 +280,144 @@ class QuestionGenerator:
                     ("books", "was", "interesting"), # should be "were"
                 ]
             },
+            "subject_verb_compound": {
+                "pattern": "{subject1} and {subject2} {verb} together.",
+                "errors": [
+                    ("John", "Mary", "works"), # should be "work"
+                    ("The dog", "the cat", "plays"), # should be "play"
+                    ("My mother", "father", "cooks"), # should be "cook"
+                ]
+            },
+            "subject_verb_indefinite": {
+                "pattern": "{indefinite_pronoun} {verb} the answer.",
+                "errors": [
+                    ("Everyone", "know"), # should be "knows"
+                    ("Nobody", "understand"), # should be "understands"
+                    ("Each of the students", "have"), # should be "has"
+                    ("Either of the boys", "are"), # should be "is"
+                ]
+            },
             "pronoun": {
                 "pattern": "{pronoun} went to the store.",
                 "errors": [
                     ("Me and John", "I and John"), # should be "John and I"
                     ("Him and her", "He and she"), # should be "He and she"
                     ("Us students", "We students"), # should be "We students"
+                ]
+            },
+            "pronoun_antecedent": {
+                "pattern": "{noun} lost {pronoun} book.",
+                "errors": [
+                    ("The student", "their"), # should be "his or her"
+                    ("Everyone", "their"), # should be "his or her"
+                    ("The team", "their"), # collective noun - can be "its" or "their"
+                ]
+            },
+            "pronoun_reference": {
+                "pattern": "When {subject} saw {object}, {pronoun} was surprised.",
+                "errors": [
+                    ("John", "Mike", "he"), # unclear reference
+                    ("The teacher", "the student", "she"), # unclear reference
+                ]
+            },
+            "who_whom": {
+                "pattern": "{who_whom} did you see at the party?",
+                "errors": [
+                    ("Who", "Whom"), # should be "Whom" (object)
+                    ("Whom is calling?", "Who is calling?"), # should be "Who" (subject)
+                ]
+            },
+            "adjective_clause": {
+                "pattern": "The book {clause} is interesting.",
+                "errors": [
+                    ("which I read it", "which I read"), # redundant pronoun
+                    ("that it belongs to me", "that belongs to me"), # redundant pronoun
+                ]
+            },
+            "adverb_clause": {
+                "pattern": "{clause}, she studied harder.",
+                "errors": [
+                    ("Because she wanted to pass", "correct"), # correct example
+                    ("Although being tired", "Although she was tired"), # missing subject
+                ]
+            },
+            "noun_clause": {
+                "pattern": "{clause} surprised everyone.",
+                "errors": [
+                    ("That he won", "correct"), # correct example
+                    ("What did he say", "What he said"), # wrong word order
+                ]
+            },
+            "gerunds": {
+                "pattern": "{gerund} is good exercise.",
+                "errors": [
+                    ("To swim", "Swimming"), # infinitive vs gerund
+                    ("Swim", "Swimming"), # base form vs gerund
+                ]
+            },
+            "infinitives": {
+                "pattern": "She wants {infinitive}.",
+                "errors": [
+                    ("going", "to go"), # gerund vs infinitive
+                    ("that she goes", "to go"), # clause vs infinitive
+                ]
+            },
+            "modifiers": {
+                "pattern": "{modifier}, the student answered the question.",
+                "errors": [
+                    ("Walking to class", "correct"), # correct participial phrase
+                    ("Having been studied", "Having studied"), # wrong form
+                ]
+            },
+            "modifiers_misplaced": {
+                "pattern": "She saw {object} {modifier}.",
+                "errors": [
+                    ("the man with binoculars", "correct/ambiguous"), # who has binoculars?
+                    ("the cake on the table that was chocolate", "the chocolate cake on the table"), # misplaced modifier
+                ]
+            },
+            "modifiers_dangling": {
+                "pattern": "{modifier}, {main_clause}.",
+                "errors": [
+                    ("Running down the street", "the bus was missed"), # dangling - who was running?
+                    ("After studying all night", "the test was easy"), # dangling - who studied?
+                ]
+            },
+            "comparisons": {
+                "pattern": "This book is {comparison} than that one.",
+                "errors": [
+                    ("more better", "better"), # double comparison
+                    ("gooder", "better"), # wrong form
+                    ("more unique", "unique"), # absolute adjective
+                ]
+            },
+            "comparisons_incomplete": {
+                "pattern": "She likes math {comparison}.",
+                "errors": [
+                    ("more than English", "correct"), # complete comparison
+                    ("more", "more than other subjects"), # incomplete
+                ]
+            },
+            "good_well": {
+                "pattern": "She plays the piano {adverb}.",
+                "errors": [
+                    ("good", "well"), # adjective vs adverb
+                    ("She feels good", "correct"), # linking verb + adjective
+                ]
+            },
+            "bad_badly": {
+                "pattern": "He performed {adverb} on the test.",
+                "errors": [
+                    ("bad", "badly"), # adjective vs adverb
+                    ("The food tastes bad", "correct"), # linking verb + adjective
+                ]
+            },
+            "double_negatives": {
+                "pattern": "I {negative1} have {negative2}.",
+                "errors": [
+                    ("don't", "nothing"), # double negative
+                    ("haven't", "no money"), # double negative
+                    ("can't", "hardly"), # double negative (hardly is negative)
                 ]
             },
             "tense": {
@@ -295,6 +427,57 @@ class QuestionGenerator:
                     ("walk", "walked"),
                     ("run", "ran"),
                     ("drive", "drove")
+                ]
+            },
+            "usage_common": {
+                "pattern": "Common usage errors",
+                "errors": [
+                    ("accept/except", "I accept your apology / Everyone except John"),
+                    ("affect/effect", "The weather affects mood / The effect was dramatic"),
+                    ("among/between", "Between two people / Among many people"),
+                    ("amount/number", "Amount of water / Number of bottles"),
+                    ("allot/a lot", "Allot time for study / A lot of homework"),
+                    ("all right/alright", "All right is standard / Alright is informal"),
+                    ("all together/altogether", "All together now / Altogether different"),
+                    ("already/all ready", "Already finished / All ready to go"),
+                    ("anyway/any way", "Anyway, let's start / Is there any way to help?"),
+                    ("beside/besides", "Sit beside me / Besides that issue"),
+                    ("bring/take", "Bring it here / Take it there"),
+                    ("can/may", "Can you do it? / May I help you?"),
+                    ("fewer/less", "Fewer students / Less homework"),
+                    ("farther/further", "Farther distance / Further discussion"),
+                    ("its/it's", "Its tail / It's raining"),
+                    ("lay/lie", "Lay the book down / Lie on the bed"),
+                    ("lose/loose", "Lose the game / Loose clothing"),
+                    ("passed/past", "Passed the test / Past experiences"),
+                    ("precede/proceed", "Precede means come before / Proceed means continue"),
+                    ("principal/principle", "School principal / Scientific principle"),
+                    ("than/then", "Better than / First this, then that"),
+                    ("their/there/they're", "Their book / Over there / They're coming"),
+                    ("to/too/two", "Go to school / Too much / Two apples"),
+                    ("weather/whether", "Weather forecast / Whether or not"),
+                    ("who's/whose", "Who's coming? / Whose book?"),
+                    ("your/you're", "Your book / You're welcome")
+                ]
+            },
+            "appositives": {
+                "pattern": "Appositive punctuation and usage",
+                "errors": [
+                    ("My friend Sarah is here.", "My friend, Sarah, is here."), # if only one friend
+                    ("The author, Mark Twain wrote many books.", "The author Mark Twain wrote many books."), # restrictive
+                    ("My brother, the doctor is visiting.", "My brother, the doctor, is visiting."), # non-restrictive needs both commas
+                    ("John my neighbor, helped me.", "John, my neighbor, helped me."), # non-restrictive appositive
+                    ("The planet Mars, is red.", "The planet Mars is red.") # no comma needed for restrictive
+                ]
+            },
+            "prepositional_phrases": {
+                "pattern": "Prepositional phrase placement and usage",
+                "errors": [
+                    ("The book on the table which is red.", "The red book on the table."), # misplaced modifier
+                    ("He gave the gift to Mary from John.", "He gave Mary the gift from John."), # awkward placement
+                    ("In the morning, I usually in the park run.", "In the morning, I usually run in the park."), # word order
+                    ("She is good in math.", "She is good at math."), # wrong preposition
+                    ("Different than others.", "Different from others.") # wrong preposition
                 ]
             }
         }
@@ -686,19 +869,198 @@ class QuestionGenerator:
         )
 
     def _generate_grammar_question(self, config: QuestionConfig) -> GeneratedQuestion:
-        """Generate grammar questions."""
+        """Generate grammar questions based on Grade 9 workbook topics."""
         
-        error_type = random.choice(["subject_verb", "pronoun", "tense"])
+        # Select error types based on grade level
+        if config.grade <= 5:
+            error_types = ["subject_verb", "pronoun", "tense", "good_well", "usage_common"]
+        elif config.grade <= 6:
+            error_types = ["subject_verb", "subject_verb_compound", "pronoun", "tense", "modifiers", 
+                          "comparisons", "usage_common", "prepositional_phrases"]
+        elif config.grade <= 7:
+            error_types = ["subject_verb_indefinite", "pronoun_antecedent", "who_whom", "adjective_clause", 
+                          "modifiers_misplaced", "good_well", "bad_badly", "appositives"]
+        elif config.grade <= 8:
+            error_types = ["pronoun_reference", "adverb_clause", "noun_clause", "gerunds", "infinitives",
+                          "modifiers_dangling", "comparisons_incomplete", "double_negatives", "appositives"]
+        else:  # Grades 9-11
+            # All grammar types for advanced students
+            error_types = list(self.grammar_patterns.keys())
         
+        error_type = random.choice(error_types)
+        
+        # Generate questions based on the selected error type
         if error_type == "subject_verb":
             errors = [
                 ("The students is working hard.", "The students are working hard."),
-                ("Each of the cats run quickly.", "Each of the cats runs quickly."),
-                ("The group of teachers are meeting.", "The group of teachers is meeting."),
-                ("Neither the books nor the pen work.", "Neither the books nor the pen works."),
-                ("The family are going on vacation.", "The family is going on vacation.")
+                ("The collection of books were impressive.", "The collection of books was impressive."),
+                ("Mathematics are my favorite subject.", "Mathematics is my favorite subject."),
+                ("The news about the accidents were shocking.", "The news about the accidents was shocking."),
+                ("Politics influence many decisions.", "Politics influences many decisions.")
             ]
-            
+        
+        elif error_type == "subject_verb_compound":
+            errors = [
+                ("Tom and Jerry is best friends.", "Tom and Jerry are best friends."),
+                ("The teacher and the principal was at the meeting.", "The teacher and the principal were at the meeting."),
+                ("Bread and butter are my favorite breakfast.", "Bread and butter is my favorite breakfast."), # compound subject as single unit
+                ("Neither the students nor the teacher were ready.", "Neither the students nor the teacher was ready."), # verb agrees with closer subject
+                ("Either the cats or the dog are making noise.", "Either the cats or the dog is making noise.")
+            ]
+        
+        elif error_type == "subject_verb_indefinite":
+            errors = [
+                ("Everyone have their own opinion.", "Everyone has their own opinion."),
+                ("Each of the students are unique.", "Each of the students is unique."),
+                ("Nobody know the answer.", "Nobody knows the answer."),
+                ("Someone need to help.", "Someone needs to help."),
+                ("Either of the options are acceptable.", "Either of the options is acceptable.")
+            ]
+        
+        elif error_type == "pronoun_antecedent":
+            errors = [
+                ("Every student must bring their book.", "Every student must bring his or her book."),
+                ("Each person should do their best.", "Each person should do his or her best."),
+                ("The committee made their decision.", "The committee made its decision."), # collective noun
+                ("Neither girl brought their lunch.", "Neither girl brought her lunch."),
+                ("Someone left their backpack.", "Someone left his or her backpack.")
+            ]
+        
+        elif error_type == "pronoun_reference":
+            errors = [
+                ("When John met Mike, he was surprised.", "When John met Mike, John was surprised."), # unclear reference
+                ("Sarah told Mary that she won the prize.", "Sarah told Mary, 'I won the prize.'"), # unclear reference
+                ("The vase fell off the table and it broke.", "The vase fell off the table and broke."), # unnecessary pronoun
+                ("In the newspaper, it says rain is expected.", "The newspaper says rain is expected."), # vague 'it'
+                ("They say that exercise is important.", "Experts say that exercise is important.") # vague 'they'
+            ]
+        
+        elif error_type == "who_whom":
+            errors = [
+                ("Who did you give the book to?", "Whom did you give the book to?"),
+                ("Whom is coming to dinner?", "Who is coming to dinner?"),
+                ("The person who you met is my teacher.", "The person whom you met is my teacher."),
+                ("I wonder whom will win.", "I wonder who will win."),
+                ("To who should I address this letter?", "To whom should I address this letter?")
+            ]
+        
+        elif error_type == "adjective_clause":
+            errors = [
+                ("The book which I read it was interesting.", "The book which I read was interesting."),
+                ("The student that she won the award is here.", "The student that won the award is here."),
+                ("The car, that is red, belongs to me.", "The car, which is red, belongs to me."), # non-restrictive clause
+                ("The house where I live there is old.", "The house where I live is old."),
+                ("The reason why I came here it is important.", "The reason why I came here is important.")
+            ]
+        
+        elif error_type == "adverb_clause":
+            errors = [
+                ("Although being tired, she continued.", "Although she was tired, she continued."),
+                ("Because of he was late, we waited.", "Because he was late, we waited."),
+                ("While eating dinner, the phone rang.", "While I was eating dinner, the phone rang."), # dangling
+                ("After to finish homework, she relaxed.", "After finishing homework, she relaxed."),
+                ("Unless you don't study, you'll fail.", "Unless you study, you'll fail.") # double negative
+            ]
+        
+        elif error_type == "noun_clause":
+            errors = [
+                ("What did he say surprised me.", "What he said surprised me."),
+                ("That why she left is unclear.", "Why she left is unclear."),
+                ("I don't know what is he doing.", "I don't know what he is doing."),
+                ("Whether will it rain is uncertain.", "Whether it will rain is uncertain."),
+                ("The fact that she won it amazed everyone.", "The fact that she won amazed everyone.")
+            ]
+        
+        elif error_type == "gerunds":
+            errors = [
+                ("To swim is good exercise.", "Swimming is good exercise."), # gerund as subject preferred
+                ("I enjoy to read books.", "I enjoy reading books."),
+                ("She is good at to sing.", "She is good at singing."),
+                ("After to eat, we left.", "After eating, we left."),
+                ("He admitted to cheat on the test.", "He admitted cheating on the test.")
+            ]
+        
+        elif error_type == "infinitives":
+            errors = [
+                ("She wants going to the party.", "She wants to go to the party."),
+                ("It's important being on time.", "It's important to be on time."),
+                ("He decided leaving early.", "He decided to leave early."),
+                ("They plan visiting tomorrow.", "They plan to visit tomorrow."),
+                ("I hope seeing you soon.", "I hope to see you soon.")
+            ]
+        
+        elif error_type == "modifiers":
+            errors = [
+                ("Walking quickly down the street, she arrived.", "Walking quickly down the street, she arrived."), # correct
+                ("Being a rainy day, I stayed inside.", "Because it was a rainy day, I stayed inside."),
+                ("Having been finished the work, he left.", "Having finished the work, he left."),
+                ("Considered carefully, the plan seems good.", "When considered carefully, the plan seems good."),
+                ("To understand better, the book was reread.", "To understand better, I reread the book.")
+            ]
+        
+        elif error_type == "modifiers_misplaced":
+            errors = [
+                ("I saw the man with binoculars.", "I used binoculars to see the man."), # ambiguous
+                ("She served sandwiches to the children on paper plates.", "She served sandwiches on paper plates to the children."),
+                ("The student earned an A who studied hard.", "The student who studied hard earned an A."),
+                ("We saw many deer driving through the park.", "Driving through the park, we saw many deer."),
+                ("He nearly drove the car for six hours.", "He drove the car for nearly six hours.")
+            ]
+        
+        elif error_type == "modifiers_dangling":
+            errors = [
+                ("Running down the street, the bus was missed.", "Running down the street, I missed the bus."),
+                ("After studying all night, the test seemed easy.", "After studying all night, I found the test easy."),
+                ("To improve your grade, the homework must be completed.", "To improve your grade, you must complete the homework."),
+                ("While cooking dinner, the smoke alarm went off.", "While I was cooking dinner, the smoke alarm went off."),
+                ("Having finished the assignment, the TV was turned on.", "Having finished the assignment, she turned on the TV.")
+            ]
+        
+        elif error_type == "comparisons":
+            errors = [
+                ("This book is more better than that one.", "This book is better than that one."),
+                ("She is the most smartest student.", "She is the smartest student."),
+                ("This solution is more unique.", "This solution is unique."), # absolute adjective
+                ("He runs more faster than me.", "He runs faster than me."),
+                ("This is the bestest day ever.", "This is the best day ever.")
+            ]
+        
+        elif error_type == "comparisons_incomplete":
+            errors = [
+                ("I like pizza more.", "I like pizza more than pasta."),
+                ("She studies harder.", "She studies harder than her classmates."),
+                ("This car is faster.", "This car is faster than that one."),
+                ("Math is more interesting.", "Math is more interesting than history."),
+                ("He works better.", "He works better alone than in groups.")
+            ]
+        
+        elif error_type == "good_well":
+            errors = [
+                ("She sings good.", "She sings well."),
+                ("The food tastes well.", "The food tastes good."),
+                ("He doesn't feel good.", "He doesn't feel well."), # health context
+                ("You did good on the test.", "You did well on the test."),
+                ("This works good for me.", "This works well for me.")
+            ]
+        
+        elif error_type == "bad_badly":
+            errors = [
+                ("He played bad in the game.", "He played badly in the game."),
+                ("The milk smells badly.", "The milk smells bad."),
+                ("I feel badly about the mistake.", "I feel bad about the mistake."), # emotion, not touch
+                ("She wants it bad.", "She wants it badly."),
+                ("The injury hurts bad.", "The injury hurts badly.")
+            ]
+        
+        elif error_type == "double_negatives":
+            errors = [
+                ("I don't have nothing.", "I don't have anything."),
+                ("She can't hardly wait.", "She can hardly wait."),
+                ("We haven't seen nobody.", "We haven't seen anybody."),
+                ("I can't find it nowhere.", "I can't find it anywhere."),
+                ("There isn't no solution.", "There isn't any solution.")
+            ]
+        
         elif error_type == "pronoun":
             errors = [
                 ("Me and Sarah went to the store.", "Sarah and I went to the store."),
@@ -706,6 +1068,40 @@ class QuestionGenerator:
                 ("Us students finished the project.", "We students finished the project."),
                 ("Between you and I, it's difficult.", "Between you and me, it's difficult."),
                 ("Him and her are coming later.", "He and she are coming later.")
+            ]
+        
+        elif error_type == "usage_common":
+            # Common usage errors - select from the patterns
+            usage_pairs = [
+                ("I could care less about that.", "I couldn't care less about that."),
+                ("Please except my apology.", "Please accept my apology."),
+                ("The medicine had a good affect.", "The medicine had a good effect."),
+                ("Divide the candy between the three children.", "Divide the candy among the three children."),
+                ("A large amount of people attended.", "A large number of people attended."),
+                ("Its going to rain today.", "It's going to rain today."),
+                ("I need to lay down for a while.", "I need to lie down for a while."),
+                ("Your going to love this movie.", "You're going to love this movie."),
+                ("I past the test yesterday.", "I passed the test yesterday."),
+                ("The principle of the school is strict.", "The principal of the school is strict.")
+            ]
+            errors = usage_pairs
+            
+        elif error_type == "appositives":
+            errors = [
+                ("My sister Sarah is a doctor.", "My sister, Sarah, is a doctor."), # if only one sister
+                ("The author, Stephen King, wrote many novels.", "The author Stephen King wrote many novels."), # restrictive - many authors
+                ("My teacher Mrs. Smith, is helpful.", "My teacher, Mrs. Smith, is helpful."),
+                ("The city Chicago, is cold in winter.", "The city Chicago is cold in winter."), # restrictive
+                ("Tom, my best friend is visiting.", "Tom, my best friend, is visiting.")
+            ]
+            
+        elif error_type == "prepositional_phrases":
+            errors = [
+                ("She is interested about science.", "She is interested in science."),
+                ("He is capable to do it.", "He is capable of doing it."),
+                ("Different than what I expected.", "Different from what I expected."),
+                ("Comply to the rules.", "Comply with the rules."),
+                ("In regards of your question.", "In regard to your question.")
             ]
             
         else:  # tense
@@ -732,15 +1128,67 @@ class QuestionGenerator:
         random.shuffle(options)
         correct_answer = correct
         
-        explanation = f"The correct sentence is: '{correct}'. "
-        if error_type == "subject_verb":
-            explanation += "Subject and verb must agree in number."
-        elif error_type == "pronoun":
-            explanation += "Use the correct pronoun case for the sentence position."
-        else:
-            explanation += "Use the correct verb tense for the time reference."
+        # Generate appropriate explanation based on error type
+        explanations = {
+            "subject_verb": "Subject and verb must agree in number.",
+            "subject_verb_compound": "Compound subjects joined by 'and' usually take plural verbs.",
+            "subject_verb_indefinite": "Indefinite pronouns like 'everyone' and 'each' are singular.",
+            "pronoun": "Use the correct pronoun case (subjective/objective) for the sentence position.",
+            "pronoun_antecedent": "Pronouns must agree with their antecedents in person, number, and gender.",
+            "pronoun_reference": "Pronouns must have clear, unambiguous antecedents.",
+            "who_whom": "'Who' is for subjects; 'whom' is for objects.",
+            "adjective_clause": "Avoid redundant pronouns in adjective clauses.",
+            "adverb_clause": "Adverb clauses need complete subjects and verbs.",
+            "noun_clause": "Noun clauses use statement word order, not question word order.",
+            "gerunds": "Use gerunds (verb + -ing) as nouns after certain verbs and prepositions.",
+            "infinitives": "Use infinitives (to + verb) after certain verbs and adjectives.",
+            "modifiers": "Participial phrases must clearly modify a specific noun.",
+            "modifiers_misplaced": "Place modifiers near the words they modify to avoid ambiguity.",
+            "modifiers_dangling": "Dangling modifiers lack a clear subject to modify.",
+            "comparisons": "Avoid double comparisons and use correct comparative forms.",
+            "comparisons_incomplete": "Comparisons must include both items being compared.",
+            "good_well": "'Good' is an adjective; 'well' is usually an adverb.",
+            "bad_badly": "'Bad' is an adjective; 'badly' is an adverb.",
+            "double_negatives": "Avoid using two negative words in the same clause.",
+            "tense": "Use the correct verb tense for the time reference.",
+            "usage_common": "Common usage errors often involve confused word pairs. Learn the differences.",
+            "appositives": "Appositives rename nouns. Use commas for non-restrictive appositives only.",
+            "prepositional_phrases": "Use correct prepositions and place prepositional phrases clearly."
+        }
+        
+        explanation = f"The correct sentence is: '{correct}'. {explanations.get(error_type, '')}"
+        
+        # Generate contextual hints based on error type
+        hint_map = {
+            "subject_verb": ["Identify the subject", "Check if it's singular or plural", "Match the verb form"],
+            "subject_verb_compound": ["Find all parts of the subject", "Check if joined by 'and' or 'or'", "Apply agreement rules"],
+            "subject_verb_indefinite": ["Identify indefinite pronouns", "Remember most are singular", "Check verb agreement"],
+            "pronoun": ["Identify pronoun position", "Subject = I, he, she, we, they", "Object = me, him, her, us, them"],
+            "pronoun_antecedent": ["Find the pronoun's antecedent", "Check number and gender", "Ensure agreement"],
+            "pronoun_reference": ["Find what the pronoun refers to", "Check for ambiguity", "Clarify if needed"],
+            "who_whom": ["Is it doing the action (who)?", "Is it receiving the action (whom)?", "Try substituting he/him"],
+            "adjective_clause": ["Find the relative pronoun", "Check for redundant pronouns", "Simplify the clause"],
+            "adverb_clause": ["Identify the subordinating conjunction", "Check for complete subject and verb", "Ensure proper structure"],
+            "noun_clause": ["Identify the clause function", "Use statement word order", "Check completeness"],
+            "gerunds": ["Look for verbs used as nouns", "Add -ing to the verb", "Check after prepositions"],
+            "infinitives": ["Look for verb patterns", "Add 'to' before the verb", "Check after certain verbs"],
+            "modifiers": ["Find the modifying phrase", "Identify what it modifies", "Check placement"],
+            "modifiers_misplaced": ["Find the modifier", "What should it modify?", "Move it closer"],
+            "modifiers_dangling": ["Find the opening phrase", "Who/what does the action?", "Add the missing subject"],
+            "comparisons": ["Check for double comparisons", "Use -er OR more, not both", "Check absolute adjectives"],
+            "comparisons_incomplete": ["What two things are compared?", "Include both items", "Complete the comparison"],
+            "good_well": ["Is it modifying a noun (good)?", "Is it modifying a verb (well)?", "Check linking verbs"],
+            "bad_badly": ["Is it modifying a noun (bad)?", "Is it modifying a verb (badly)?", "Consider the context"],
+            "double_negatives": ["Find all negative words", "Keep only one negative", "Change others to positive"],
+            "tense": ["Identify time markers", "Match verb to time", "Check consistency"],
+            "usage_common": ["Think about word meanings", "Check commonly confused pairs", "Consider context"],
+            "appositives": ["Is it essential information?", "One or many?", "Check comma placement"],
+            "prepositional_phrases": ["Check preposition choice", "Verify phrase placement", "Avoid ambiguity"]
+        }
+        
+        hints = hint_map.get(error_type, ["Check grammar rules", "Read carefully", "Consider the context"])
 
-        question_hash = self._generate_hash(question_text, config)
+        question_hash = self._generate_hash(question_text + str(config.grade) + error_type, config)
         
         return GeneratedQuestion(
             question_text=question_text,
@@ -748,7 +1196,7 @@ class QuestionGenerator:
             correct_answer=correct_answer,
             options=options,
             explanation=explanation,
-            hints=["Check subject-verb agreement", "Consider the correct pronoun case", "Match verb tense to time reference"],
+            hints=hints,
             question_hash=question_hash
         )
 
@@ -1290,11 +1738,12 @@ def main():
     """Main execution function."""
     
     # Get Supabase credentials from environment variables
-    supabase_url = os.getenv("SUPABASE_URL")
-    supabase_key = os.getenv("SUPABASE_ANON_KEY")
+    # Try both with and without NEXT_PUBLIC_ prefix
+    supabase_url = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+    supabase_key = os.getenv("SUPABASE_ANON_KEY") or os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
     
     if not supabase_url or not supabase_key:
-        logger.error("Missing Supabase credentials. Set SUPABASE_URL and SUPABASE_ANON_KEY environment variables.")
+        logger.error("Missing Supabase credentials. Set SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL and SUPABASE_ANON_KEY/NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.")
         return
     
     # Initialize populator

@@ -351,8 +351,34 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'User not found' });
       }
 
+      // Check if we need to force a grammar question
+      let actualTopic = topic;
+      let forcedGrammar = false;
+      
+      if (sessionId) {
+        // Get current session to check question count
+        const { data: sessionData, error: sessionError } = await supabase
+          .from('study_sessions')
+          .select('questions_in_session, grammar_interval')
+          .eq('id', sessionId)
+          .eq('student_id', userId)
+          .single();
+        
+        if (!sessionError && sessionData) {
+          const { questions_in_session = 0, grammar_interval = 3 } = sessionData;
+          
+          // Check if it's time for a grammar question (every 3rd question by default)
+          // Note: questions_in_session starts at 0, so we check (count + 1) % interval
+          if ((questions_in_session + 1) % grammar_interval === 0) {
+            actualTopic = 'english_grammar';
+            forcedGrammar = true;
+            console.log(`Forcing grammar question for session ${sessionId}, question #${questions_in_session + 1}`);
+          }
+        }
+      }
+
       // Get current proficiency and map to difficulty
-      const currentProficiency = user[topic] || 5;
+      const currentProficiency = user[actualTopic] || 5;
       const difficulty = mapProficiencyToDifficulty(currentProficiency, [1, 2, 3, 4, 5, 6, 7, 8]);
       const grade = user.grade || 8;
       
@@ -360,11 +386,11 @@ export default async function handler(req, res) {
       const timerDuration = getTimerDuration(grade);
       
       try {
-        // Get question from cache instead of generating with AI
-        const cachedData = await getQuestionFromCache(userId, topic, difficulty, grade, mood);
+        // Get question from cache with potentially forced grammar topic
+        const cachedData = await getQuestionFromCache(userId, actualTopic, difficulty, grade, mood);
         
         // Validate the cached question format
-        if (!validateQuestion(cachedData.question, topic, grade)) {
+        if (!validateQuestion(cachedData.question, actualTopic, grade)) {
           throw new Error('Invalid question format from cache');
         }
         
@@ -616,6 +642,17 @@ export default async function handler(req, res) {
           true   // abandoned = true
         );
         
+        // Increment questions_in_session counter even for abandoned questions
+        if (sessionId) {
+          await supabase
+            .from('study_sessions')
+            .update({ 
+              questions_in_session: supabase.raw('questions_in_session + 1')
+            })
+            .eq('id', sessionId)
+            .eq('student_id', userId);
+        }
+        
         return res.status(200).json({
           success: true,
           message: 'Abandoned question recorded'
@@ -661,6 +698,17 @@ export default async function handler(req, res) {
             })
             .eq('id', userId);
         }
+      }
+
+      // Increment questions_in_session counter if we have a session
+      if (sessionId) {
+        await supabase
+          .from('study_sessions')
+          .update({ 
+            questions_in_session: supabase.raw('questions_in_session + 1')
+          })
+          .eq('id', sessionId)
+          .eq('student_id', userId);
       }
 
       // Update proficiency
