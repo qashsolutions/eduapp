@@ -12,15 +12,6 @@ import { MOOD_TOPICS, formatTopicName, getCachedProficiency, setCachedProficienc
 import { retrieveSessionData, storeSessionData, checkSessionExpiry } from '../lib/studentSession';
 import { questionRateLimiter } from '../lib/rateLimiter';
 
-// Enable comprehensive logging for debugging cache-based system
-const DEBUG = true;
-const log = (category, message, data = null) => {
-  if (DEBUG) {
-    const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] [${category}] ${message}`, data ? data : '');
-  }
-};
-
 export default function Dashboard() {
   const router = useRouter();
   const { user, loading: authLoading, isAuthenticated, getSession } = useAuth();
@@ -35,70 +26,24 @@ export default function Dashboard() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [batchId, setBatchId] = useState(null);
   const [topicQuestionCount, setTopicQuestionCount] = useState(0);
-  
-  // NEW: Timer state for cache-based system
-  const [timerDuration, setTimerDuration] = useState(60); // Default 60 seconds
-  const [timeRemaining, setTimeRemaining] = useState(60);
-  const [timerActive, setTimerActive] = useState(false);
-
-  // Timer effect
-  useEffect(() => {
-    let interval;
-    
-    if (timerActive && timeRemaining > 0) {
-      interval = setInterval(() => {
-        setTimeRemaining(prev => {
-          if (prev <= 1) {
-            setTimerActive(false);
-            log('TIMER', 'Time expired - auto-submitting answer');
-            // Auto-submit when timer expires
-            handleTimerExpired();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    
-    return () => clearInterval(interval);
-  }, [timerActive, timeRemaining]);
-
-  // Handle timer expiration
-  const handleTimerExpired = () => {
-    log('TIMER', 'Timer expired, forcing answer submission');
-    // Force submit with no answer selected
-    if (currentQuestion) {
-      // This will be handled by QuestionCard component
-      const event = new CustomEvent('forceSubmit');
-      window.dispatchEvent(event);
-    }
-  };
 
   useEffect(() => {
-    log('AUTH', 'Auth state changed', { authLoading, isAuthenticated, userId: user?.id });
-    
     if (!authLoading && isAuthenticated && user) {
       // Load session stats when user is available
       getSessionStats(user.id).then(stats => {
-        log('SESSION', 'Session stats loaded', stats);
         setSessionStats(stats);
       }).catch(error => {
-        log('ERROR', 'Failed to load session stats', error);
         console.error('Error loading session stats:', error);
       });
       
       // Check session expiry for students
       if (user.role === 'student') {
         const studentData = retrieveSessionData();
-        log('STUDENT', 'Student session data', { hasData: !!studentData, expiresAt: studentData?.expiresAt });
-        
         if (studentData && studentData.expiresAt) {
           const expiryStatus = checkSessionExpiry(studentData.expiresAt);
-          log('SESSION', 'Session expiry status', expiryStatus);
           
           // Refresh session if less than 2 days until expiry
           if (expiryStatus.shouldRefresh) {
-            log('SESSION', 'Refreshing student session');
             fetch('/api/refresh-student-session', {
               method: 'POST',
               headers: {
@@ -108,7 +53,6 @@ export default function Dashboard() {
             })
             .then(res => res.json())
             .then(result => {
-              log('SESSION', 'Session refresh result', result);
               if (result.success) {
                 // Update stored session with new expiry
                 const updatedData = { ...studentData, expiresAt: result.expiresAt };
@@ -116,10 +60,7 @@ export default function Dashboard() {
                 storeSessionData(updatedData, keepSignedIn);
               }
             })
-            .catch(err => {
-              log('ERROR', 'Failed to refresh session', err);
-              console.error('Failed to refresh session:', err);
-            });
+            .catch(err => console.error('Failed to refresh session:', err));
           }
           
           // Show warning if less than 5 minutes until expiry
@@ -132,12 +73,10 @@ export default function Dashboard() {
   }, [user, authLoading, isAuthenticated]);
 
   const handleTopicSelect = async (topic) => {
-    log('TOPIC', 'Topic selected', { topic, mood: selectedMood, userId: user?.id });
     console.log('Topic selected:', topic);
     console.log('Available topics for mood:', selectedMood, MOOD_TOPICS[selectedMood]);
     
     if (!user || !user.id) {
-      log('ERROR', 'No user data available');
       console.error('No user data available');
       setGenerating(false);
       return;
@@ -145,7 +84,6 @@ export default function Dashboard() {
     
     // Check if account is pending parent approval
     if (user.account_type === 'pending') {
-      log('AUTH', 'Account pending parent approval');
       alert('Your account is pending parent approval. Please ask your parent to check their email.');
       setGenerating(false);
       return;
@@ -154,7 +92,6 @@ export default function Dashboard() {
     // Check rate limit before proceeding
     if (!questionRateLimiter.canMakeRequest()) {
       const waitTime = questionRateLimiter.getWaitTime();
-      log('RATE_LIMIT', 'Rate limit exceeded', { waitTime });
       alert(`Please wait ${waitTime} seconds before generating new questions. This helps ensure quality responses.`);
       return;
     }
@@ -174,163 +111,115 @@ export default function Dashboard() {
         if (studentData) {
           const { sessionToken } = studentData;
           authHeader = `Student ${sessionToken}`;
-          log('AUTH', 'Using student session token');
         }
       } else {
         // Get Supabase session token for parents/teachers
         const session = await getSession();
         if (session?.access_token) {
           authHeader = `Bearer ${session.access_token}`;
-          log('AUTH', 'Using Supabase bearer token');
         }
       }
       
-      log('API', 'Calling generate API', { 
-        endpoint: '/api/generate',
-        action: 'generate-batch',
-        topic,
-        mood: selectedMood 
-      });
-      
-      // UPDATED: Use cache-based API endpoint
-      const response = await fetch('/api/generate', {
+      // Generate first question immediately for better UX
+      const firstResponse = await fetch('/api/generate-stream', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': authHeader
         },
         body: JSON.stringify({
-          action: 'generate-batch', // Try batch first for reading comprehension
           userId: user.id,
           topic: topic,
-          mood: selectedMood
+          mood: selectedMood,
+          position: 1,
+          existingQuestions: []
         })
       });
 
-      log('API', 'Generate API response', { 
-        status: response.status, 
-        ok: response.ok,
-        headers: Object.fromEntries(response.headers.entries())
-      });
-
       // Handle rate limiting (429 error)
-      if (response.status === 429) {
-        const retryAfter = response.headers.get('Retry-After') || '60';
-        log('RATE_LIMIT', 'API rate limited', { retryAfter });
+      if (firstResponse.status === 429) {
+        const retryAfter = firstResponse.headers.get('Retry-After') || '60';
         console.log(`Rate limited. Retry after ${retryAfter} seconds`);
         setGenerating(false);
         alert(`Too many requests. Please wait ${retryAfter} seconds before trying again.`);
         return;
       }
       
-      if (response.ok) {
-        const data = await response.json();
-        log('API', 'Generate API success', {
-          questionsCount: data.questions?.length || 1,
-          batchId: data.batchId,
-          timerDuration: data.timerDuration,
-          fromCache: data.fromCache,
-          currentProficiency: data.currentProficiency
-        });
+      if (firstResponse.ok) {
+        const firstData = await firstResponse.json();
         
-        // UPDATED: Handle cache-based response
-        if (data.questions && data.questions.length > 0) {
-          // Multiple questions (reading comprehension)
-          log('QUESTIONS', 'Setting batch questions', { count: data.questions.length });
+        // Check if we got multiple questions
+        if (firstData.multiQuestion && firstData.questions) {
+          console.log(`Received ${firstData.questions.length} questions for the passage`);
           
-          setQuestionBatch(data.questions);
-          setBatchId(data.batchId);
+          // Set all questions in batch
+          setQuestionBatch(firstData.questions);
           setCurrentQuestionIndex(0);
-          
-          // Set timer duration from API response
-          setTimerDuration(data.timerDuration || 60);
-          setTimeRemaining(data.timerDuration || 60);
           
           // Set first question as current
           setCurrentQuestion({
-            ...data.questions[0],
+            ...firstData.questions[0],
             topic: topic,
-            difficulty: data.questions[0].difficulty,
-            proficiency: data.currentProficiency,
-            fromCache: data.fromCache
+            difficulty: firstData.questions[0].difficulty,
+            proficiency: firstData.currentProficiency
           });
           
-          // Start timer
-          setTimerActive(true);
-          
-          // Update question count
-          setTopicQuestionCount(0);
-        } else if (data.question) {
-          // Single question fallback
-          log('QUESTIONS', 'Setting single question');
-          
+          // Update question count for multiple questions
+          setTopicQuestionCount(firstData.questions.length - 1);
+        } else {
+          // Handle single question (legacy)
           setCurrentQuestion({
-            ...data.question,
+            ...firstData.question,
             topic: topic,
-            difficulty: data.difficulty,
-            proficiency: data.currentProficiency,
-            fromCache: data.fromCache
+            difficulty: firstData.question.difficulty,
+            proficiency: firstData.currentProficiency
           });
-          
-          setQuestionBatch([data.question]);
+          setQuestionBatch([firstData.question]);
           setCurrentQuestionIndex(0);
-          
-          // Set timer
-          setTimerDuration(data.timerDuration || 60);
-          setTimeRemaining(data.timerDuration || 60);
-          setTimerActive(true);
         }
         
-        setGenerating(false);
-        log('SUCCESS', 'Questions loaded successfully');
+        setGenerating(false); // Stop loading indicator
+        console.log('Questions loaded successfully');
       } else {
-        // Try single question if batch fails
-        log('API', 'Batch failed, trying single question');
-        
-        const singleResponse = await fetch('/api/generate', {
+        // Fallback: Try batch generation
+        console.log('First question generation failed, trying batch generation');
+        const response = await fetch('/api/generate', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
             'Authorization': authHeader
           },
           body: JSON.stringify({
-            action: 'generate', // Single question
+            action: 'generate-batch',
             userId: user.id,
             topic: topic,
             mood: selectedMood
           })
         });
+
+        const data = await response.json();
         
-        const singleData = await singleResponse.json();
-        log('API', 'Single question response', singleData);
-        
-        if (singleResponse.ok && singleData.question) {
+        if (response.ok && data.questions && data.questions.length > 0) {
+          setQuestionBatch(data.questions);
+          setBatchId(data.batchId);
+          setCurrentQuestionIndex(0);
           setCurrentQuestion({
-            ...singleData.question,
+            ...data.questions[0],
             topic: topic,
-            difficulty: singleData.difficulty,
-            proficiency: singleData.currentProficiency,
-            fromCache: singleData.fromCache
+            difficulty: data.questions[0].difficulty,
+            proficiency: data.currentProficiency
           });
           
-          setQuestionBatch([singleData.question]);
-          setCurrentQuestionIndex(0);
-          
-          // Set timer
-          setTimerDuration(singleData.timerDuration || 60);
-          setTimeRemaining(singleData.timerDuration || 60);
-          setTimerActive(true);
-          
-          setGenerating(false);
+          if (data.questions.length < 5) {
+            generateRemainingQuestions(data.questions, topic, selectedMood, authHeader, data.currentProficiency);
+          }
         } else {
-          throw new Error(singleData.error || 'Failed to generate questions');
+          // Final fallback: Generate questions one by one
+          console.log('Batch generation also failed, falling back to individual streaming');
+          generateQuestionsIndividually(topic, selectedMood, authHeader);
         }
       }
     } catch (error) {
-      log('ERROR', 'Failed to generate questions', { 
-        message: error.message,
-        stack: error.stack 
-      });
       console.error('Error generating questions:', error);
       setGenerating(false);
       
@@ -338,23 +227,123 @@ export default function Dashboard() {
       if (error.message === 'Failed to fetch' || error.name === 'NetworkError') {
         alert('Network connection issue. Please check your internet connection and try again.');
       } else {
-        alert(error.message || 'Failed to generate questions. Please try again.');
+        alert('Failed to generate questions. Please try again.');
       }
     }
   };
+  
+  // Generate remaining questions in parallel for speed
+  const generateRemainingQuestions = async (existingQuestions, topic, mood, authHeader, proficiency) => {
+    const existingCount = existingQuestions.length;
+    const needed = 5 - existingCount;
+    
+    console.log(`Generating ${needed} more questions in parallel`);
+    
+    // Create promises for all remaining questions
+    const promises = [];
+    for (let i = 0; i < needed; i++) {
+      const promise = fetch('/api/generate-stream', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': authHeader
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          topic: topic,
+          mood: mood,
+          position: existingCount + i + 1,
+          existingQuestions: existingQuestions.map(q => q.question)
+        })
+      })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => {
+        if (data) {
+          return {
+            ...data.question,
+            topic: topic,
+            difficulty: data.question.difficulty,
+            proficiency: proficiency
+          };
+        }
+        return null;
+      })
+      .catch(error => {
+        console.error(`Error generating question ${existingCount + i + 1}:`, error);
+        return null;
+      });
+      
+      promises.push(promise);
+    }
+    
+    // Wait for all to complete and update batch
+    const results = await Promise.all(promises);
+    const validQuestions = results.filter(q => q !== null);
+    
+    if (validQuestions.length > 0) {
+      setQuestionBatch(prev => [...prev, ...validQuestions]);
+      console.log(`Successfully generated ${validQuestions.length} additional questions`);
+    }
+    
+    // Generate batch ID if we have all 5 questions
+    if (existingQuestions.length + validQuestions.length >= 5) {
+      const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      setBatchId(batchId);
+    }
+  };
+  
+  // Generate all questions individually (streaming)
+  const generateQuestionsIndividually = async (topic, mood, authHeader) => {
+    const questions = [];
+    
+    for (let i = 0; i < 5; i++) {
+      try {
+        const response = await fetch('/api/generate-stream', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': authHeader
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            topic: topic,
+            mood: mood,
+            position: i + 1,
+            existingQuestions: questions.map(q => q.question)
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const newQuestion = {
+            ...data.question,
+            topic: topic,
+            difficulty: data.question.difficulty,
+            proficiency: data.currentProficiency
+          };
+          
+          questions.push(newQuestion);
+          
+          // Update batch in real-time
+          setQuestionBatch([...questions]);
+          
+          // Set first question as current
+          if (i === 0) {
+            setCurrentQuestion(newQuestion);
+            setGenerating(false); // Stop showing loading after first question
+          }
+        }
+      } catch (error) {
+        console.error(`Error generating question ${i + 1}:`, error);
+      }
+    }
+    
+    // Generate batch ID
+    const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    setBatchId(batchId);
+  };
 
   const handleAnswer = async (correct, timeSpent, hintsUsed, selectedAnswer) => {
-    log('ANSWER', 'Answer submitted', { 
-      correct, 
-      timeSpent, 
-      hintsUsed, 
-      selectedAnswer,
-      questionHash: currentQuestion?.questionHash 
-    });
-    
-    // Stop timer
-    setTimerActive(false);
-    
     try {
       // Get appropriate auth token (same logic as handleTopicSelect)
       let authHeader = '';
@@ -370,8 +359,6 @@ export default function Dashboard() {
           authHeader = `Bearer ${session.access_token}`;
         }
       }
-      
-      log('API', 'Submitting answer', { userId: user.id, topic: selectedTopic });
       
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -393,7 +380,6 @@ export default function Dashboard() {
 
       if (response.ok) {
         const data = await response.json();
-        log('API', 'Answer submitted successfully', data);
         
         // Update cached proficiency immediately
         setCachedProficiency(selectedTopic, data.newProficiency);
@@ -403,22 +389,13 @@ export default function Dashboard() {
           totalQuestions: prev.totalQuestions + 1,
           correctAnswers: prev.correctAnswers + (correct ? 1 : 0)
         }));
-      } else {
-        log('ERROR', 'Failed to submit answer', { status: response.status });
       }
     } catch (error) {
-      log('ERROR', 'Error submitting answer', error);
       console.error('Error submitting answer:', error);
     }
   };
 
   const handleNext = async () => {
-    log('NAVIGATION', 'Next button clicked', { 
-      currentIndex: currentQuestionIndex,
-      batchLength: questionBatch.length,
-      topicCount: topicQuestionCount 
-    });
-    
     // Check if we have more questions in the current batch
     if (currentQuestionIndex < questionBatch.length - 1) {
       // Move to next question in batch
@@ -434,22 +411,15 @@ export default function Dashboard() {
         proficiency: nextQuestion.proficiency || getProficiency(selectedTopic)
       });
       
-      // Reset timer for next question
-      setTimeRemaining(timerDuration);
-      setTimerActive(true);
-      
-      log('NAVIGATION', 'Moved to next question in batch', { nextIndex });
       console.log(`Moving to question ${nextIndex + 1} of ${questionBatch.length} in current passage`);
       return;
     }
     
     // All questions in current batch completed
     const totalQuestionsCompleted = topicQuestionCount + 1;
-    log('PROGRESS', 'Batch completed', { totalQuestionsCompleted });
     
     // Check if reached maximum questions per topic (10)
     if (totalQuestionsCompleted >= 10) {
-      log('PROGRESS', 'Maximum questions reached');
       alert(`Great job! You've completed 10 questions in ${formatTopicName(selectedTopic)}. Select a new topic to continue.`);
       handleBack();
       return;
@@ -465,7 +435,6 @@ export default function Dashboard() {
     }
     
     // Generate next batch of questions
-    log('NAVIGATION', 'Generating next batch');
     setGenerating(true);
     
     try {
@@ -484,49 +453,61 @@ export default function Dashboard() {
         }
       }
       
-      // Generate next batch from cache
-      log('API', 'Requesting next batch');
-      const response = await fetch('/api/generate', {
+      // Generate next batch of questions
+      const response = await fetch('/api/generate-stream', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': authHeader
         },
         body: JSON.stringify({
-          action: 'generate-batch',
           userId: user.id,
           topic: selectedTopic,
-          mood: selectedMood
+          mood: selectedMood,
+          position: totalQuestionsCompleted + 1
         })
       });
 
+      // Handle rate limiting (429 error)
+      if (response.status === 429) {
+        const retryAfter = response.headers.get('Retry-After') || '60';
+        console.log(`Rate limited. Retry after ${retryAfter} seconds`);
+        setGenerating(false);
+        alert(`Too many requests. Please wait ${retryAfter} seconds before trying again.`);
+        return;
+      }
+
       if (response.ok) {
         const data = await response.json();
-        log('API', 'Next batch received', { count: data.questions?.length });
         
-        if (data.questions && data.questions.length > 0) {
+        // Check if we got multiple questions
+        if (data.multiQuestion && data.questions) {
+          console.log(`Received ${data.questions.length} new questions for next passage`);
+          
           // Reset batch with new questions
           setQuestionBatch(data.questions);
           setCurrentQuestionIndex(0);
-          setBatchId(data.batchId);
-          
-          // Set timer duration
-          setTimerDuration(data.timerDuration || 60);
-          setTimeRemaining(data.timerDuration || 60);
-          setTimerActive(true);
           
           // Set first question of new batch
           setCurrentQuestion({
             ...data.questions[0],
             topic: selectedTopic,
             difficulty: data.questions[0].difficulty,
-            proficiency: data.currentProficiency,
-            fromCache: data.fromCache
+            proficiency: data.currentProficiency
           });
+        } else {
+          // Handle single question (legacy)
+          setCurrentQuestion({
+            ...data.question,
+            topic: selectedTopic,
+            difficulty: data.question.difficulty,
+            proficiency: data.currentProficiency
+          });
+          setQuestionBatch([data.question]);
+          setCurrentQuestionIndex(0);
         }
       }
     } catch (error) {
-      log('ERROR', 'Failed to generate next batch', error);
       console.error('Error generating next question:', error);
     } finally {
       setGenerating(false);
@@ -534,14 +515,12 @@ export default function Dashboard() {
   };
 
   const handleBack = () => {
-    log('NAVIGATION', 'Back button clicked');
     setSelectedTopic(null);
     setCurrentQuestion(null);
     setQuestionBatch([]);
     setCurrentQuestionIndex(0);
     setBatchId(null);
     setTopicQuestionCount(0);
-    setTimerActive(false);
   };
 
   const getAvailableTopics = () => {
@@ -716,19 +695,11 @@ export default function Dashboard() {
                   <div className="question-count">
                     Grade {user?.grade || '8'}
                     {generating && (
-                      <span className="loading-indicator"> (Loading from cache...)</span>
+                      <span className="loading-indicator"> (Generating...)</span>
                     )}
                   </div>
                 </div>
-                <div className="timer-section">
-                  {timerActive && (
-                    <div className={`timer ${timeRemaining <= 10 ? 'timer-warning' : ''}`}>
-                      <span className="timer-icon">⏱️</span>
-                      <span className="timer-text">{timeRemaining}s</span>
-                    </div>
-                  )}
-                  <div className="level-badge">Level {getProficiency(selectedTopic).toFixed(1)}</div>
-                </div>
+                <div className="level-badge">Level {getProficiency(selectedTopic).toFixed(1)}</div>
               </header>
 
               <div className="progress-section">
@@ -741,10 +712,7 @@ export default function Dashboard() {
               {generating ? (
                 <div className="generating">
                   <div className="generating-text">
-                    Loading questions from cache...
-                  </div>
-                  <div className="generating-subtext">
-                    {currentQuestion?.fromCache ? 'Serving from pre-generated pool' : 'Please wait...'}
+                    Loading your personalized questions in real-time, please do not refresh...
                   </div>
                 </div>
               ) : currentQuestion && (
@@ -758,8 +726,6 @@ export default function Dashboard() {
                   onNext={handleNext}
                   userId={user.id}
                   getSession={getSession}
-                  timerDuration={timerDuration}
-                  timeRemaining={timeRemaining}
                 />
               )}
             </div>
@@ -898,44 +864,6 @@ export default function Dashboard() {
               font-style: italic;
               border: none;
               box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-            }
-
-            /* Timer Styles */
-            .timer-section {
-              display: flex;
-              align-items: center;
-              gap: 1rem;
-            }
-
-            .timer {
-              display: flex;
-              align-items: center;
-              gap: 0.5rem;
-              background: rgba(255, 255, 255, 0.9);
-              padding: 0.5rem 1rem;
-              border-radius: 12px;
-              border: 1px solid rgba(0, 0, 0, 0.1);
-              font-weight: 600;
-              transition: all 0.3s ease;
-            }
-
-            .timer-warning {
-              background: rgba(239, 68, 68, 0.1);
-              border-color: rgba(239, 68, 68, 0.3);
-              animation: pulse 1s ease-in-out infinite;
-            }
-
-            .timer-icon {
-              font-size: 1.2rem;
-            }
-
-            .timer-text {
-              font-size: 1.1rem;
-              color: #1a1a1a;
-            }
-
-            .timer-warning .timer-text {
-              color: #ef4444;
             }
 
             /* Progress Bar */
@@ -1120,10 +1048,6 @@ export default function Dashboard() {
               }
               .question-view {
                 padding: 0 1rem;
-              }
-              .timer-section {
-                flex-direction: column;
-                gap: 0.5rem;
               }
             }
 
