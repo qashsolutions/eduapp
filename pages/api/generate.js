@@ -140,14 +140,36 @@ async function getQuestionFromCache(userId, topic, difficulty, grade, mood) {
     // Randomly select one question
     const selectedQuestion = questions[Math.floor(Math.random() * questions.length)];
     
+    
     // Update usage count
     await supabase
       .from('question_cache')
       .update({ usage_count: (selectedQuestion.usage_count || 0) + 1 })
       .eq('id', selectedQuestion.id);
     
+    // Transform the question to match expected format
+    const questionData = selectedQuestion.question;
+    const transformedQuestion = {
+      question: questionData.question_text,
+      options: {},
+      correct: null,
+      explanation: questionData.explanation || selectedQuestion.answer_explanation,
+      context: questionData.context || ''
+    };
+    
+    // Convert array options to object format (A, B, C, D)
+    if (Array.isArray(questionData.options)) {
+      questionData.options.forEach((option, index) => {
+        const letter = String.fromCharCode(65 + index); // A, B, C, D
+        transformedQuestion.options[letter] = option;
+        if (option === questionData.correct_answer) {
+          transformedQuestion.correct = letter;
+        }
+      });
+    }
+    
     return {
-      question: selectedQuestion.question,
+      question: transformedQuestion,
       questionHash: selectedQuestion.question_hash,
       cacheId: selectedQuestion.id
     };
@@ -231,12 +253,32 @@ async function getBatchFromCache(userId, topic, difficulty, grade, mood) {
       .in('id', questionIds);
     
     // Format for batch response
-    return selectedQuestions.map((q, index) => ({
-      ...q.question,
-      hash: q.question_hash,
-      difficulty,
-      position: index + 1
-    }));
+    return selectedQuestions.map((q, index) => {
+      const questionData = q.question;
+      const transformedQuestion = {
+        question: questionData.question_text,
+        options: {},
+        correct: null,
+        explanation: questionData.explanation || q.answer_explanation,
+        context: questionData.context || '',
+        hash: q.question_hash,
+        difficulty,
+        position: index + 1
+      };
+      
+      // Convert array options to object format (A, B, C, D)
+      if (Array.isArray(questionData.options)) {
+        questionData.options.forEach((option, idx) => {
+          const letter = String.fromCharCode(65 + idx); // A, B, C, D
+          transformedQuestion.options[letter] = option;
+          if (option === questionData.correct_answer) {
+            transformedQuestion.correct = letter;
+          }
+        });
+      }
+      
+      return transformedQuestion;
+    });
   } catch (error) {
     console.error('Batch retrieval error:', error);
     throw error;

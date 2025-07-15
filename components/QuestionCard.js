@@ -51,70 +51,15 @@ export default function QuestionCard({
 
   const handleHint = async () => {
     if (!showResult && currentHintLevel < MAX_HINTS && !isLoadingHint) {
-      const nextLevel = currentHintLevel + 1;
-      
-      // If we already have this hint level, just show it
-      if (hints[nextLevel - 1]) {
-        setCurrentHintLevel(nextLevel);
-        if (nextLevel === 1) {
-          setHintsUsed(1);
-        }
-        return;
-      }
-      
-      // Otherwise, fetch a new hint
-      setIsLoadingHint(true);
-      try {
-        // Get appropriate auth token
-        let authHeader = '';
-        
-        // Check if this is a student user
-        const studentData = retrieveSessionData();
-        if (studentData) {
-          const { sessionToken } = studentData;
-          authHeader = `Student ${sessionToken}`;
-        } else {
-          // Get Supabase session token for parents/teachers
-          const session = await getSession();
-          if (session?.access_token) {
-            authHeader = `Bearer ${session.access_token}`;
-          }
-        }
-        
-        const response = await fetch('/api/generate', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': authHeader
-          },
-          body: JSON.stringify({
-            action: 'socratic',
-            userId,
-            topic,
-            question: question.question,
-            wrongAnswer: selectedAnswer || 'not selected',
-            difficulty,
-            hintLevel: nextLevel
-          })
-        });
-
-        const data = await response.json();
-        
-        if (response.ok) {
-          const newHints = [...hints];
-          newHints[nextLevel - 1] = data.hint;
-          setHints(newHints);
-          setCurrentHintLevel(nextLevel);
-          if (nextLevel === 1) {
-            setHintsUsed(1);
-          }
-        } else {
-          console.error('Failed to get hint:', data.error);
-        }
-      } catch (error) {
-        console.error('Error getting hint:', error);
-      } finally {
-        setIsLoadingHint(false);
+      // Since we now use pre-generated questions with explanations,
+      // we'll show the explanation as a hint
+      if (question.explanation && currentHintLevel === 0) {
+        setHints([question.explanation]);
+        setCurrentHintLevel(1);
+        setHintsUsed(1);
+      } else {
+        // No more hints available in the cache-based system
+        console.log('No additional hints available - using cached explanations only');
       }
     }
   };
