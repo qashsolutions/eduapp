@@ -474,14 +474,106 @@ export default async function handler(req, res) {
     }
 
     /**
-     * SOCRATIC ACTION - Removed
-     * No longer needed since we don't generate dynamic hints
-     * Hints are now pre-stored in question_cache as answer_explanation
+     * START-SESSION ACTION - Create a new study session
      */
-    if (action === 'socratic') {
-      return res.status(410).json({ 
-        error: 'Socratic hints are no longer dynamically generated. Use the answer_explanation field from cached questions.' 
-      });
+    if (action === 'start-session') {
+      const { grade } = req.body;
+      
+      // Validate required fields
+      if (!userId || !topic) {
+        return res.status(400).json({ error: 'Missing userId or topic' });
+      }
+      
+      try {
+        // Close any existing active sessions for this student
+        await supabase
+          .from('study_sessions')
+          .update({ 
+            session_end: new Date().toISOString(),
+            is_active: false 
+          })
+          .eq('student_id', userId)
+          .eq('is_active', true);
+        
+        // Get user's current proficiency for difficulty level
+        const user = await getUser(userId);
+        const proficiency = user?.[topic] || 5;
+        const difficulty = mapProficiencyToDifficulty(proficiency, [1, 2, 3, 4, 5, 6, 7, 8]);
+        
+        // Create new study session
+        const { data: sessionData, error } = await supabase
+          .from('study_sessions')
+          .insert({
+            student_id: userId,
+            topic: topic,
+            session_type: 'practice',
+            difficulty_level: difficulty,
+            is_active: true,
+            session_start: new Date().toISOString()
+          })
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('Failed to create study session:', error);
+          return res.status(500).json({ error: 'Failed to create study session' });
+        }
+        
+        return res.status(200).json({
+          success: true,
+          sessionId: sessionData.id,
+          message: 'Study session started'
+        });
+      } catch (error) {
+        console.error('Start session error:', error);
+        return res.status(500).json({ error: 'Failed to start session' });
+      }
+    }
+    
+    /**
+     * END-SESSION ACTION - Close an active study session
+     */
+    if (action === 'end-session') {
+      const { reason = 'completed' } = req.body;
+      
+      if (!userId || !sessionId) {
+        return res.status(400).json({ error: 'Missing userId or sessionId' });
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from('study_sessions')
+          .update({
+            session_end: new Date().toISOString(),
+            is_active: false,
+            abandonment_reason: reason
+          })
+          .eq('id', sessionId)
+          .eq('student_id', userId)
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('Failed to end study session:', error);
+          return res.status(500).json({ error: 'Failed to end study session' });
+        }
+        
+        return res.status(200).json({
+          success: true,
+          message: 'Study session ended',
+          sessionStats: {
+            duration: data.session_end && data.session_start ? 
+              Math.floor((new Date(data.session_end) - new Date(data.session_start)) / 1000) : 0,
+            totalQuestions: data.total_questions,
+            correctAnswers: data.correct_answers,
+            accuracy: data.total_questions > 0 ? 
+              Math.round((data.correct_answers / data.total_questions) * 100) : 0
+          }
+        });
+      } catch (error) {
+        console.error('End session error:', error);
+        return res.status(500).json({ error: 'Failed to end session' });
+      }
     }
 
     /**

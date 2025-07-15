@@ -11,13 +11,6 @@ import { getUser, getSessionStats } from '../lib/db';
 import { MOOD_TOPICS, formatTopicName, getCachedProficiency, setCachedProficiency, mapProficiencyToDifficulty } from '../lib/utils';
 import { retrieveSessionData, storeSessionData, checkSessionExpiry } from '../lib/studentSession';
 import { questionRateLimiter } from '../lib/rateLimiter';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 
 // Enable comprehensive logging for debugging cache-based system
 const DEBUG = true;
@@ -167,52 +160,51 @@ export default function Dashboard() {
       return;
     }
     
-    // Close any existing session before starting new one
-    if (currentSessionId) {
-      log('SESSION', 'Closing previous session', { sessionId: currentSessionId });
-      try {
-        const { error } = await supabase
-          .from('study_sessions')
-          .update({
-            session_end: new Date().toISOString(),
-            is_active: false
-          })
-          .eq('id', currentSessionId);
-          
-        if (error) {
-          log('ERROR', 'Failed to close previous session', error);
+    // Get appropriate auth token
+    let authHeader = '';
+    try {
+      if (user.role === 'student') {
+        const studentData = retrieveSessionData();
+        if (studentData) {
+          const { sessionToken } = studentData;
+          authHeader = `Student ${sessionToken}`;
         }
-      } catch (error) {
-        log('ERROR', 'Error closing session', error);
+      } else {
+        const session = await getSession();
+        if (session?.access_token) {
+          authHeader = `Bearer ${session.access_token}`;
+        }
       }
+    } catch (error) {
+      log('ERROR', 'Failed to get auth token', error);
     }
     
-    // Create new study session
+    // Create new study session through API
     try {
-      log('SESSION', 'Creating new study session', { topic, userId: user.id });
+      log('SESSION', 'Creating new study session via API', { topic, userId: user.id });
       
-      // Get current proficiency for difficulty level
-      const userProficiency = user[topic] || 5;
-      const difficulty = mapProficiencyToDifficulty(userProficiency, [1, 2, 3, 4, 5, 6, 7, 8]);
-      
-      const { data: sessionData, error } = await supabase
-        .from('study_sessions')
-        .insert({
-          student_id: user.id,
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': authHeader
+        },
+        body: JSON.stringify({
+          action: 'start-session',
+          userId: user.id,
           topic: topic,
-          session_type: 'practice',
-          difficulty_level: difficulty,
-          is_active: true
+          grade: user.grade
         })
-        .select()
-        .single();
-        
-      if (error) {
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        log('SESSION', 'Study session created', { sessionId: data.sessionId });
+        setCurrentSessionId(data.sessionId);
+      } else {
+        const error = await response.json();
         log('ERROR', 'Failed to create study session', error);
         console.error('Failed to create study session:', error);
-      } else {
-        log('SESSION', 'Study session created', { sessionId: sessionData.id });
-        setCurrentSessionId(sessionData.id);
       }
     } catch (error) {
       log('ERROR', 'Error creating study session', error);
@@ -598,24 +590,51 @@ export default function Dashboard() {
     log('NAVIGATION', 'Back button clicked');
     
     // Close current session if exists
-    if (currentSessionId) {
+    if (currentSessionId && user) {
       log('SESSION', 'Closing session on back', { sessionId: currentSessionId });
+      
+      // Get auth token
+      let authHeader = '';
       try {
-        const { error } = await supabase
-          .from('study_sessions')
-          .update({
-            session_end: new Date().toISOString(),
-            is_active: false
-          })
-          .eq('id', currentSessionId);
-          
-        if (error) {
-          log('ERROR', 'Failed to close session on back', error);
+        if (user.role === 'student') {
+          const studentData = retrieveSessionData();
+          if (studentData) {
+            authHeader = `Student ${studentData.sessionToken}`;
+          }
+        } else {
+          const session = await getSession();
+          if (session?.access_token) {
+            authHeader = `Bearer ${session.access_token}`;
+          }
         }
-        setCurrentSessionId(null);
+        
+        // Close session through API
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': authHeader
+          },
+          body: JSON.stringify({
+            action: 'end-session',
+            userId: user.id,
+            sessionId: currentSessionId,
+            reason: 'user_back'
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          log('SESSION', 'Session closed', data.sessionStats);
+        } else {
+          const error = await response.json();
+          log('ERROR', 'Failed to close session', error);
+        }
       } catch (error) {
-        log('ERROR', 'Error closing session on back', error);
+        log('ERROR', 'Error closing session', error);
       }
+      
+      setCurrentSessionId(null);
     }
     
     setSelectedTopic(null);
