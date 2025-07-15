@@ -588,6 +588,56 @@ export default function Dashboard() {
   const handleBack = async () => {
     log('NAVIGATION', 'Back button clicked');
     
+    // Check if there's an unanswered question to record as abandoned
+    if (currentQuestion && user) {
+      const timeSpent = timerDuration - timeRemaining;
+      log('ABANDON', 'Recording abandoned question', { 
+        topic: selectedTopic, 
+        timeSpent,
+        questionHash: currentQuestion.questionHash 
+      });
+      
+      // Get auth token
+      let authHeader = '';
+      try {
+        if (user.role === 'student') {
+          const studentData = retrieveSessionData();
+          if (studentData) {
+            authHeader = `Student ${studentData.sessionToken}`;
+          }
+        } else {
+          const session = await getSession();
+          if (session?.access_token) {
+            authHeader = `Bearer ${session.access_token}`;
+          }
+        }
+        
+        // Record abandoned question
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': authHeader
+          },
+          body: JSON.stringify({
+            action: 'abandon',
+            userId: user.id,
+            topic: selectedTopic,
+            timeSpent: timeSpent,
+            questionHash: currentQuestion?.questionHash || null,
+            sessionId: currentSessionId
+          })
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          log('ERROR', 'Failed to record abandoned question', error);
+        }
+      } catch (error) {
+        log('ERROR', 'Error recording abandoned question', error);
+      }
+    }
+    
     // Close current session if exists
     if (currentSessionId && user) {
       log('SESSION', 'Closing session on back', { sessionId: currentSessionId });
@@ -822,7 +872,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="timer-section">
-                  {timerActive && (
+                  {currentQuestion && (
                     <div className={`timer ${timeRemaining <= 10 ? 'timer-warning' : ''}`}>
                       <span className="timer-icon">⏱️</span>
                       <span className="timer-text">{timeRemaining}s</span>

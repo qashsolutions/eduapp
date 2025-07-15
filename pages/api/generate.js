@@ -577,6 +577,42 @@ export default async function handler(req, res) {
     }
 
     /**
+     * ABANDON ACTION - Record abandoned question
+     */
+    if (action === 'abandon') {
+      // Validate inputs
+      if (!userId || !topic || timeSpent === undefined) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+      
+      const { questionHash } = req.body;
+      
+      try {
+        // Log the abandoned attempt
+        await logQuestionAttempt(
+          userId, 
+          topic, 
+          null,  // correct is null for abandoned
+          timeSpent, 
+          0,     // no hints used
+          questionHash, 
+          sessionId,
+          true   // abandoned = true
+        );
+        
+        return res.status(200).json({
+          success: true,
+          message: 'Abandoned question recorded'
+        });
+      } catch (error) {
+        console.error('Failed to record abandoned question:', error);
+        return res.status(500).json({ 
+          error: 'Failed to record abandoned question' 
+        });
+      }
+    }
+    
+    /**
      * SUBMIT ACTION - Process answer and update proficiency
      * Enhanced to update answered_question_hashes
      */
@@ -595,8 +631,8 @@ export default async function handler(req, res) {
       // Check if answer is correct
       const { correct, questionHash } = req.body;
       
-      // Log the attempt with session ID
-      await logQuestionAttempt(userId, topic, correct, timeSpent, hintsUsed || 0, questionHash, sessionId);
+      // Log the attempt with session ID (not abandoned)
+      await logQuestionAttempt(userId, topic, correct, timeSpent, hintsUsed || 0, questionHash, sessionId, false);
 
       // NEW: Update answered_question_hashes to prevent seeing same question again
       if (questionHash) {
