@@ -38,10 +38,25 @@ export default function Dashboard() {
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [currentHintsUsed, setCurrentHintsUsed] = useState(0);
   
+  // NEW: Track learning flow state
+  const [comprehensionPassagesCompleted, setComprehensionPassagesCompleted] = useState(0);
+  const [grammarQuestionsCompleted, setGrammarQuestionsCompleted] = useState(0);
+  const [isInGrammarMode, setIsInGrammarMode] = useState(false);
+  const [topicRotationIndex, setTopicRotationIndex] = useState(0);
+  
   // NEW: Timer state for cache-based system
   const [timerDuration, setTimerDuration] = useState(60); // Default 60 seconds
   const [timeRemaining, setTimeRemaining] = useState(60);
   const [timerActive, setTimerActive] = useState(false);
+  
+  // Topic rotation order (after grammar questions)
+  const ENGLISH_TOPICS = [
+    'english_vocabulary',
+    'english_synonyms', 
+    'english_antonyms',
+    'english_sentences',
+    'english_comprehension'
+  ];
 
   // Timer effect
   useEffect(() => {
@@ -137,6 +152,13 @@ export default function Dashboard() {
     log('TOPIC', 'Topic selected', { topic, mood: selectedMood, userId: user?.id });
     console.log('Topic selected:', topic);
     console.log('Available topics for mood:', selectedMood, MOOD_TOPICS[selectedMood]);
+    
+    // Reset learning flow state when starting a new topic
+    setComprehensionPassagesCompleted(0);
+    setGrammarQuestionsCompleted(0);
+    setIsInGrammarMode(false);
+    setTopicRotationIndex(0);
+    setCurrentHintsUsed(0);
     
     if (!user || !user.id) {
       log('ERROR', 'No user data available');
@@ -356,7 +378,8 @@ export default function Dashboard() {
             action: 'generate', // Single question
             userId: user.id,
             topic: topic,
-            mood: selectedMood
+            mood: selectedMood,
+            sessionId: currentSessionId
           })
         });
         
@@ -513,25 +536,69 @@ export default function Dashboard() {
     const totalQuestionsCompleted = topicQuestionCount + 1;
     log('PROGRESS', 'Batch completed', { totalQuestionsCompleted });
     
-    // Check if reached maximum questions per topic (10)
-    if (totalQuestionsCompleted >= 10) {
-      log('PROGRESS', 'Maximum questions reached');
-      alert(`Great job! You've completed 10 questions in ${formatTopicName(selectedTopic)}. Select a new topic to continue.`);
-      handleBack();
-      return;
-    }
-    
-    // Check if minimum questions reached (5) and offer option to continue or change
-    if (totalQuestionsCompleted >= 5 && totalQuestionsCompleted < 10) {
-      const continueWithTopic = confirm(`You've completed ${totalQuestionsCompleted} questions in ${formatTopicName(selectedTopic)}. Would you like to continue with this topic (up to 10 questions) or select a new one?\n\nClick OK to continue, Cancel to select a new topic.`);
-      if (!continueWithTopic) {
-        handleBack();
-        return;
+    // Check if we just completed a comprehension passage
+    if (selectedTopic === 'english_comprehension' && !isInGrammarMode) {
+      const newPassagesCompleted = comprehensionPassagesCompleted + 1;
+      setComprehensionPassagesCompleted(newPassagesCompleted);
+      
+      // After 2 comprehension passages, switch to grammar
+      if (newPassagesCompleted >= 2) {
+        log('FLOW', 'Switching to grammar mode after 2 comprehension passages');
+        setIsInGrammarMode(true);
+        setGrammarQuestionsCompleted(0);
+        // Will generate grammar questions below
       }
     }
     
-    // Generate next batch of questions
-    log('NAVIGATION', 'Generating next batch');
+    // Check if we're in grammar mode
+    if (isInGrammarMode) {
+      const newGrammarCount = grammarQuestionsCompleted + 1;
+      setGrammarQuestionsCompleted(newGrammarCount);
+      
+      if (newGrammarCount >= 3) {
+        // Completed 3 grammar questions, move to topic rotation
+        log('FLOW', 'Completed 3 grammar questions, starting topic rotation');
+        setIsInGrammarMode(false);
+        setComprehensionPassagesCompleted(0); // Reset for next cycle
+        setGrammarQuestionsCompleted(0);
+        setTopicRotationIndex(0); // Start rotation from beginning
+      }
+    }
+    
+    // Determine next topic
+    let nextTopic;
+    if (isInGrammarMode) {
+      // Continue with grammar until we complete 3 questions
+      nextTopic = 'english_grammar';
+    } else if (comprehensionPassagesCompleted >= 2 && grammarQuestionsCompleted === 0) {
+      // Just finished 2 comprehension passages, start grammar
+      nextTopic = 'english_grammar';
+    } else if (!isInGrammarMode && comprehensionPassagesCompleted === 0 && topicRotationIndex > 0) {
+      // We're in topic rotation mode (after completing grammar)
+      const currentRotationIndex = topicRotationIndex;
+      nextTopic = ENGLISH_TOPICS[currentRotationIndex % ENGLISH_TOPICS.length];
+      setTopicRotationIndex(currentRotationIndex + 1);
+      
+      // If we've completed all topics in rotation, reset to comprehension
+      if (currentRotationIndex >= ENGLISH_TOPICS.length) {
+        setTopicRotationIndex(0);
+        // The cycle will restart with comprehension
+      }
+    } else if (selectedTopic === 'english_comprehension') {
+      // Continue with comprehension until we have 2 passages
+      nextTopic = 'english_comprehension';
+    } else {
+      // Default: continue with current topic
+      nextTopic = selectedTopic;
+    }
+    
+    log('NAVIGATION', 'Generating next questions', { 
+      nextTopic, 
+      isInGrammarMode,
+      grammarQuestionsCompleted,
+      comprehensionPassagesCompleted,
+      topicRotationIndex 
+    });
     setGenerating(true);
     
     try {
@@ -559,10 +626,10 @@ export default function Dashboard() {
           'Authorization': authHeader
         },
         body: JSON.stringify({
-          action: selectedTopic === 'english_comprehension' ? 'generate-batch' : 'generate',
+          action: nextTopic === 'english_comprehension' ? 'generate-batch' : 'generate',
           userId: user.id,
-          topic: selectedTopic,
-          mood: selectedMood,
+          topic: nextTopic,
+          mood: selectedMood, // Maintain the same mood
           sessionId: currentSessionId
         })
       });
@@ -585,16 +652,60 @@ export default function Dashboard() {
           // Set first question of new batch
           setCurrentQuestion({
             ...data.questions[0],
-            topic: selectedTopic,
+            topic: nextTopic,
             difficulty: data.questions[0].difficulty,
             proficiency: data.currentProficiency,
             fromCache: data.fromCache
           });
+          
+          // Update selected topic if it changed
+          if (nextTopic !== selectedTopic) {
+            setSelectedTopic(nextTopic);
+          }
+        } else if (data.question) {
+          // Single question response
+          setQuestionBatch([data.question]);
+          setCurrentQuestionIndex(0);
+          
+          setCurrentQuestion({
+            ...data.question,
+            topic: nextTopic,
+            difficulty: data.difficulty,
+            proficiency: data.currentProficiency,
+            fromCache: data.fromCache
+          });
+          
+          // Set timer
+          setTimerDuration(data.timerDuration || 60);
+          setTimeRemaining(data.timerDuration || 60);
+          setTimerActive(true);
+          
+          // Reset hints
+          setCurrentHintsUsed(0);
+          
+          // Grammar question tracking is now handled at the beginning of handleNext
+          
+          // Update selected topic if it changed
+          if (nextTopic !== selectedTopic) {
+            setSelectedTopic(nextTopic);
+          }
+        } else {
+          // No questions returned
+          log('ERROR', 'No questions returned from API', data);
+          alert('No more questions available. Great job on your practice session!');
+          handleBack();
         }
+      } else {
+        // Handle error response
+        const errorData = await response.json();
+        log('ERROR', 'API error response', errorData);
+        alert('Unable to load more questions. Please try a different topic.');
+        handleBack();
       }
     } catch (error) {
       log('ERROR', 'Failed to generate next batch', error);
       console.error('Error generating next question:', error);
+      alert('An error occurred. Please try again.');
     } finally {
       setGenerating(false);
     }

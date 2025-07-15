@@ -247,10 +247,12 @@ async function getBatchFromCache(userId, topic, difficulty, grade, mood) {
     
     // Update usage count for all selected questions
     const questionIds = selectedQuestions.map(q => q.id);
-    await supabase
-      .from('question_cache')
-      .update({ usage_count: supabase.raw('usage_count + 1') })
-      .in('id', questionIds);
+    for (const question of selectedQuestions) {
+      await supabase
+        .from('question_cache')
+        .update({ usage_count: (question.usage_count || 0) + 1 })
+        .eq('id', question.id);
+    }
     
     // Format for batch response
     return selectedQuestions.map((q, index) => {
