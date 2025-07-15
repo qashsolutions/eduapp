@@ -51,17 +51,56 @@ export default function QuestionCard({
 
   const handleHint = async () => {
     if (!showResult && currentHintLevel < MAX_HINTS && !isLoadingHint) {
-      // Since we now use pre-generated questions with explanations,
-      // we'll show the explanation as a hint
-      if (question.explanation && currentHintLevel === 0) {
-        setHints([question.explanation]);
-        setCurrentHintLevel(1);
-        setHintsUsed(1);
-      } else {
-        // No more hints available in the cache-based system
-        console.log('No additional hints available - using cached explanations only');
+      const nextLevel = currentHintLevel + 1;
+      
+      // Generate progressive hints based on the question and answer
+      const progressiveHints = generateProgressiveHints(question, selectedAnswer);
+      
+      if (progressiveHints[nextLevel - 1]) {
+        const newHints = [...hints];
+        newHints[nextLevel - 1] = progressiveHints[nextLevel - 1];
+        setHints(newHints);
+        setCurrentHintLevel(nextLevel);
+        if (nextLevel === 1) {
+          setHintsUsed(1);
+        }
       }
     }
+  };
+  
+  // Generate hints progressively
+  const generateProgressiveHints = (q, selected) => {
+    const hints = [];
+    
+    // Hint 1: General guidance
+    if (q.question.toLowerCase().includes('main idea') || q.question.toLowerCase().includes('central theme')) {
+      hints.push('Look for the topic that is discussed throughout the entire passage, not just in one part.');
+    } else if (q.question.toLowerCase().includes('inference') || q.question.toLowerCase().includes('implies')) {
+      hints.push('Think about what the passage suggests but doesn\'t directly state. Look for clues in the context.');
+    } else if (q.question.toLowerCase().includes('purpose') || q.question.toLowerCase().includes('why')) {
+      hints.push('Consider the author\'s intent. What are they trying to achieve or communicate?');
+    } else {
+      hints.push('Read the question carefully and look for key words that match information in the passage.');
+    }
+    
+    // Hint 2: Eliminate wrong answers
+    if (selected && q.correct && selected !== q.correct) {
+      hints.push(`The answer "${q.options[selected]}" might be too specific or not fully supported by the passage. Try eliminating obviously incorrect options first.`);
+    } else {
+      hints.push('Try to eliminate options that are clearly wrong or not mentioned in the passage.');
+    }
+    
+    // Hint 3: More specific guidance
+    hints.push('Focus on the part of the passage that directly relates to the question. The answer should be supported by evidence from the text.');
+    
+    // Hint 4: Show explanation
+    if (q.explanation) {
+      hints.push(q.explanation);
+    } else {
+      hints.push('Take your time and re-read the relevant section of the passage. The answer is there!');
+    }
+    
+    return hints;
   };
 
   const handleNext = () => {
@@ -79,7 +118,15 @@ export default function QuestionCard({
       
       
       {question.context && question.context.trim().length > 0 && (
-        <div className="question-context">
+        <div className="question-context" style={{ 
+          fontSize: '1.1rem', 
+          fontWeight: 'normal',
+          lineHeight: '1.8',
+          marginBottom: '1.5rem',
+          padding: '1rem',
+          backgroundColor: 'rgba(255, 255, 255, 0.03)',
+          borderRadius: '8px'
+        }}>
           {question.context}
           <div className="word-count">
             <em>({question.context.trim().split(/\s+/).length} words)</em>
@@ -117,15 +164,25 @@ export default function QuestionCard({
       </div>
 
       {currentHintLevel > 0 && hints.length > 0 && (
-        <div className="hint-section">
-          <div className="hint-title">
+        <div className="hint-section" style={{
+          marginTop: '1rem',
+          padding: '1rem',
+          backgroundColor: 'rgba(255, 215, 0, 0.1)',
+          borderRadius: '8px',
+          border: '1px solid rgba(255, 215, 0, 0.3)'
+        }}>
+          <div className="hint-title" style={{
+            fontWeight: 'bold',
+            marginBottom: '0.5rem',
+            color: '#ffd700'
+          }}>
             💡 {currentHintLevel === 1 ? 'Think about it...' : 
                 currentHintLevel === 2 ? 'Getting warmer...' :
                 currentHintLevel === 3 ? 'Almost there...' :
                 'Final clue...'}
-            <span className="hint-level">({currentHintLevel}/{MAX_HINTS})</span>
+            <span className="hint-level" style={{ fontSize: '0.9rem', marginLeft: '0.5rem' }}>({currentHintLevel}/{MAX_HINTS})</span>
           </div>
-          <div className="hint-text">{hints[currentHintLevel - 1]}</div>
+          <div className="hint-text" style={{ fontSize: '1rem', lineHeight: '1.6' }}>{hints[currentHintLevel - 1]}</div>
         </div>
       )}
 
