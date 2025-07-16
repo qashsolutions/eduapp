@@ -19,9 +19,21 @@ export default function QuestionCard({
   const [hints, setHints] = useState([]);
   const [currentHintLevel, setCurrentHintLevel] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
-  const [startTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
   const [isLoadingHint, setIsLoadingHint] = useState(false);
   const MAX_HINTS = 4;
+  
+  // Reset state when question changes
+  useEffect(() => {
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setIsCorrect(false);
+    setHints([]);
+    setCurrentHintLevel(0);
+    setHintsUsed(0);
+    setIsLoadingHint(false);
+    setStartTime(Date.now()); // Reset timer for new question
+  }, [question]);
 
 
   const handleAnswerSelect = (option) => {

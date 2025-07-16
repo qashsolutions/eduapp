@@ -381,23 +381,38 @@ async function getQuestionFromCache(userId, topic, difficulty, grade, mood) {
     
     // Transform the question to match expected format
     const questionData = selectedQuestion.question;
-    const transformedQuestion = {
-      question: questionData.question_text,
-      options: {},
-      correct: null,
-      explanation: questionData.explanation || selectedQuestion.answer_explanation,
-      context: questionData.context || ''
-    };
+    let transformedQuestion;
     
-    // Convert array options to object format (A, B, C, D)
-    if (Array.isArray(questionData.options)) {
-      questionData.options.forEach((option, index) => {
-        const letter = String.fromCharCode(65 + index); // A, B, C, D
-        transformedQuestion.options[letter] = option;
-        if (option === questionData.correct_answer) {
-          transformedQuestion.correct = letter;
-        }
-      });
+    // Handle both comprehension format and regular format
+    if (questionData.question && typeof questionData.options === 'object' && !Array.isArray(questionData.options)) {
+      // Comprehension format (already has proper structure)
+      transformedQuestion = {
+        question: questionData.question,
+        options: questionData.options,
+        correct: questionData.correct,
+        explanation: questionData.explanation || selectedQuestion.answer_explanation,
+        context: questionData.context || ''
+      };
+    } else {
+      // Regular format (needs transformation)
+      transformedQuestion = {
+        question: questionData.question_text,
+        options: {},
+        correct: null,
+        explanation: questionData.explanation || selectedQuestion.answer_explanation,
+        context: questionData.context || ''
+      };
+      
+      // Convert array options to object format (A, B, C, D)
+      if (Array.isArray(questionData.options)) {
+        questionData.options.forEach((option, index) => {
+          const letter = String.fromCharCode(65 + index); // A, B, C, D
+          transformedQuestion.options[letter] = option;
+          if (option === questionData.correct_answer) {
+            transformedQuestion.correct = letter;
+          }
+        });
+      }
     }
     
     return {
@@ -490,26 +505,44 @@ async function getBatchFromCache(userId, topic, difficulty, grade, mood) {
     // Format for batch response
     return selectedQuestions.map((q, index) => {
       const questionData = q.question;
-      const transformedQuestion = {
-        question: questionData.question_text,
-        options: {},
-        correct: null,
-        explanation: questionData.explanation || q.answer_explanation,
-        context: questionData.context || '',
-        hash: q.question_hash,
-        difficulty,
-        position: index + 1
-      };
+      // Handle both comprehension format and regular format
+      let transformedQuestion;
       
-      // Convert array options to object format (A, B, C, D)
-      if (Array.isArray(questionData.options)) {
-        questionData.options.forEach((option, idx) => {
-          const letter = String.fromCharCode(65 + idx); // A, B, C, D
-          transformedQuestion.options[letter] = option;
-          if (option === questionData.correct_answer) {
-            transformedQuestion.correct = letter;
-          }
-        });
+      if (questionData.question && typeof questionData.options === 'object' && !Array.isArray(questionData.options)) {
+        // Comprehension format (already has proper structure)
+        transformedQuestion = {
+          question: questionData.question,
+          options: questionData.options,
+          correct: questionData.correct,
+          explanation: questionData.explanation || q.answer_explanation,
+          context: questionData.context || '',
+          questionHash: q.question_hash, // Use questionHash consistently
+          difficulty,
+          position: index + 1
+        };
+      } else {
+        // Regular format (needs transformation)
+        transformedQuestion = {
+          question: questionData.question_text,
+          options: {},
+          correct: null,
+          explanation: questionData.explanation || q.answer_explanation,
+          context: questionData.context || '',
+          questionHash: q.question_hash, // Use questionHash consistently
+          difficulty,
+          position: index + 1
+        };
+        
+        // Convert array options to object format (A, B, C, D)
+        if (Array.isArray(questionData.options)) {
+          questionData.options.forEach((option, idx) => {
+            const letter = String.fromCharCode(65 + idx); // A, B, C, D
+            transformedQuestion.options[letter] = option;
+            if (option === questionData.correct_answer) {
+              transformedQuestion.correct = letter;
+            }
+          });
+        }
       }
       
       return transformedQuestion;

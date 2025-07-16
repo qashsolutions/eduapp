@@ -327,7 +327,8 @@ export default function Dashboard() {
             topic: topic,
             difficulty: data.questions[0].difficulty,
             proficiency: data.currentProficiency,
-            fromCache: data.fromCache
+            fromCache: data.fromCache,
+            questionHash: data.questions[0].questionHash || data.questions[0].hash // Handle both property names
           });
           
           // Start timer
@@ -521,7 +522,8 @@ export default function Dashboard() {
         ...nextQuestion,
         topic: selectedTopic,
         difficulty: nextQuestion.difficulty,
-        proficiency: nextQuestion.proficiency || getProficiency(selectedTopic)
+        proficiency: nextQuestion.proficiency || getProficiency(selectedTopic),
+        questionHash: nextQuestion.questionHash || nextQuestion.hash // Handle both property names
       });
       
       // Reset timer for next question
