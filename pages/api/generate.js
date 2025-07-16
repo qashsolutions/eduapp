@@ -120,7 +120,8 @@ async function getQuestionFromCache(userId, topic, difficulty, grade, mood) {
     // Filter out answered questions
     if (answeredHashes.length > 0) {
       console.log('[getQuestionFromCache] Applying answered filter with', answeredHashes.length, 'hashes');
-      query = query.not('question_hash', 'in', answeredHashes);
+      // Use filter syntax for not in array
+      query = query.filter('question_hash', 'not.in', `(${answeredHashes.map(h => `"${h}"`).join(',')})`);
     }
     
     // Get up to 10 questions and randomly select one
@@ -235,7 +236,8 @@ async function getBatchFromCache(userId, topic, difficulty, grade, mood) {
     }
     
     if (answeredHashes.length > 0) {
-      query = query.not('question_hash', 'in', `(${answeredHashes.join(',')})`);
+      // Use filter syntax for not in array
+      query = query.filter('question_hash', 'not.in', `(${answeredHashes.map(h => `"${h}"`).join(',')})`);
     }
     
     const { data: availableQuestions, error } = await query.limit(100);
