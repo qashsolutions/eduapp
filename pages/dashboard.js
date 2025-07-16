@@ -344,13 +344,14 @@ export default function Dashboard() {
           
           setCurrentQuestion({
             ...data.question,
+            questionHash: data.questionHash,
             topic: topic,
             difficulty: data.difficulty,
             proficiency: data.currentProficiency,
             fromCache: data.fromCache
           });
           
-          setQuestionBatch([data.question]);
+          setQuestionBatch([{...data.question, questionHash: data.questionHash}]);
           setCurrentQuestionIndex(0);
           
           // Set timer
@@ -664,11 +665,12 @@ export default function Dashboard() {
           }
         } else if (data.question) {
           // Single question response
-          setQuestionBatch([data.question]);
+          setQuestionBatch([{...data.question, questionHash: data.questionHash}]);
           setCurrentQuestionIndex(0);
           
           setCurrentQuestion({
             ...data.question,
+            questionHash: data.questionHash,
             topic: nextTopic,
             difficulty: data.difficulty,
             proficiency: data.currentProficiency,
