@@ -74,6 +74,211 @@ function getTimerDuration(grade) {
 }
 
 /**
+ * Determine next topic based on session flow
+ * Flow: 2 comprehension passages → 3-5 of each other topic
+ */
+async function getNextTopicForSession(sessionId, userId, requestedTopic, mood) {
+  // Get session flow state
+  const { data: session, error } = await supabase
+    .from('study_sessions')
+    .select('*')
+    .eq('id', sessionId)
+    .eq('student_id', userId)
+    .single();
+  
+  if (error || !session) {
+    console.log('[Flow] No session found, using requested topic:', requestedTopic);
+    return requestedTopic;
+  }
+  
+  const {
+    current_flow_stage,
+    comprehension_sets_completed,
+    vocabulary_completed,
+    synonyms_completed,
+    antonyms_completed,
+    grammar_completed,
+    sentences_completed,
+    fill_blanks_completed
+  } = session;
+  
+  console.log('[Flow] Current stage:', current_flow_stage, 'Comprehension sets:', comprehension_sets_completed);
+  
+  // Stage 1: Comprehension (2 passages)
+  if (current_flow_stage === 'comprehension' && comprehension_sets_completed < 2) {
+    return 'english_comprehension';
+  }
+  
+  // Transition to topic rotation after 2 comprehension sets
+  if (current_flow_stage === 'comprehension' && comprehension_sets_completed >= 2) {
+    await supabase
+      .from('study_sessions')
+      .update({ current_flow_stage: 'topic_rotation' })
+      .eq('id', sessionId);
+  }
+  
+  // Stage 2: Topic rotation (3-5 questions each)
+  if (current_flow_stage === 'topic_rotation' || comprehension_sets_completed >= 2) {
+    const topics = [
+      { name: 'english_vocabulary', completed: vocabulary_completed, min: 3, max: 5 },
+      { name: 'english_synonyms', completed: synonyms_completed, min: 3, max: 5 },
+      { name: 'english_antonyms', completed: antonyms_completed, min: 3, max: 5 },
+      { name: 'english_grammar', completed: grammar_completed, min: 3, max: 5 },
+      { name: 'english_sentences', completed: sentences_completed, min: 3, max: 5 },
+      { name: 'english_fill_blanks', completed: fill_blanks_completed, min: 3, max: 5 }
+    ];
+    
+    // Find next topic that hasn't reached minimum
+    for (const topic of topics) {
+      if (topic.completed < topic.min) {
+        console.log('[Flow] Next topic:', topic.name, 'Completed:', topic.completed);
+        return topic.name;
+      }
+    }
+    
+    // All topics have minimum, check if any want more (up to max)
+    for (const topic of topics) {
+      if (topic.completed < topic.max) {
+        return topic.name;
+      }
+    }
+    
+    // All complete - mark session as completed and restart cycle
+    await supabase
+      .from('study_sessions')
+      .update({ 
+        current_flow_stage: 'completed',
+        comprehension_sets_completed: 0,
+        vocabulary_completed: 0,
+        synonyms_completed: 0,
+        antonyms_completed: 0,
+        grammar_completed: 0,
+        sentences_completed: 0,
+        fill_blanks_completed: 0
+      })
+      .eq('id', sessionId);
+    
+    return 'english_comprehension'; // Start new cycle
+  }
+  
+  // Default to requested topic
+  return requestedTopic;
+}
+
+/**
+ * Try alternative topics when primary topic has no questions
+ * Returns next available topic based on session flow priorities
+ */
+async function getFallbackTopic(sessionId, userId, attemptedTopic, attemptedTopics = []) {
+  const allTopics = [
+    'english_vocabulary',
+    'english_synonyms', 
+    'english_antonyms',
+    'english_grammar',
+    'english_sentences',
+    'english_fill_blanks',
+    'english_comprehension'
+  ];
+  
+  // Track attempted topics to avoid infinite loop
+  const tried = new Set([...attemptedTopics, attemptedTopic]);
+  
+  // If we have a session, try topics in flow order
+  if (sessionId) {
+    const { data: session } = await supabase
+      .from('study_sessions')
+      .select('*')
+      .eq('id', sessionId)
+      .eq('student_id', userId)
+      .single();
+    
+    if (session) {
+      // Priority order based on what needs completion
+      const priorities = [
+        { name: 'english_vocabulary', completed: session.vocabulary_completed },
+        { name: 'english_synonyms', completed: session.synonyms_completed },
+        { name: 'english_antonyms', completed: session.antonyms_completed },
+        { name: 'english_grammar', completed: session.grammar_completed },
+        { name: 'english_sentences', completed: session.sentences_completed },
+        { name: 'english_fill_blanks', completed: session.fill_blanks_completed }
+      ];
+      
+      // Sort by least completed first
+      priorities.sort((a, b) => a.completed - b.completed);
+      
+      // Try topics in priority order
+      for (const topic of priorities) {
+        if (!tried.has(topic.name)) {
+          console.log('[Fallback] Trying alternative topic:', topic.name);
+          return topic.name;
+        }
+      }
+    }
+  }
+  
+  // No session or all prioritized topics tried - try any remaining topic
+  for (const topic of allTopics) {
+    if (!tried.has(topic)) {
+      console.log('[Fallback] Trying any available topic:', topic);
+      return topic;
+    }
+  }
+  
+  return null; // All topics exhausted
+}
+
+/**
+ * Update session counters after successful question delivery
+ */
+async function updateSessionCounters(sessionId, topic, isBatch = false) {
+  if (!sessionId) return;
+  
+  const columnMap = {
+    'english_comprehension': 'comprehension_sets_completed',
+    'english_vocabulary': 'vocabulary_completed',
+    'english_synonyms': 'synonyms_completed',
+    'english_antonyms': 'antonyms_completed',
+    'english_grammar': 'grammar_completed',
+    'english_sentences': 'sentences_completed',
+    'english_fill_blanks': 'fill_blanks_completed'
+  };
+  
+  const column = columnMap[topic];
+  if (!column) return;
+  
+  // For comprehension, we count sets/batches, for others we count individual questions
+  // This increment happens when question is delivered, not when answered
+  const increment = (topic === 'english_comprehension' && isBatch) ? 1 : 0;
+  
+  if (increment > 0) {
+    const { error } = await supabase.rpc('increment', {
+      table_name: 'study_sessions',
+      column_name: column,
+      row_id: sessionId,
+      increment_value: increment
+    });
+    
+    if (error) {
+      // Fallback to manual update if RPC doesn't exist
+      const { data: current } = await supabase
+        .from('study_sessions')
+        .select(column)
+        .eq('id', sessionId)
+        .single();
+      
+      if (current) {
+        await supabase
+          .from('study_sessions')
+          .update({ [column]: (current[column] || 0) + increment })
+          .eq('id', sessionId);
+      }
+    }
+    
+    console.log('[Session] Updated', column, '+', increment);
+  }
+}
+
+/**
  * Retrieve question from cache based on user's proficiency and history
  * This replaces the AI generation logic
  */
@@ -381,30 +586,12 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'User not found' });
       }
 
-      // Check if we need to force a grammar question
+      // Get the appropriate topic based on session flow
       let actualTopic = topic;
-      let forcedGrammar = false;
       
       if (sessionId) {
-        // Get current session to check question count
-        const { data: sessionData, error: sessionError } = await supabase
-          .from('study_sessions')
-          .select('questions_in_session, grammar_interval')
-          .eq('id', sessionId)
-          .eq('student_id', userId)
-          .single();
-        
-        if (!sessionError && sessionData) {
-          const { questions_in_session = 0, grammar_interval = 3 } = sessionData;
-          
-          // Check if it's time for a grammar question (every 3rd question by default)
-          // Note: questions_in_session starts at 0, so we check (count + 1) % interval
-          if ((questions_in_session + 1) % grammar_interval === 0) {
-            actualTopic = 'english_grammar';
-            forcedGrammar = true;
-            console.log(`Forcing grammar question for session ${sessionId}, question #${questions_in_session + 1}`);
-          }
-        }
+        actualTopic = await getNextTopicForSession(sessionId, userId, topic, mood);
+        console.log('[Flow] Topic override:', topic, '->', actualTopic);
       }
 
       // Get current proficiency and map to difficulty
@@ -415,30 +602,49 @@ export default async function handler(req, res) {
       // NEW: Get timer duration based on grade
       const timerDuration = getTimerDuration(grade);
       
-      try {
-        // Get question from cache with potentially forced grammar topic
-        const cachedData = await getQuestionFromCache(userId, actualTopic, difficulty, grade, mood);
-        
-        // Basic existence check
-        if (!cachedData.question) {
-          throw new Error('No question data found');
+      // Try to get question with fallback logic
+      let cachedData = null;
+      let finalTopic = actualTopic;
+      const attemptedTopics = [];
+      
+      while (!cachedData && finalTopic) {
+        try {
+          console.log('[Generate] Attempting topic:', finalTopic);
+          cachedData = await getQuestionFromCache(userId, finalTopic, difficulty, grade, mood);
+          
+          // Basic existence check
+          if (!cachedData.question) {
+            throw new Error('No question data found');
+          }
+          
+          // Success - no need to update counters here, we update when answered
+          
+        } catch (error) {
+          console.log('[Generate] Failed to get question for topic:', finalTopic, error.message);
+          attemptedTopics.push(finalTopic);
+          
+          // Try fallback topic
+          finalTopic = await getFallbackTopic(sessionId, userId, finalTopic, attemptedTopics);
+          
+          if (!finalTopic) {
+            console.error('All topics exhausted, no questions available');
+            return res.status(500).json({ 
+              error: 'No questions available. Please try a different topic or contact support.',
+              details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+          }
         }
-        
-        return res.status(200).json({
-          question: cachedData.question,
-          difficulty,
-          currentProficiency,
-          questionHash: cachedData.questionHash,
-          timerDuration, // NEW: Include timer duration
-          fromCache: true // NEW: Indicate this came from cache
-        });
-      } catch (error) {
-        console.error('Failed to get question from cache:', error);
-        return res.status(500).json({ 
-          error: 'No questions available. Please try a different topic or contact support.',
-          details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
       }
+      
+      return res.status(200).json({
+        question: cachedData.question,
+        difficulty,
+        currentProficiency: user[finalTopic] || 5,
+        questionHash: cachedData.questionHash,
+        timerDuration,
+        fromCache: true,
+        actualTopic: finalTopic // Include actual topic used
+      });
     }
 
     /**
@@ -480,6 +686,11 @@ export default async function handler(req, res) {
         
         // Generate batch ID for tracking
         const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+        
+        // Update session counter for comprehension batch
+        if (sessionId && topic === 'english_comprehension') {
+          await updateSessionCounters(sessionId, topic, true);
+        }
         
         return res.status(200).json({
           questions,
@@ -741,7 +952,7 @@ export default async function handler(req, res) {
         }
       }
 
-      // Increment questions_in_session counter if we have a session
+      // Increment questions_in_session counter and topic counter if we have a session
       if (sessionId) {
         // First get current count
         const { data: sessionData } = await supabase
@@ -761,6 +972,35 @@ export default async function handler(req, res) {
           })
           .eq('id', sessionId)
           .eq('student_id', userId);
+        
+        // Update topic-specific counter (for non-comprehension topics)
+        // Comprehension is counted when batch is delivered, not per question
+        if (topic !== 'english_comprehension') {
+          const columnMap = {
+            'english_vocabulary': 'vocabulary_completed',
+            'english_synonyms': 'synonyms_completed',
+            'english_antonyms': 'antonyms_completed',
+            'english_grammar': 'grammar_completed',
+            'english_sentences': 'sentences_completed',
+            'english_fill_blanks': 'fill_blanks_completed'
+          };
+          
+          const column = columnMap[topic];
+          if (column) {
+            const { data: current } = await supabase
+              .from('study_sessions')
+              .select(column)
+              .eq('id', sessionId)
+              .single();
+            
+            if (current) {
+              await supabase
+                .from('study_sessions')
+                .update({ [column]: (current[column] || 0) + 1 })
+                .eq('id', sessionId);
+            }
+          }
+        }
       }
 
       // Update proficiency
