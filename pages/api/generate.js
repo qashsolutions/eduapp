@@ -110,7 +110,7 @@ async function getQuestionFromCache(userId, topic, difficulty, grade, mood) {
     
     // Filter out answered questions
     if (answeredHashes.length > 0) {
-      query = query.not('question_hash', 'in', `(${answeredHashes.join(',')})`);
+      query = query.not('question_hash', 'in', answeredHashes);
     }
     
     // Get up to 10 questions and randomly select one
