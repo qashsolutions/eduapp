@@ -79,6 +79,8 @@ function getTimerDuration(grade) {
  * This replaces the AI generation logic
  */
 async function getQuestionFromCache(userId, topic, difficulty, grade, mood) {
+  console.log('[getQuestionFromCache] Starting with params:', { userId, topic, difficulty, grade, mood });
+  
   try {
     // First, get user's answered question hashes to avoid duplicates
     const { data: userData, error: userError } = await supabase
@@ -88,10 +90,15 @@ async function getQuestionFromCache(userId, topic, difficulty, grade, mood) {
       .single();
     
     if (userError) {
-      console.error('Error fetching user data:', userError);
+      console.error('[getQuestionFromCache] Error fetching user data:', userError);
     }
     
     const answeredHashes = userData?.answered_question_hashes || [];
+    console.log('[getQuestionFromCache] User answered hashes:', {
+      count: answeredHashes.length,
+      type: Array.isArray(answeredHashes) ? 'array' : typeof answeredHashes,
+      sample: answeredHashes.slice(0, 3)
+    });
     
     // Query question_cache for matching questions
     // Filter out questions the user has already answered
@@ -103,27 +110,47 @@ async function getQuestionFromCache(userId, topic, difficulty, grade, mood) {
       .eq('difficulty', difficulty)
       .is('expires_at', null); // Only permanent questions
     
+    console.log('[getQuestionFromCache] Base query built for:', { topic, grade, difficulty });
+    
     // Add mood filter if provided
     if (mood) {
       query = query.eq('mood', mood);
+      console.log('[getQuestionFromCache] Added mood filter:', mood);
     }
     
     // Filter out answered questions
     if (answeredHashes.length > 0) {
+      console.log('[getQuestionFromCache] Applying answered filter with', answeredHashes.length, 'hashes');
       query = query.not('question_hash', 'in', answeredHashes);
     }
     
     // Get up to 10 questions and randomly select one
+    console.log('[getQuestionFromCache] Executing query...');
     const { data: questions, error } = await query.limit(10);
     
     if (error) {
-      console.error('Error fetching questions from cache:', error);
-      throw new Error('Failed to fetch questions from cache');
+      console.error('[getQuestionFromCache] Query error:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
+      throw new Error(`Failed to fetch questions from cache: ${error.message}`);
     }
     
+    console.log('[getQuestionFromCache] Query result:', {
+      questionsFound: questions?.length || 0,
+      topic,
+      grade,
+      difficulty,
+      mood
+    });
+    
     if (!questions || questions.length === 0) {
+      console.log('[getQuestionFromCache] No questions found, trying fallback strategies...');
       // Try without mood filter if no questions found
       if (mood) {
+        console.log('[getQuestionFromCache] Retrying without mood filter');
         return getQuestionFromCache(userId, topic, difficulty, grade, null);
       }
       
