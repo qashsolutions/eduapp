@@ -15,7 +15,6 @@
  * @version 2.0.0 - Cache-based
  */
 
-import { validateQuestion } from '../../lib/ai-service';
 import { getUser, updateUserProficiency, logQuestionAttempt } from '../../lib/db';
 import { mapProficiencyToDifficulty, updateProficiency } from '../../lib/utils';
 import { validateAuth } from '../../lib/authMiddleware';
@@ -418,9 +417,9 @@ export default async function handler(req, res) {
         // Get question from cache with potentially forced grammar topic
         const cachedData = await getQuestionFromCache(userId, actualTopic, difficulty, grade, mood);
         
-        // Validate the cached question format
-        if (!validateQuestion(cachedData.question, actualTopic, grade)) {
-          throw new Error('Invalid question format from cache');
+        // Basic existence check
+        if (!cachedData.question) {
+          throw new Error('No question data found');
         }
         
         return res.status(200).json({
