@@ -274,7 +274,7 @@ export default function Dashboard() {
           'Authorization': authHeader
         },
         body: JSON.stringify({
-          action: (topic === 'english_comprehension' || topic === 'english_sentences') ? 'generate-batch' : 'generate', // Use batch for comprehension and sentences
+          action: topic === 'english_comprehension' ? 'generate-batch' : 'generate', // Only use batch for comprehension
           userId: user.id,
           topic: topic,
           mood: selectedMood,
