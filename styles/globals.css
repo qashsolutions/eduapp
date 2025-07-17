@@ -407,6 +407,12 @@ label {
   position: relative;
 }
 
+.page-wrapper .container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .welcome-card {
   max-width: 600px;
 }
@@ -682,4 +688,9 @@ label {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* Footer positioning */
+footer {
+  margin-top: auto;
 }

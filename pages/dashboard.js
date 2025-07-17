@@ -1063,7 +1063,7 @@ export default function Dashboard() {
           {showWelcome && !selectedTopic ? (
             <div className="flex justify-center items-center min-h-500 p-xl">
               <div className="glass card text-center max-w-600">
-                <h1 className="mb-xl">Welcome back, {user?.name || 'Student'}!</h1>
+                <h1 className="mb-xl">Welcome back, {user?.first_name || 'Student'}!</h1>
                 
                 {/* Show previous session summary if exists */}
                 {sessionStats.totalQuestions > 0 ? (
