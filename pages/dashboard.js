@@ -1215,9 +1215,7 @@ export default function Dashboard() {
                 />
               )}
             </div>
-          )}
-
-
+          ) : null}
         </div>
         <Footer />
       </div>
