@@ -749,9 +749,12 @@ export default async function handler(req, res) {
             console.error('[Generate] Fallback also failed:', fallbackError);
           }
           
-          return res.status(500).json({ 
-            error: 'Failed to generate mixed session', 
-            message: 'No questions available in cache. Please contact support.' 
+          // Return user-friendly error when no questions are available
+          return res.status(503).json({ 
+            error: 'Questions temporarily unavailable', 
+            message: 'We are currently updating our question database. Please try again in a few minutes, or contact support if the issue persists.',
+            userMessage: 'Questions are being updated. Please try again shortly.',
+            showRetry: true
           });
         }
       }

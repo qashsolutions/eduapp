@@ -436,6 +436,14 @@ export default function Dashboard() {
           message: errorData.error || errorData.message
         });
         
+        // Handle specific error cases
+        if (response.status === 503 && errorData.userMessage) {
+          // Show user-friendly message for service unavailable
+          alert(errorData.userMessage);
+          setGenerating(false);
+          return;
+        }
+        
         // Try single question if batch fails
         log('API', 'Batch failed, trying single question');
         
@@ -492,6 +500,8 @@ export default function Dashboard() {
       // Handle network errors gracefully
       if (error.message === 'Failed to fetch' || error.name === 'NetworkError') {
         alert('Network connection issue. Please check your internet connection and try again.');
+      } else if (error.message.includes('Unexpected token') && error.message.includes('DOCTYPE')) {
+        alert('Service temporarily unavailable. Please try again in a few minutes.');
       } else {
         alert(error.message || 'Failed to generate questions. Please try again.');
       }
