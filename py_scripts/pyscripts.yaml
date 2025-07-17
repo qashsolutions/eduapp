@@ -1,0 +1,18 @@
+ Navigate to your project directory
+cd /Users/cvr/Documents/Project/EduApp
+
+# Create virtual environment
+python3 -m venv eduapp_env
+
+# Activate it
+source eduapp_env/bin/activate
+
+# Your prompt should now show (eduapp_env)
+# Install all required packages
+pip install python-dotenv nltk supabase requests
+
+# Run your script
+python vocabulary_generator_large.py
+
+# When finished, deactivate
+deactivate

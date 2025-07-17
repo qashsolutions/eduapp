@@ -3,12 +3,11 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import MoodSelector from '../components/MoodSelector';
 import ProgressBar from '../components/ProgressBar';
 import QuestionCard from '../components/QuestionCard';
 import { useAuth } from '../lib/AuthContext';
 import { getUser, getSessionStats } from '../lib/db';
-import { MOOD_TOPICS, formatTopicName, getCachedProficiency, setCachedProficiency, mapProficiencyToDifficulty } from '../lib/utils';
+import { formatTopicName, getCachedProficiency, setCachedProficiency, mapProficiencyToDifficulty } from '../lib/utils';
 import { retrieveSessionData, storeSessionData, checkSessionExpiry } from '../lib/studentSession';
 import { questionRateLimiter } from '../lib/rateLimiter';
 
@@ -24,8 +23,7 @@ const log = (category, message, data = null) => {
 export default function Dashboard() {
   const router = useRouter();
   const { user, loading: authLoading, isAuthenticated, getSession } = useAuth();
-  const [selectedMood, setSelectedMood] = useState('creative');
-  const [selectedTopic, setSelectedTopic] = useState(null);
+  const [selectedTopic, setSelectedTopic] = useState('mixed_session');
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -34,7 +32,10 @@ export default function Dashboard() {
   const [questionBatch, setQuestionBatch] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [batchId, setBatchId] = useState(null);
-  const [topicQuestionCount, setTopicQuestionCount] = useState(0);
+  const [sessionQuestionCount, setSessionQuestionCount] = useState(0);
+  const [totalSessionQuestions, setTotalSessionQuestions] = useState(30);
+  const [sessionStartTime, setSessionStartTime] = useState(null);
+  const [sessionTimeRemaining, setSessionTimeRemaining] = useState(1800); // 30 minutes
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [currentHintsUsed, setCurrentHintsUsed] = useState(0);
   
@@ -58,7 +59,7 @@ export default function Dashboard() {
     'english_comprehension'
   ];
 
-  // Timer effect
+  // Timer effect for individual questions
   useEffect(() => {
     let interval;
     
@@ -80,6 +81,26 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [timerActive, timeRemaining]);
 
+  // Session timer effect
+  useEffect(() => {
+    let interval;
+    
+    if (sessionStartTime && sessionTimeRemaining > 0 && currentQuestion) {
+      interval = setInterval(() => {
+        setSessionTimeRemaining(prev => {
+          if (prev <= 1) {
+            log('SESSION', 'Session time expired - ending session');
+            handleSessionTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    
+    return () => clearInterval(interval);
+  }, [sessionStartTime, sessionTimeRemaining, currentQuestion]);
+
   // Handle timer expiration
   const handleTimerExpired = () => {
     log('TIMER', 'Timer expired, forcing answer submission');
@@ -91,10 +112,28 @@ export default function Dashboard() {
     }
   };
 
+  // Handle session time up
+  const handleSessionTimeUp = () => {
+    log('SESSION', 'Session time expired, showing analytics');
+    // End session and show analytics
+    handleShowAnalytics();
+  };
+
+  // Show analytics screen
+  const handleShowAnalytics = () => {
+    setSelectedTopic('analytics');
+    // Analytics will be implemented next
+  };
+
   useEffect(() => {
     log('AUTH', 'Auth state changed', { authLoading, isAuthenticated, userId: user?.id });
     
     if (!authLoading && isAuthenticated && user) {
+      // Auto-start mixed session for students
+      if (user.role === 'student' && selectedTopic === 'mixed_session' && !currentQuestion && !generating) {
+        handleAutoStartSession();
+      }
+      
       // Load session stats when user is available
       getSessionStats(user.id).then(stats => {
         log('SESSION', 'Session stats loaded', stats);
@@ -149,11 +188,16 @@ export default function Dashboard() {
   }, [user, authLoading, isAuthenticated]);
 
   const handleTopicSelect = async (topic) => {
-    log('TOPIC', 'Topic selected', { topic, mood: selectedMood, userId: user?.id });
-    console.log('Topic selected:', topic);
-    console.log('Available topics for mood:', selectedMood, MOOD_TOPICS[selectedMood]);
+    log('TOPIC', 'Session started', { topic, userId: user?.id });
     
-    // Reset learning flow state when starting a new topic
+    // For mixed session, reset all counters
+    if (topic === 'mixed_session') {
+      setSessionQuestionCount(0);
+      setSessionStartTime(Date.now());
+      setSessionTimeRemaining(1800); // 30 minutes
+    }
+    
+    // Reset learning flow state when starting a new session
     setComprehensionPassagesCompleted(0);
     setGrammarQuestionsCompleted(0);
     setIsInGrammarMode(false);
@@ -262,8 +306,7 @@ export default function Dashboard() {
       log('API', 'Calling generate API', { 
         endpoint: '/api/generate',
         action: 'generate-batch',
-        topic,
-        mood: selectedMood 
+        topic
       });
       
       // UPDATED: Use cache-based API endpoint
@@ -277,7 +320,6 @@ export default function Dashboard() {
           action: topic === 'english_comprehension' ? 'generate-batch' : 'generate', // Only use batch for comprehension
           userId: user.id,
           topic: topic,
-          mood: selectedMood,
           sessionId: currentSessionId
         })
       });
@@ -310,21 +352,27 @@ export default function Dashboard() {
         
         // UPDATED: Handle cache-based response
         if (data.questions && data.questions.length > 0) {
-          // Multiple questions (reading comprehension)
-          log('QUESTIONS', 'Setting batch questions', { count: data.questions.length });
+          // Multiple questions (mixed session or reading comprehension)
+          log('QUESTIONS', 'Setting session questions', { count: data.questions.length });
           
           setQuestionBatch(data.questions);
           setBatchId(data.batchId);
           setCurrentQuestionIndex(0);
           
+          // For mixed session, update total questions
+          if (data.sessionType === 'mixed') {
+            setTotalSessionQuestions(data.questions.length);
+            setSessionQuestionCount(0);
+          }
+          
           // Set timer duration from API response
-          setTimerDuration(data.timerDuration || 60);
-          setTimeRemaining(data.timerDuration || 60);
+          setTimerDuration(data.timerDuration || 45);
+          setTimeRemaining(data.timerDuration || 45);
           
           // Set first question as current
           setCurrentQuestion({
             ...data.questions[0],
-            topic: topic,
+            topic: data.questions[0].topic || topic,
             difficulty: data.questions[0].difficulty,
             proficiency: data.currentProficiency,
             fromCache: data.fromCache,
@@ -336,9 +384,6 @@ export default function Dashboard() {
           
           // Reset hints tracking
           setCurrentHintsUsed(0);
-          
-          // Update question count
-          setTopicQuestionCount(0);
         } else if (data.question) {
           // Single question fallback
           log('QUESTIONS', 'Setting single question');
@@ -380,8 +425,7 @@ export default function Dashboard() {
             action: 'generate', // Single question
             userId: user.id,
             topic: topic,
-            mood: selectedMood,
-            sessionId: currentSessionId
+              sessionId: currentSessionId
           })
         });
         
@@ -507,22 +551,24 @@ export default function Dashboard() {
     log('NAVIGATION', 'Next button clicked', { 
       currentIndex: currentQuestionIndex,
       batchLength: questionBatch.length,
-      topicCount: topicQuestionCount 
+      sessionCount: sessionQuestionCount 
     });
+    
+    // Update session question count
+    setSessionQuestionCount(prev => prev + 1);
     
     // Check if we have more questions in the current batch
     if (currentQuestionIndex < questionBatch.length - 1) {
       // Move to next question in batch
       const nextIndex = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextIndex);
-      setTopicQuestionCount(topicQuestionCount + 1);
       
       const nextQuestion = questionBatch[nextIndex];
       setCurrentQuestion({
         ...nextQuestion,
-        topic: selectedTopic,
+        topic: nextQuestion.topic || selectedTopic,
         difficulty: nextQuestion.difficulty,
-        proficiency: nextQuestion.proficiency || getProficiency(selectedTopic),
+        proficiency: nextQuestion.proficiency || 5,
         questionHash: nextQuestion.questionHash || nextQuestion.hash // Handle both property names
       });
       
@@ -530,8 +576,14 @@ export default function Dashboard() {
       setTimeRemaining(timerDuration);
       setTimerActive(true);
       
-      log('NAVIGATION', 'Moved to next question in batch', { nextIndex });
-      console.log(`Moving to question ${nextIndex + 1} of ${questionBatch.length} in current passage`);
+      log('NAVIGATION', 'Moved to next question in session', { nextIndex, sessionCount: sessionQuestionCount + 1 });
+      return;
+    }
+    
+    // Check if session is complete (30 questions or time up)
+    if (sessionQuestionCount + 1 >= totalSessionQuestions) {
+      log('SESSION', 'Session completed - showing analytics');
+      handleShowAnalytics();
       return;
     }
     
@@ -632,7 +684,6 @@ export default function Dashboard() {
           action: nextTopic === 'english_comprehension' ? 'generate-batch' : 'generate',
           userId: user.id,
           topic: nextTopic,
-          mood: selectedMood, // Maintain the same mood
           sessionId: currentSessionId
         })
       });
@@ -826,8 +877,20 @@ export default function Dashboard() {
     setTimerActive(false);
   };
 
-  const getAvailableTopics = () => {
-    return MOOD_TOPICS[selectedMood] || [];
+  // Auto-start mixed session - no topic selection needed
+  const handleAutoStartSession = async () => {
+    if (!user || !user.id || selectedTopic !== 'mixed_session') return;
+    
+    log('SESSION', 'Auto-starting mixed session for student');
+    setSessionStartTime(Date.now());
+    setGenerating(true);
+    
+    try {
+      // Start mixed session
+      await handleTopicSelect('mixed_session');
+    } catch (error) {
+      log('ERROR', 'Failed to auto-start session', error);
+    }
   };
 
   const getProficiency = (topic) => {
@@ -841,9 +904,9 @@ export default function Dashboard() {
 
   if (authLoading || loading) {
     return (
-      <div className="loading-container">
-        <div className="logo">Socratic Learning ✨</div>
-        <div className="loading-text">Loading your learning journey...</div>
+      <div className="flex flex-col items-center justify-center gap-lg" style={{ minHeight: '100vh' }}>
+        <h1 className="text-center">Socratic Learning ✨</h1>
+        <p className="text-secondary text-center animate-fadeIn">Loading your learning journey...</p>
       </div>
     );
   }
@@ -920,100 +983,206 @@ export default function Dashboard() {
       </Head>
       
       {/* Dynamic meta tags for when user is in a topic */}
-      {selectedTopic && (
+      {selectedTopic && selectedTopic !== 'mixed_session' && selectedTopic !== 'analytics' && (
         <Head>
           <title>Socratic Learning - Learning {formatTopicName(selectedTopic)} | Level {getProficiency(selectedTopic).toFixed(1)}</title>
           <meta name="description" content={`Practice ${formatTopicName(selectedTopic)} with AI-generated questions. Currently at level ${getProficiency(selectedTopic).toFixed(1)}/9.`} />
         </Head>
       )}
       
-      <div className="page-wrapper">
-        {/* Morphing Background */}
-        <div className="bg-morphing"></div>
+      {selectedTopic === 'mixed_session' && (
+        <Head>
+          <title>Socratic Learning - Mixed Learning Session</title>
+          <meta name="description" content="Practice with a mix of reading comprehension, vocabulary, grammar, and more in a 30-minute session." />
+        </Head>
+      )}
+      
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        {/* Paper texture background */}
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: `
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 1px,
+              rgba(0, 0, 0, 0.03) 1px,
+              rgba(0, 0, 0, 0.03) 2px
+            ),
+            repeating-linear-gradient(
+              90deg,
+              transparent,
+              transparent 1px,
+              rgba(0, 0, 0, 0.02) 1px,
+              rgba(0, 0, 0, 0.02) 2px
+            )
+          `,
+          pointerEvents: 'none',
+          zIndex: 1,
+          opacity: 0.4
+        }}></div>
         
         <Header />
         
         {/* Session expiry warning for students */}
         {showExpiryWarning && user?.role === 'student' && (
-          <div className="expiry-warning">
-            <p>⚠️ Your session will expire in less than 5 minutes. Please save your work!</p>
-            <button onClick={() => setShowExpiryWarning(false)} className="dismiss-btn">Dismiss</button>
+          <div className="animate-slideIn" style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            background: 'linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%)',
+            color: 'white',
+            padding: '1rem 2rem',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <p className="font-medium">⚠️ Your session will expire in less than 5 minutes. Please save your work!</p>
+            <button 
+              onClick={() => setShowExpiryWarning(false)} 
+              className="btn-secondary"
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                color: 'white',
+                padding: '0.5rem 1rem',
+                fontSize: '0.9rem'
+              }}
+            >Dismiss</button>
           </div>
         )}
         
         <div className="container">
-          {!selectedTopic ? (
-            <>
-              <MoodSelector 
-                selectedMood={selectedMood} 
-                onMoodSelect={setSelectedMood} 
-              />
-
-              <section className="adventure-section">
-                <h2 className="adventure-title">Pick your adventure</h2>
-                <div className="adventure-grid">
-                  {getAvailableTopics().map((topic) => {
-                    const proficiency = getProficiency(topic);
-                    const progressPercentage = (proficiency / 9) * 100;
-                    return (
-                      <div 
-                        key={topic} 
-                        className="adventure-card"
-                        onClick={() => handleTopicSelect(topic)}
-                      >
-                        <div className="adventure-header">
-                          <div className="adventure-details">
-                            <h3>{formatTopicName(topic)}</h3>
-                          </div>
-                          <div className="level-badge">Level {proficiency.toFixed(1)}</div>
-                        </div>
-                        
-                        <div className="level-info">
-                          <div className="progress-bar">
-                            <div 
-                              className={`progress-fill ${proficiency >= 9 ? 'progress-max' : ''}`} 
-                              style={{ width: `${progressPercentage}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                        
-                        <button className="start-btn" onClick={(e) => {
-                          e.stopPropagation();
-                          handleTopicSelect(topic);
-                        }}>
-                          Start Learning
-                        </button>
-                      </div>
-                    );
-                  })}
+          {selectedTopic === 'mixed_session' && !currentQuestion && !generating ? (
+            <div className="flex justify-center items-center" style={{ minHeight: '400px', padding: '2rem' }}>
+              <div className="glass card" style={{ maxWidth: '500px' }}>
+                <h2 className="text-center mb-xl">Starting Your Learning Session</h2>
+                <div className="flex flex-col gap-md mb-xl">
+                  <div className="flex items-center gap-md">
+                    <span style={{ fontSize: '1.5rem' }}>📚</span>
+                    <span className="text-secondary">~30 Questions Mixed Topics</span>
+                  </div>
+                  <div className="flex items-center gap-md">
+                    <span style={{ fontSize: '1.5rem' }}>⏱️</span>
+                    <span className="text-secondary">45 Seconds Per Question</span>
+                  </div>
+                  <div className="flex items-center gap-md">
+                    <span style={{ fontSize: '1.5rem' }}>🎯</span>
+                    <span className="text-secondary">Reading, Grammar, Vocabulary</span>
+                  </div>
                 </div>
-              </section>
-            </>
-          ) : (
-            <div className="question-view">
-              <header className="question-header">
-                <button className="back-btn" onClick={handleBack}>←</button>
-                <div className="topic-info">
-                  <div className="topic-title">{formatTopicName(selectedTopic)}</div>
-                  <div className="question-count">
-                    Grade {user?.grade || '8'}
+                <div className="text-center">
+                  <p className="text-muted animate-fadeIn">Preparing your questions...</p>
+                </div>
+              </div>
+            </div>
+          ) : selectedTopic === 'analytics' ? (
+            <div className="flex justify-center items-center" style={{ minHeight: '500px', padding: '2rem' }}>
+              <div className="glass card text-center" style={{ maxWidth: '600px' }}>
+                <h2 className="mb-xl">Session Complete! 🎉</h2>
+                <div className="grid grid-cols-3 gap-lg mb-xl">
+                  <div className="flex flex-col items-center gap-sm">
+                    <span className="font-extrabold" style={{ fontSize: '2.5rem', color: 'var(--accent-success)' }}>{sessionQuestionCount}</span>
+                    <span className="text-muted font-semibold" style={{ fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Questions Answered</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-sm">
+                    <span className="font-extrabold" style={{ fontSize: '2.5rem', color: 'var(--accent-success)' }}>{Math.floor((1800 - sessionTimeRemaining) / 60)}m {((1800 - sessionTimeRemaining) % 60)}s</span>
+                    <span className="text-muted font-semibold" style={{ fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Time Spent</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-sm">
+                    <span className="font-extrabold" style={{ fontSize: '2.5rem', color: 'var(--accent-success)' }}>{Math.round((sessionStats.correctAnswers / sessionStats.totalQuestions) * 100) || 0}%</span>
+                    <span className="text-muted font-semibold" style={{ fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Accuracy</span>
+                  </div>
+                </div>
+                <button 
+                  className="btn-success"
+                  onClick={() => {
+                    setSelectedTopic('mixed_session');
+                    setCurrentQuestion(null);
+                    setSessionQuestionCount(0);
+                    setSessionTimeRemaining(1800);
+                    handleAutoStartSession();
+                  }}
+                  style={{ fontSize: '1.25rem' }}
+                >
+                  Start New Session
+                </button>
+              </div>
+            </div>
+          ) : currentQuestion ? (
+            <div className="animate-fadeIn" style={{ width: '100%', maxWidth: '1400px', margin: '0 auto' }}>
+              <header className="glass flex justify-between items-center mb-lg" style={{ borderRadius: '20px', padding: '20px 28px' }}>
+                <button 
+                  className="btn-secondary" 
+                  onClick={handleBack}
+                  style={{ padding: '0.5rem 1rem', fontSize: '1.5rem' }}
+                >←</button>
+                <div className="text-center">
+                  <div className="font-bold" style={{ fontSize: '1.25rem' }}>Learning Session</div>
+                  <div className="text-secondary">
+                    Question {sessionQuestionCount + 1} of {totalSessionQuestions}
                     {generating && (
-                      <span className="loading-indicator"> (Loading from cache...)</span>
+                      <span className="text-primary animate-fadeIn"> (Loading...)</span>
                     )}
                   </div>
                 </div>
-                <div className="timer-section">
+                <div className="flex items-center gap-md flex-wrap">
                   {currentQuestion && (
-                    <div className={`timer ${timeRemaining <= 10 ? 'timer-warning' : ''}`}>
-                      <span className="timer-icon">⏱️</span>
-                      <span className="timer-text">{timeRemaining}s</span>
+                    <div className={`glass flex items-center gap-sm ${timeRemaining <= 10 ? 'animate-slideIn' : ''}`} 
+                         style={{ 
+                           padding: '0.5rem 1rem', 
+                           borderRadius: '12px',
+                           backgroundColor: timeRemaining <= 10 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255, 255, 255, 0.9)',
+                           borderColor: timeRemaining <= 10 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(0, 0, 0, 0.1)'
+                         }}>
+                      <span style={{ fontSize: '1.2rem' }}>⏱️</span>
+                      <span className="font-semibold" style={{ color: timeRemaining <= 10 ? 'var(--accent-error)' : 'var(--text-primary)' }}>{timeRemaining}s</span>
                     </div>
                   )}
-                  <div className="level-badge">Level {getProficiency(selectedTopic).toFixed(1)}</div>
+                  <div className="glass flex items-center gap-sm" style={{ padding: '0.5rem 1rem', borderRadius: '12px' }}>
+                    <span style={{ fontSize: '1.2rem' }}>🕐</span>
+                    <span className="font-semibold text-primary">
+                      {Math.floor(sessionTimeRemaining / 60)}:{(sessionTimeRemaining % 60).toString().padStart(2, '0')}
+                    </span>
+                  </div>
                 </div>
               </header>
 
-              <div className="progress-section">
+              {/* Session Progress Bar */}
+              <div className="glass mb-xl" style={{ borderRadius: '16px', padding: '1.5rem' }}>
+                <div style={{ 
+                  width: '100%', 
+                  height: '16px', 
+                  backgroundColor: 'var(--tertiary-bg)', 
+                  borderRadius: '8px', 
+                  overflow: 'hidden',
+                  marginBottom: '0.75rem'
+                }}>
+                  <div 
+                    style={{ 
+                      height: '100%',
+                      borderRadius: '8px',
+                      transition: 'width 0.3s ease, background 0.3s ease',
+                      width: `${Math.min((sessionQuestionCount / totalSessionQuestions) * 100, 100)}%`,
+                      background: sessionQuestionCount === 0 ? '#cbd5e0' : 
+                                 sessionQuestionCount >= totalSessionQuestions ? 'linear-gradient(90deg, #10b981 0%, #059669 100%)' : 
+                                 'linear-gradient(90deg, #f97316 0%, #ea580c 100%)'
+                    }}
+                  ></div>
+                </div>
+                <div className="text-center font-semibold text-secondary">
+                  {sessionQuestionCount} / {totalSessionQuestions} Questions Complete
+                </div>
+              </div>
+
+              <div className="mb-lg">
                 <ProgressBar 
                   proficiency={getProficiency(selectedTopic)} 
                   showLevel={false}
@@ -1021,13 +1190,13 @@ export default function Dashboard() {
               </div>
 
               {generating ? (
-                <div className="generating">
-                  <div className="generating-text">
+                <div className="flex flex-col items-center justify-center" style={{ minHeight: '300px' }}>
+                  <p className="text-primary font-semibold animate-fadeIn mb-sm" style={{ fontSize: '1.5rem' }}>
                     Loading questions from cache...
-                  </div>
-                  <div className="generating-subtext">
+                  </p>
+                  <p className="text-muted">
                     {currentQuestion?.fromCache ? 'Serving from pre-generated pool' : 'Please wait...'}
-                  </div>
+                  </p>
                 </div>
               ) : currentQuestion && (
                 <QuestionCard 
@@ -1048,612 +1217,7 @@ export default function Dashboard() {
             </div>
           )}
 
-          <style jsx>{`
-            /* Container and Layout */
-            .container {
-              container-type: inline-size;
-              width: 100%;
-              margin: 0 auto;
-              padding: 2rem 3rem;
-              position: relative;
-              z-index: 10;
-            }
 
-            .loading-container {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              min-height: 100vh;
-              gap: 20px;
-              background: linear-gradient(135deg, #fdfcfa 0%, #f9f7f4 100%);
-            }
-
-            .logo {
-              font-size: 3rem;
-              font-weight: 800;
-              color: #1a1a1a;
-              margin-bottom: 8px;
-            }
-
-            .loading-text {
-              color: #1a1a1a;
-              font-size: 1.4rem;
-              animation: pulse 2s ease-in-out infinite;
-            }
-
-            /* User Info */
-            .user-info {
-              text-align: center;
-              margin-bottom: 2rem;
-            }
-
-            .subtitle {
-              color: #1a1a1a;
-              font-size: 1.3rem;
-              font-weight: 500;
-            }
-
-            .session-stats {
-              color: #1a1a1a;
-              font-size: 1.1rem;
-              margin-top: 8px;
-              font-weight: 600;
-            }
-
-            /* Adventure Section */
-            .adventure-section {
-              margin-top: 4rem;
-              display: grid;
-              grid-template-rows: auto 1fr;
-              gap: 3rem;
-              width: 100%;
-              max-width: 1400px;
-              margin-left: auto;
-              margin-right: auto;
-            }
-
-            .adventure-title {
-              font-size: clamp(2.5rem, 4vw, 3.5rem);
-              font-weight: 800;
-              color: #1a1a1a;
-              text-align: center;
-              position: relative;
-            }
-
-            .adventure-grid {
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-              gap: 2rem;
-            }
-
-            .adventure-card {
-              background: rgba(255, 255, 255, 0.85);
-              backdrop-filter: blur(10px);
-              border: 1px solid rgba(0, 0, 0, 0.08);
-              border-radius: 20px;
-              padding: 2.5rem;
-              cursor: pointer;
-              transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-              position: relative;
-              overflow: hidden;
-              transform-style: preserve-3d;
-              display: flex;
-              flex-direction: column;
-              justify-content: space-between;
-              min-height: 300px;
-              box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-            }
-
-            .adventure-card:hover {
-              transform: translateY(-10px) scale(1.02);
-              box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-              background: rgba(255, 255, 255, 0.95);
-            }
-
-            .adventure-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-bottom: 2rem;
-            }
-
-            .adventure-details h3 {
-              font-size: clamp(1.5rem, 2.5vw, 1.8rem);
-              font-weight: 800;
-              color: #1a1a1a;
-              margin-bottom: 0;
-              line-height: 1.2;
-            }
-
-            @keyframes gradient-shift {
-              0%, 100% { background-position: 0% 50%; }
-              50% { background-position: 100% 50%; }
-            }
-
-            .level-badge {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: white;
-              padding: 0.4rem 0.8rem;
-              border-radius: 12px;
-              font-weight: 500;
-              font-size: 0.9rem;
-              font-style: italic;
-              border: none;
-              box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-            }
-
-            /* Timer Styles */
-            .timer-section {
-              display: flex;
-              align-items: center;
-              gap: 1rem;
-            }
-
-            .timer {
-              display: flex;
-              align-items: center;
-              gap: 0.5rem;
-              background: rgba(255, 255, 255, 0.9);
-              padding: 0.5rem 1rem;
-              border-radius: 12px;
-              border: 1px solid rgba(0, 0, 0, 0.1);
-              font-weight: 600;
-              transition: all 0.3s ease;
-            }
-
-            .timer-warning {
-              background: rgba(239, 68, 68, 0.1);
-              border-color: rgba(239, 68, 68, 0.3);
-              animation: pulse 1s ease-in-out infinite;
-            }
-
-            .timer-icon {
-              font-size: 1.2rem;
-            }
-
-            .timer-text {
-              font-size: 1.1rem;
-              color: #1a1a1a;
-            }
-
-            .timer-warning .timer-text {
-              color: #ef4444;
-            }
-
-            /* Progress Bar */
-            .progress-bar {
-              width: 100%;
-              height: 12px;
-              background: rgba(0, 0, 0, 0.08);
-              border-radius: 6px;
-              overflow: hidden;
-              position: relative;
-              margin-top: 0.5rem;
-              border: 1px solid rgba(0, 0, 0, 0.05);
-            }
-
-            .progress-fill {
-              height: 100%;
-              background: 
-                linear-gradient(90deg, 
-                  #ef4444 0%, 
-                  #f97316 50%, 
-                  #eab308 100%);
-              border-radius: 5px;
-              position: relative;
-              animation: progress-glow 2s ease-in-out infinite;
-              transition: width 0.3s ease, background 0.5s ease;
-            }
-            
-            .progress-fill.progress-max {
-              background: 
-                linear-gradient(90deg, 
-                  #10b981 0%, 
-                  #059669 50%, 
-                  #047857 100%);
-            }
-
-            @keyframes progress-glow {
-              0%, 100% { 
-                filter: brightness(1) saturate(1);
-                box-shadow: 0 0 0 rgba(239, 68, 68, 0);
-              }
-              50% { 
-                filter: brightness(1.2) saturate(1.3);
-                box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
-              }
-            }
-
-            /* Start Button */
-            .start-btn {
-              width: 100%;
-              padding: 1.2rem 2.5rem;
-              border: none;
-              border-radius: 16px;
-              font-size: clamp(1.4rem, 2.5vw, 1.7rem);
-              font-weight: 700;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: white;
-              position: relative;
-              z-index: 2;
-              box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
-              transform-style: preserve-3d;
-            }
-
-            .start-btn:hover {
-              transform: translateY(-4px) scale(1.02);
-              box-shadow: 
-                0 15px 35px rgba(16, 185, 129, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.4);
-            }
-
-            .start-btn:active {
-              transform: translateY(-1px) scale(0.98);
-            }
-
-            /* Question View */
-            .question-view {
-              width: 100%;
-              max-width: 1400px;
-              margin: 0 auto;
-              animation: fadeIn 0.6s ease-out;
-            }
-
-            .question-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 32px;
-              background: rgba(255, 255, 255, 0.85);
-              backdrop-filter: blur(10px);
-              border: 1px solid rgba(0, 0, 0, 0.08);
-              border-radius: 20px;
-              padding: 20px 28px;
-              box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-            }
-
-            .back-btn {
-              background: none;
-              border: none;
-              color: #1a1a1a;
-              font-size: 1.8rem;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              padding: 0.5rem;
-              border-radius: 8px;
-            }
-
-            .back-btn:hover {
-              color: #1a1a1a;
-              background: rgba(0, 0, 0, 0.05);
-            }
-
-            .topic-info {
-              text-align: center;
-            }
-
-            .topic-title {
-              font-size: 1.6rem;
-              font-weight: 700;
-              color: #1a1a1a;
-            }
-
-            .question-count {
-              font-size: 1.1rem;
-              color: #666666;
-              margin-top: 0.25rem;
-              font-style: italic;
-            }
-            
-            .loading-indicator {
-              color: #667eea;
-              font-weight: normal;
-              animation: pulse 1.5s ease-in-out infinite;
-            }
-
-            .progress-section {
-              margin-bottom: 32px;
-            }
-
-            .generating {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              min-height: 300px;
-            }
-
-            .generating-text {
-              font-size: 1.5rem;
-              color: #1a1a1a;
-              animation: pulse 2s ease-in-out infinite;
-              margin-bottom: 0.5rem;
-            }
-            
-            .generating-subtext {
-              font-size: 1.1rem;
-              color: #666666;
-              font-style: italic;
-            }
-
-            @keyframes fadeIn {
-              from { opacity: 0; transform: translateY(30px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
-
-            @keyframes pulse {
-              0%, 100% { opacity: 0.6; }
-              50% { opacity: 1; }
-            }
-
-            /* Responsive */
-            @media (max-width: 768px) {
-              .container { 
-                padding: 1rem 1.5rem;
-              }
-              .adventure-grid { 
-                grid-template-columns: 1fr; 
-              }
-              .adventure-card {
-                padding: 2rem;
-                min-height: 250px;
-              }
-              .question-view {
-                padding: 0 1rem;
-              }
-              .timer-section {
-                flex-direction: column;
-                gap: 0.5rem;
-              }
-            }
-
-            @container (max-width: 768px) {
-              .adventure-grid {
-                gap: 1.5rem;
-              }
-            }
-
-            @container (max-width: 480px) {
-              .adventure-grid {
-                gap: 1rem;
-              }
-            }
-            
-            /* Session expiry warning */
-            .expiry-warning {
-              position: fixed;
-              top: 0;
-              left: 0;
-              right: 0;
-              background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
-              color: white;
-              padding: 1rem 2rem;
-              box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-              z-index: 1000;
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              animation: slideDown 0.3s ease;
-            }
-            
-            @keyframes slideDown {
-              from {
-                transform: translateY(-100%);
-              }
-              to {
-                transform: translateY(0);
-              }
-            }
-            
-            .expiry-warning p {
-              margin: 0;
-              font-size: 1rem;
-              font-weight: 500;
-            }
-            
-            .dismiss-btn {
-              background: rgba(255, 255, 255, 0.2);
-              border: 1px solid rgba(255, 255, 255, 0.3);
-              color: white;
-              padding: 0.5rem 1rem;
-              border-radius: 8px;
-              cursor: pointer;
-              font-size: 0.9rem;
-              transition: all 0.2s ease;
-            }
-            
-            .dismiss-btn:hover {
-              background: rgba(255, 255, 255, 0.3);
-              transform: translateY(-1px);
-            }
-          `}</style>
-
-          <style jsx global>{`
-            /* Paper texture background */
-            .bg-morphing {
-              position: fixed;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 100%;
-              background-image: 
-                repeating-linear-gradient(
-                  0deg,
-                  transparent,
-                  transparent 1px,
-                  rgba(0, 0, 0, 0.03) 1px,
-                  rgba(0, 0, 0, 0.03) 2px
-                ),
-                repeating-linear-gradient(
-                  90deg,
-                  transparent,
-                  transparent 1px,
-                  rgba(0, 0, 0, 0.02) 1px,
-                  rgba(0, 0, 0, 0.02) 2px
-                );
-              pointer-events: none;
-              z-index: 1;
-              opacity: 0.4;
-            }
-
-
-            /* Base styles */
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
-
-            body {
-              font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-              background: 
-                radial-gradient(circle at 20% 50%, rgba(120, 119, 116, 0.02) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(120, 119, 116, 0.02) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(120, 119, 116, 0.01) 0%, transparent 50%),
-                linear-gradient(135deg, #fdfcfa 0%, #f9f7f4 100%);
-              min-height: 100vh;
-              color: #1a1a1a;
-              overflow-x: hidden;
-            }
-
-            .page-wrapper {
-              min-height: 100vh;
-              display: flex;
-              flex-direction: column;
-              position: relative;
-              background: transparent;
-            }
-
-            .container {
-              flex: 1;
-              display: flex;
-              flex-direction: column;
-            }
-
-            /* Support for reduced motion */
-            @media (prefers-reduced-motion: reduce) {
-              * {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-              }
-            }
-            
-            /* Override QuestionCard styles for dashboard */
-            .question-card {
-              background: rgba(255, 255, 255, 0.85) !important;
-              backdrop-filter: blur(10px) !important;
-              border: 1px solid rgba(0, 0, 0, 0.08) !important;
-              color: #1a1a1a !important;
-            }
-            
-            .question-card h2,
-            .question-card p,
-            .question-card .question-type,
-            .question-card .hint-text,
-            .question-card .explanation-text {
-              color: #1a1a1a !important;
-            }
-            
-            .question-card .btn-secondary {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-              color: white !important;
-              border: none !important;
-              font-size: 1.1rem !important;
-              font-weight: 600 !important;
-            }
-            
-            .question-card .btn-primary {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-              border: none !important;
-              font-size: 1.2rem !important;
-            }
-            
-            .question-card .answer-option {
-              background: transparent !important;
-              border: 2px solid transparent !important;
-              cursor: pointer !important;
-              pointer-events: auto !important;
-              padding: 16px !important;
-              transition: all 0.2s ease !important;
-            }
-            
-            .question-card .answer-option span:not(.answer-letter) {
-              color: #1a1a1a !important;
-              font-size: 1.1rem !important;
-              font-weight: 500 !important;
-              font-style: italic !important;
-              pointer-events: none !important;
-            }
-            
-            .question-card .answer-option:hover {
-              background: rgba(102, 126, 234, 0.1) !important;
-              border-color: #667eea !important;
-            }
-            
-            .question-card .answers-grid .answer-option.selected {
-              background: rgba(102, 126, 234, 0.5) !important;
-              border-color: #667eea !important;
-              border-width: 3px !important;
-              box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3) !important;
-            }
-            
-            .question-card .answers-grid .answer-option.selected span:not(.answer-letter) {
-              font-style: normal !important;
-              font-weight: 700 !important;
-              color: #1a1a1a !important;
-            }
-            
-            .question-card .answer-letter {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-              pointer-events: none !important;
-              color: white !important;
-              font-weight: 700 !important;
-            }
-            
-            .question-card .answer-option.correct {
-              background: rgba(16, 185, 129, 0.2) !important;
-              border-color: #10b981 !important;
-            }
-            
-            .question-card .answer-option.incorrect {
-              background: rgba(239, 68, 68, 0.2) !important;
-              border-color: #ef4444 !important;
-            }
-            
-            .question-card .hint-section,
-            .question-card .explanation-section {
-              background: rgba(255, 255, 255, 0.7) !important;
-              border: 1px solid rgba(0, 0, 0, 0.08) !important;
-            }
-            
-            .question-card .hint-title,
-            .question-card .explanation-title {
-              color: #1a1a1a !important;
-            }
-            
-            .question-card .question-context {
-              color: #1a1a1a !important;
-              background: rgba(255, 255, 255, 0.95) !important;
-              border: 1px solid rgba(0, 0, 0, 0.1) !important;
-              border-radius: 12px !important;
-              padding: 20px !important;
-              margin-bottom: 20px !important;
-              font-size: 1.1rem !important;
-              line-height: 1.6 !important;
-              font-style: normal !important;
-              display: block !important;
-              visibility: visible !important;
-              opacity: 1 !important;
-              max-height: none !important;
-              overflow: visible !important;
-              white-space: normal !important;
-              word-wrap: break-word !important;
-            }
-          `}</style>
         </div>
         <Footer />
       </div>

@@ -77,7 +77,7 @@ function getTimerDuration(grade) {
  * Determine next topic based on session flow
  * Flow: 2 comprehension passages → 3-5 of each other topic
  */
-async function getNextTopicForSession(sessionId, userId, requestedTopic, mood) {
+async function getNextTopicForSession(sessionId, userId, requestedTopic) {
   // Get session flow state
   const { data: session, error } = await supabase
     .from('study_sessions')
@@ -282,8 +282,78 @@ async function updateSessionCounters(sessionId, topic, isBatch = false) {
  * Retrieve question from cache based on user's proficiency and history
  * This replaces the AI generation logic
  */
-async function getQuestionFromCache(userId, topic, difficulty, grade, mood) {
-  console.log('[getQuestionFromCache] Starting with params:', { userId, topic, difficulty, grade, mood });
+async function getMixedSessionQuestions(userId, grade) {
+  console.log('[getMixedSessionQuestions] Starting mixed session for:', { userId, grade });
+  
+  try {
+    // Get user's answered questions to avoid duplicates
+    const { data: user } = await supabase
+      .from('users')
+      .select('answered_question_hashes')
+      .eq('id', userId)
+      .single();
+    
+    const answeredHashes = user?.answered_question_hashes || [];
+    
+    // Define question distribution for 30 questions
+    const questionTypes = [
+      { topic: 'english_comprehension', count: 8 }, // 2-4 passages, 4-6 questions each
+      { topic: 'english_synonyms', count: 6 },
+      { topic: 'english_antonyms', count: 6 },
+      { topic: 'english_sentences', count: 6 },
+      { topic: 'english_vocabulary', count: 4 }
+    ];
+    
+    const allQuestions = [];
+    
+    // Get questions for each type
+    for (const { topic, count } of questionTypes) {
+      console.log(`[getMixedSessionQuestions] Getting ${count} questions for ${topic}`);
+      
+      if (topic === 'english_comprehension') {
+        // For comprehension, get 2-3 passages
+        const passages = await getBatchFromCache(userId, topic, null, grade);
+        if (passages && passages.length > 0) {
+          // Take first 8 questions from passages
+          allQuestions.push(...passages.slice(0, count));
+        }
+      } else {
+        // For other topics, get individual questions  
+        // Try different difficulties to get variety
+        const difficulties = [3, 4, 5, 6]; // Mix of difficulties
+        
+        for (let i = 0; i < count; i++) {
+          const difficulty = difficulties[i % difficulties.length];
+          const question = await getQuestionFromCache(userId, topic, difficulty, grade);
+          if (question && question.question) {
+            allQuestions.push({
+              ...question.question,
+              topic,
+              difficulty: question.difficulty || difficulty,
+              questionHash: question.questionHash
+            });
+          }
+        }
+      }
+    }
+    
+    // Shuffle questions randomly
+    for (let i = allQuestions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allQuestions[i], allQuestions[j]] = [allQuestions[j], allQuestions[i]];
+    }
+    
+    console.log(`[getMixedSessionQuestions] Generated ${allQuestions.length} mixed questions`);
+    return allQuestions.slice(0, 30); // Ensure exactly 30 questions
+    
+  } catch (error) {
+    console.error('[getMixedSessionQuestions] Error:', error);
+    throw error;
+  }
+}
+
+async function getQuestionFromCache(userId, topic, difficulty, grade) {
+  console.log('[getQuestionFromCache] Starting with params:', { userId, topic, difficulty, grade });
   
   try {
     // First, get user's answered question hashes to avoid duplicates
@@ -316,11 +386,6 @@ async function getQuestionFromCache(userId, topic, difficulty, grade, mood) {
     
     console.log('[getQuestionFromCache] Base query built for:', { topic, grade, difficulty });
     
-    // Add mood filter if provided
-    if (mood) {
-      query = query.eq('mood', mood);
-      console.log('[getQuestionFromCache] Added mood filter:', mood);
-    }
     
     // Filter out answered questions
     if (answeredHashes.length > 0) {
@@ -348,22 +413,16 @@ async function getQuestionFromCache(userId, topic, difficulty, grade, mood) {
       topic,
       grade,
       difficulty,
-      mood
     });
     
     if (!questions || questions.length === 0) {
       console.log('[getQuestionFromCache] No questions found, trying fallback strategies...');
-      // Try without mood filter if no questions found
-      if (mood) {
-        console.log('[getQuestionFromCache] Retrying without mood filter');
-        return getQuestionFromCache(userId, topic, difficulty, grade, null);
-      }
       
       // Try adjacent difficulties if still no questions
       if (difficulty > 1) {
-        return getQuestionFromCache(userId, topic, difficulty - 1, grade, mood);
+        return getQuestionFromCache(userId, topic, difficulty - 1, grade);
       } else if (difficulty < 8) {
-        return getQuestionFromCache(userId, topic, difficulty + 1, grade, mood);
+        return getQuestionFromCache(userId, topic, difficulty + 1, grade);
       }
       
       throw new Error('No available questions in cache');
@@ -430,7 +489,7 @@ async function getQuestionFromCache(userId, topic, difficulty, grade, mood) {
  * Get batch of questions for reading comprehension
  * Returns multiple questions from the same passage
  */
-async function getBatchFromCache(userId, topic, difficulty, grade, mood) {
+async function getBatchFromCache(userId, topic, difficulty, grade) {
   try {
     // Get user's answered question hashes
     const { data: userData } = await supabase
@@ -451,9 +510,6 @@ async function getBatchFromCache(userId, topic, difficulty, grade, mood) {
       .eq('difficulty', difficulty)
       .is('expires_at', null);
     
-    if (mood) {
-      query = query.eq('mood', mood);
-    }
     
     if (answeredHashes.length > 0) {
       // Use filter syntax for not in array
@@ -566,7 +622,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { action, userId, topic, answer, timeSpent, hintsUsed, mood, sessionId } = req.body;
+    const { action, userId, topic, answer, timeSpent, hintsUsed, sessionId } = req.body;
 
     // Validate authentication using middleware
     const authResult = await validateAuth(req);
@@ -619,21 +675,56 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'User not found' });
       }
 
-      // Get the appropriate topic based on session flow
+      const grade = user.grade || 8;
+      const timerDuration = 45; // Fixed 45 seconds for all questions
+
+      // Handle mixed session
+      if (topic === 'mixed_session') {
+        console.log('[Generate] Starting mixed session');
+        
+        try {
+          const questions = await getMixedSessionQuestions(userId, grade);
+          
+          if (!questions || questions.length === 0) {
+            return res.status(404).json({ 
+              error: 'No questions available', 
+              message: 'Unable to generate mixed session questions' 
+            });
+          }
+          
+          // Return the entire question set for the session
+          return res.status(200).json({
+            questions: questions,
+            question: questions[0],
+            questionHash: questions[0].questionHash || questions[0].hash,
+            difficulty: questions[0].difficulty || 5,
+            currentProficiency: 5,
+            fromCache: true,
+            timerDuration,
+            sessionType: 'mixed',
+            totalQuestions: questions.length
+          });
+          
+        } catch (error) {
+          console.error('[Generate] Mixed session error:', error);
+          return res.status(500).json({ 
+            error: 'Failed to generate mixed session', 
+            message: error.message 
+          });
+        }
+      }
+
+      // Handle single topic (existing logic)
       let actualTopic = topic;
       
       if (sessionId) {
-        actualTopic = await getNextTopicForSession(sessionId, userId, topic, mood);
+        actualTopic = await getNextTopicForSession(sessionId, userId, topic);
         console.log('[Flow] Topic override:', topic, '->', actualTopic);
       }
 
       // Get current proficiency and map to difficulty
       const currentProficiency = user[actualTopic] || 5;
       const difficulty = mapProficiencyToDifficulty(currentProficiency, [1, 2, 3, 4, 5, 6, 7, 8]);
-      const grade = user.grade || 8;
-      
-      // NEW: Get timer duration based on grade
-      const timerDuration = getTimerDuration(grade);
       
       // Try to get question with fallback logic
       let cachedData = null;
@@ -643,7 +734,7 @@ export default async function handler(req, res) {
       while (!cachedData && finalTopic) {
         try {
           console.log('[Generate] Attempting topic:', finalTopic);
-          cachedData = await getQuestionFromCache(userId, finalTopic, difficulty, grade, mood);
+          cachedData = await getQuestionFromCache(userId, finalTopic, difficulty, grade);
           
           // Basic existence check
           if (!cachedData.question) {
@@ -715,7 +806,7 @@ export default async function handler(req, res) {
       
       try {
         // Get batch from cache for reading comprehension
-        const questions = await getBatchFromCache(userId, topic, baseDifficulty, grade, mood);
+        const questions = await getBatchFromCache(userId, topic, baseDifficulty, grade);
         
         // Generate batch ID for tracking
         const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
@@ -740,7 +831,7 @@ export default async function handler(req, res) {
         try {
           const questions = [];
           for (let i = 0; i < 5; i++) {
-            const cachedData = await getQuestionFromCache(userId, topic, baseDifficulty, grade, mood);
+            const cachedData = await getQuestionFromCache(userId, topic, baseDifficulty, grade);
             if (cachedData && cachedData.question) {
               questions.push({
                 ...cachedData.question,

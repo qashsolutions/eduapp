@@ -1,0 +1,23 @@
+###**UPDATES JULY 16,2025**###
+MIXED_SESSION_UPDATE.md that details every aspect of this major
+  update. The document covers:
+
+  Key Sections:
+
+  1. Overview & Impact - High-level summary of the transformation
+  2. Navigation Flow Changes - Before/after comparison
+  3. Database Schema Impact - Tables used, no schema changes required
+  4. Detailed File Changes - Line-by-line changes in dashboard.js and
+  generate.js
+  5. Timer System Overhaul - New dual-timer approach
+  6. Progress Tracking - Visual progress bar implementation
+  7. User Experience Flow - Step-by-step journey
+  8. Question Selection Algorithm - Random distribution logic
+  9. Analytics & Completion - Session end handling
+  10. Removed Features - What was eliminated vs preserved
+  11. Performance Optimizations - Cache strategy and efficiency
+  12. Error Handling - Fallback scenarios
+  13. Testing Considerations - Key test cases and database verification
+  14. Configuration - Fixed constants and settings
+  15. Future Enhancements - Potential improvements
+  16. Migration & Rollback - Implementation guidance
