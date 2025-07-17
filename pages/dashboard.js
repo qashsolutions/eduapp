@@ -32,7 +32,7 @@ export default function Dashboard() {
     userRole: user?.role 
   });
   
-  const [selectedTopic, setSelectedTopic] = useState('mixed_session');
+  const [selectedTopic, setSelectedTopic] = useState(null); // Start with no topic selected
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -48,6 +48,7 @@ export default function Dashboard() {
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [currentHintsUsed, setCurrentHintsUsed] = useState(0);
   const [topicQuestionCount, setTopicQuestionCount] = useState(0);
+  const [showWelcome, setShowWelcome] = useState(true); // Show welcome screen by default
   
   // NEW: Track learning flow state
   const [comprehensionPassagesCompleted, setComprehensionPassagesCompleted] = useState(0);
@@ -139,11 +140,6 @@ export default function Dashboard() {
     log('AUTH', 'Auth state changed', { authLoading, isAuthenticated, userId: user?.id });
     
     if (!authLoading && isAuthenticated && user) {
-      // Auto-start mixed session for students
-      if (user.role === 'student' && selectedTopic === 'mixed_session' && !currentQuestion && !generating) {
-        handleAutoStartSession();
-      }
-      
       // Load session stats when user is available
       getSessionStats(user.id).then(stats => {
         log('SESSION', 'Session stats loaded', stats);
@@ -905,37 +901,6 @@ export default function Dashboard() {
     setTimerActive(false);
   };
 
-  // Auto-start mixed session - no topic selection needed
-  const handleAutoStartSession = async () => {
-    log('AUTO_START', 'handleAutoStartSession called', {
-      hasUser: !!user,
-      userId: user?.id,
-      selectedTopic,
-      generating,
-      currentQuestion: !!currentQuestion
-    });
-    
-    if (!user || !user.id || selectedTopic !== 'mixed_session') {
-      log('AUTO_START', 'Conditions not met for auto-start', {
-        noUser: !user,
-        noUserId: !user?.id,
-        wrongTopic: selectedTopic !== 'mixed_session'
-      });
-      return;
-    }
-    
-    log('SESSION', 'Auto-starting mixed session for student');
-    setSessionStartTime(Date.now());
-    setGenerating(true);
-    
-    try {
-      // Start mixed session
-      await handleTopicSelect('mixed_session');
-    } catch (error) {
-      log('ERROR', 'Failed to auto-start session', error);
-      setGenerating(false);
-    }
-  };
 
   const getProficiency = (topic) => {
     // Check cache first
@@ -948,9 +913,9 @@ export default function Dashboard() {
 
   if (authLoading || loading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-lg" style={{ minHeight: '100vh' }}>
+      <div className="flex flex-col items-center justify-center gap-lg min-h-screen">
         <h1 className="text-center">Socratic Learning ✨</h1>
-        <p className="text-secondary text-center animate-fadeIn">Loading your learning journey...</p>
+        <p className="text-secondary text-center animate-pulse">Loading your learning journey...</p>
       </div>
     );
   }
@@ -968,7 +933,7 @@ export default function Dashboard() {
   if (!user) {
     log('AUTH', 'No user data available after auth');
     return (
-      <div className="flex flex-col items-center justify-center gap-lg" style={{ minHeight: '100vh' }}>
+      <div className="flex flex-col items-center justify-center gap-lg min-h-screen">
         <h1 className="text-center">Socratic Learning ✨</h1>
         <p className="text-secondary text-center">Loading user data...</p>
       </div>
@@ -1061,64 +1026,19 @@ export default function Dashboard() {
         </Head>
       )}
       
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      <div className="page-wrapper">
         {/* Paper texture background */}
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundImage: `
-            repeating-linear-gradient(
-              0deg,
-              transparent,
-              transparent 1px,
-              rgba(0, 0, 0, 0.03) 1px,
-              rgba(0, 0, 0, 0.03) 2px
-            ),
-            repeating-linear-gradient(
-              90deg,
-              transparent,
-              transparent 1px,
-              rgba(0, 0, 0, 0.02) 1px,
-              rgba(0, 0, 0, 0.02) 2px
-            )
-          `,
-          pointerEvents: 'none',
-          zIndex: 1,
-          opacity: 0.4
-        }}></div>
+        <div className="bg-texture"></div>
         
         <Header />
         
         {/* Session expiry warning for students */}
         {showExpiryWarning && user?.role === 'student' && (
-          <div className="animate-slideIn" style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            background: 'linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%)',
-            color: 'white',
-            padding: '1rem 2rem',
-            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
+          <div className="animate-slideIn session-warning">
             <p className="font-medium">⚠️ Your session will expire in less than 5 minutes. Please save your work!</p>
             <button 
               onClick={() => setShowExpiryWarning(false)} 
-              className="btn-secondary"
-              style={{
-                background: 'rgba(255, 255, 255, 0.2)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                color: 'white',
-                padding: '0.5rem 1rem',
-                fontSize: '0.9rem'
-              }}
+              className="btn-dismiss"
             >Dismiss</button>
           </div>
         )}
@@ -1130,39 +1050,92 @@ export default function Dashboard() {
             hasCurrentQuestion: !!currentQuestion,
             generating,
             sessionQuestionCount,
+            showWelcome,
             conditions: {
+              showWelcome: showWelcome && !selectedTopic,
               showSetup: selectedTopic === 'mixed_session' && !currentQuestion && !generating,
               showAnalytics: selectedTopic === 'analytics',
               showQuestion: !!currentQuestion
             }
           })}
           
-          {selectedTopic === 'mixed_session' && !currentQuestion && !generating ? (
-            <div className="flex justify-center items-center" style={{ minHeight: '400px', padding: '2rem' }}>
-              <div className="glass card" style={{ maxWidth: '500px' }}>
+          {/* Welcome Screen for First Time and Returning Students */}
+          {showWelcome && !selectedTopic ? (
+            <div className="flex justify-center items-center min-h-500 p-xl">
+              <div className="glass card text-center max-w-600">
+                <h1 className="mb-xl">Welcome back, {user?.name || 'Student'}!</h1>
+                
+                {/* Show previous session summary if exists */}
+                {sessionStats.totalQuestions > 0 ? (
+                  <div className="mb-xl">
+                    <h3 className="text-secondary mb-md">Your Previous Session</h3>
+                    <div className="grid grid-cols-3 gap-md mb-lg">
+                      <div className="text-center">
+                        <p className="font-bold text-primary" text-2xl>{sessionStats.totalQuestions}</p>
+                        <p className="text-muted">Questions</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold text-primary" text-2xl>{sessionStats.correctAnswers}</p>
+                        <p className="text-muted">Correct</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold text-primary" text-2xl>
+                          {Math.round((sessionStats.correctAnswers / sessionStats.totalQuestions) * 100) || 0}%
+                        </p>
+                        <p className="text-muted">Accuracy</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mb-xl">
+                    <p className="text-secondary mb-lg text-lg">
+                      Ready to start your learning journey?
+                    </p>
+                    <p className="text-muted">
+                      You'll practice with 30 questions in a 30-minute session.
+                    </p>
+                  </div>
+                )}
+                
+                <button 
+                  className="btn-primary"
+                  onClick={() => {
+                    setShowWelcome(false);
+                    setSelectedTopic('mixed_session');
+                    handleTopicSelect('mixed_session');
+                  }}
+                  className="btn-primary text-lg px-xl py-lg"
+                >
+                  Start Practice Session
+                </button>
+              </div>
+            </div>
+          ) : selectedTopic === 'mixed_session' && !currentQuestion && !generating ? (
+            <div className="flex justify-center items-center min-h-400 p-xl">
+              <div className="glass card max-w-500">
                 <h2 className="text-center mb-xl">Starting Your Learning Session</h2>
                 <div className="flex flex-col gap-md mb-xl">
                   <div className="flex items-center gap-md">
-                    <span style={{ fontSize: '1.5rem' }}>📚</span>
+                    <span className="icon-lg">📚</span>
                     <span className="text-secondary">~30 Questions Mixed Topics</span>
                   </div>
                   <div className="flex items-center gap-md">
-                    <span style={{ fontSize: '1.5rem' }}>⏱️</span>
+                    <span className="icon-lg">⏱️</span>
                     <span className="text-secondary">45 Seconds Per Question</span>
                   </div>
                   <div className="flex items-center gap-md">
-                    <span style={{ fontSize: '1.5rem' }}>🎯</span>
+                    <span className="icon-lg">🎯</span>
                     <span className="text-secondary">Reading, Grammar, Vocabulary</span>
                   </div>
                 </div>
                 <div className="text-center">
-                  <p className="text-muted animate-fadeIn">Preparing your questions...</p>
+                  <p className="text-muted animate-pulse">Preparing your questions...</p>
                 </div>
               </div>
             </div>
           ) : selectedTopic === 'analytics' ? (
-            <div className="flex justify-center items-center" style={{ minHeight: '500px', padding: '2rem' }}>
-              <div className="glass card text-center" style={{ maxWidth: '600px' }}>
+            <div className="flex justify-center items-center min-h-500 p-xl">
+              <div className="glass card text-center max-w-600">
                 <h2 className="mb-xl">Session Complete! 🎉</h2>
                 <div className="grid grid-cols-3 gap-lg mb-xl">
                   <div className="flex flex-col items-center gap-sm">
@@ -1181,11 +1154,17 @@ export default function Dashboard() {
                 <button 
                   className="btn-success"
                   onClick={() => {
-                    setSelectedTopic('mixed_session');
+                    // Reset states and go back to welcome
+                    setSelectedTopic(null);
                     setCurrentQuestion(null);
                     setSessionQuestionCount(0);
                     setSessionTimeRemaining(1800);
-                    handleAutoStartSession();
+                    setShowWelcome(true);
+                    
+                    // Refresh stats for the welcome screen
+                    getSessionStats(user.id).then(stats => {
+                      setSessionStats(stats);
+                    });
                   }}
                   style={{ fontSize: '1.25rem' }}
                 >

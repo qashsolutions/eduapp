@@ -311,11 +311,15 @@ async function getMixedSessionQuestions(userId, grade) {
       console.log(`[getMixedSessionQuestions] Getting ${count} questions for ${topic}`);
       
       if (topic === 'english_comprehension') {
-        // For comprehension, get 2-3 passages
-        const passages = await getBatchFromCache(userId, topic, null, grade);
-        if (passages && passages.length > 0) {
-          // Take first 8 questions from passages
-          allQuestions.push(...passages.slice(0, count));
+        try {
+          // For comprehension, get 2-3 passages
+          const passages = await getBatchFromCache(userId, topic, null, grade);
+          if (passages && passages.length > 0) {
+            // Take first 8 questions from passages
+            allQuestions.push(...passages.slice(0, count));
+          }
+        } catch (comprehensionError) {
+          console.log(`[getMixedSessionQuestions] Failed to get comprehension questions:`, comprehensionError.message);
         }
       } else {
         // For other topics, get individual questions  
@@ -323,18 +327,28 @@ async function getMixedSessionQuestions(userId, grade) {
         const difficulties = [3, 4, 5, 6]; // Mix of difficulties
         
         for (let i = 0; i < count; i++) {
-          const difficulty = difficulties[i % difficulties.length];
-          const question = await getQuestionFromCache(userId, topic, difficulty, grade);
-          if (question && question.question) {
-            allQuestions.push({
-              ...question.question,
-              topic,
-              difficulty: question.difficulty || difficulty,
-              questionHash: question.questionHash
-            });
+          try {
+            const difficulty = difficulties[i % difficulties.length];
+            const question = await getQuestionFromCache(userId, topic, difficulty, grade);
+            if (question && question.question) {
+              allQuestions.push({
+                ...question.question,
+                topic,
+                difficulty: question.difficulty || difficulty,
+                questionHash: question.questionHash
+              });
+            }
+          } catch (topicError) {
+            console.log(`[getMixedSessionQuestions] Failed to get ${topic} question:`, topicError.message);
+            // Continue to next question without failing entire process
           }
         }
       }
+    }
+    
+    // Check if we got any questions at all
+    if (allQuestions.length === 0) {
+      throw new Error('No questions available in cache for any topic');
     }
     
     // Shuffle questions randomly
@@ -344,7 +358,7 @@ async function getMixedSessionQuestions(userId, grade) {
     }
     
     console.log(`[getMixedSessionQuestions] Generated ${allQuestions.length} mixed questions`);
-    return allQuestions.slice(0, 30); // Ensure exactly 30 questions
+    return allQuestions.slice(0, 30); // Return up to 30 questions
     
   } catch (error) {
     console.error('[getMixedSessionQuestions] Error:', error);
@@ -707,9 +721,37 @@ export default async function handler(req, res) {
           
         } catch (error) {
           console.error('[Generate] Mixed session error:', error);
+          
+          // Fallback: If mixed session fails, try to get just comprehension questions
+          console.log('[Generate] Falling back to comprehension-only session');
+          try {
+            const comprehensionQuestions = await getBatchFromCache(userId, 'english_comprehension', null, grade);
+            
+            if (comprehensionQuestions && comprehensionQuestions.length > 0) {
+              // Return up to 30 comprehension questions
+              const questions = comprehensionQuestions.slice(0, 30);
+              
+              return res.status(200).json({
+                questions: questions,
+                question: questions[0],
+                questionHash: questions[0].questionHash || questions[0].hash,
+                difficulty: questions[0].difficulty || 5,
+                currentProficiency: 5,
+                fromCache: true,
+                timerDuration,
+                sessionType: 'mixed',
+                totalQuestions: questions.length,
+                fallbackMode: true,
+                message: 'Using comprehension questions only'
+              });
+            }
+          } catch (fallbackError) {
+            console.error('[Generate] Fallback also failed:', fallbackError);
+          }
+          
           return res.status(500).json({ 
             error: 'Failed to generate mixed session', 
-            message: error.message 
+            message: 'No questions available in cache. Please contact support.' 
           });
         }
       }
