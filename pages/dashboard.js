@@ -23,6 +23,15 @@ const log = (category, message, data = null) => {
 export default function Dashboard() {
   const router = useRouter();
   const { user, loading: authLoading, isAuthenticated, getSession } = useAuth();
+  
+  // Debug auth state immediately
+  log('DASHBOARD', 'Component render', { 
+    user: user?.id, 
+    authLoading, 
+    isAuthenticated,
+    userRole: user?.role 
+  });
+  
   const [selectedTopic, setSelectedTopic] = useState('mixed_session');
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -38,6 +47,7 @@ export default function Dashboard() {
   const [sessionTimeRemaining, setSessionTimeRemaining] = useState(1800); // 30 minutes
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [currentHintsUsed, setCurrentHintsUsed] = useState(0);
+  const [topicQuestionCount, setTopicQuestionCount] = useState(0);
   
   // NEW: Track learning flow state
   const [comprehensionPassagesCompleted, setComprehensionPassagesCompleted] = useState(0);
@@ -347,8 +357,19 @@ export default function Dashboard() {
           batchId: data.batchId,
           timerDuration: data.timerDuration,
           fromCache: data.fromCache,
-          currentProficiency: data.currentProficiency
+          currentProficiency: data.currentProficiency,
+          hasQuestions: !!data.questions,
+          hasQuestion: !!data.question,
+          dataKeys: Object.keys(data)
         });
+        
+        // Check for empty response
+        if (!data.questions && !data.question) {
+          log('API_ERROR', 'No questions returned from API', data);
+          alert('No questions available. This might be because the question cache is empty. Please contact support.');
+          setGenerating(false);
+          return;
+        }
         
         // UPDATED: Handle cache-based response
         if (data.questions && data.questions.length > 0) {
@@ -412,6 +433,13 @@ export default function Dashboard() {
         setGenerating(false);
         log('SUCCESS', 'Questions loaded successfully');
       } else {
+        const errorData = await response.json();
+        log('API_ERROR', 'Generate API failed', {
+          status: response.status,
+          error: errorData,
+          message: errorData.error || errorData.message
+        });
+        
         // Try single question if batch fails
         log('API', 'Batch failed, trying single question');
         
@@ -879,7 +907,22 @@ export default function Dashboard() {
 
   // Auto-start mixed session - no topic selection needed
   const handleAutoStartSession = async () => {
-    if (!user || !user.id || selectedTopic !== 'mixed_session') return;
+    log('AUTO_START', 'handleAutoStartSession called', {
+      hasUser: !!user,
+      userId: user?.id,
+      selectedTopic,
+      generating,
+      currentQuestion: !!currentQuestion
+    });
+    
+    if (!user || !user.id || selectedTopic !== 'mixed_session') {
+      log('AUTO_START', 'Conditions not met for auto-start', {
+        noUser: !user,
+        noUserId: !user?.id,
+        wrongTopic: selectedTopic !== 'mixed_session'
+      });
+      return;
+    }
     
     log('SESSION', 'Auto-starting mixed session for student');
     setSessionStartTime(Date.now());
@@ -890,6 +933,7 @@ export default function Dashboard() {
       await handleTopicSelect('mixed_session');
     } catch (error) {
       log('ERROR', 'Failed to auto-start session', error);
+      setGenerating(false);
     }
   };
 
@@ -907,6 +951,26 @@ export default function Dashboard() {
       <div className="flex flex-col items-center justify-center gap-lg" style={{ minHeight: '100vh' }}>
         <h1 className="text-center">Socratic Learning ✨</h1>
         <p className="text-secondary text-center animate-fadeIn">Loading your learning journey...</p>
+      </div>
+    );
+  }
+
+  // Add debugging for auth state
+  if (!authLoading && !isAuthenticated) {
+    log('AUTH', 'Not authenticated, redirecting to login');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
+    return null;
+  }
+
+  // Check if user data is available
+  if (!user) {
+    log('AUTH', 'No user data available after auth');
+    return (
+      <div className="flex flex-col items-center justify-center gap-lg" style={{ minHeight: '100vh' }}>
+        <h1 className="text-center">Socratic Learning ✨</h1>
+        <p className="text-secondary text-center">Loading user data...</p>
       </div>
     );
   }
@@ -1060,6 +1124,19 @@ export default function Dashboard() {
         )}
         
         <div className="container">
+          {/* Debug component state */}
+          {log('RENDER', 'Main content render', {
+            selectedTopic,
+            hasCurrentQuestion: !!currentQuestion,
+            generating,
+            sessionQuestionCount,
+            conditions: {
+              showSetup: selectedTopic === 'mixed_session' && !currentQuestion && !generating,
+              showAnalytics: selectedTopic === 'analytics',
+              showQuestion: !!currentQuestion
+            }
+          })}
+          
           {selectedTopic === 'mixed_session' && !currentQuestion && !generating ? (
             <div className="flex justify-center items-center" style={{ minHeight: '400px', padding: '2rem' }}>
               <div className="glass card" style={{ maxWidth: '500px' }}>
