@@ -213,11 +213,11 @@ export default function StudentSignup() {
               </div>
               <div className="feature-item">
                 <span className="feature-bullet">•</span>
-                <span className="feature-text">Dynamically generated & mood appropriate content</span>
+                <span className="feature-text">Pre-generated adaptive content</span>
               </div>
               <div className="feature-item">
                 <span className="feature-bullet">•</span>
-                <span className="feature-text">One flat fee for math and english</span>
+                <span className="feature-text">One flat fee for all English topics</span>
               </div>
               <div className="feature-item">
                 <span className="feature-bullet">•</span>

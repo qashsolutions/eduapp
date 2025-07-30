@@ -43,11 +43,11 @@ SKIP_AFTER_FAILURES = 2  # Skip passage after 2 consecutive failures
 
 # Grade-specific word counts
 GRADE_WORD_COUNTS = {
-    9: (350, 600),
-    8: (350, 500),
-    7: (300, 450),
-    6: (250, 350),
-    5: (200, 350)
+    7: (300, 500),
+    6: (200, 450),
+    9: (250, 750),
+    8: (250, 550),
+    9: (200, 600)
 }
 
 class ReadingComprehensionGenerator:
@@ -101,7 +101,7 @@ class ReadingComprehensionGenerator:
             print(f"✅ Fetched {len(content)} characters of content")
             
             # Process for each grade
-            for grade in [9, 8, 7, 6, 5]:
+            for grade in [7, 6, 9, 8, 5]:
                 print(f"\n📚 Processing for Grade {grade}")
                 min_words, max_words = GRADE_WORD_COUNTS[grade]
                 print(f"   Target word count: {min_words}-{max_words} words")

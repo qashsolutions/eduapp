@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import CollaborativeSession from '../components/CollaborativeSession';
 import { useAuth } from '../lib/AuthContext';
 import { supabase } from '../lib/db';
 
@@ -17,6 +18,7 @@ export default function ParentDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, collaborative
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'parent')) {
@@ -112,17 +114,38 @@ export default function ParentDashboard() {
             <h1>Parent Dashboard</h1>
             <p className="welcome-text">Welcome, {user.email}</p>
             
-            <div className="children-section">
-              <div className="section-header">
-                <h2>Your Children ({children.length}/5)</h2>
+            {/* Navigation */}
+            <div className="section-header">
+              <div className="flex gap-md mb-lg">
                 <button 
-                  className="add-child-btn"
-                  onClick={() => setShowAddChild(true)}
-                  disabled={children.length >= 5}
+                  className={currentView === 'dashboard' ? 'btn-primary' : 'btn-secondary'}
+                  onClick={() => setCurrentView('dashboard')}
                 >
-                  + Add Child
+                  Dashboard
+                </button>
+                <button 
+                  className={currentView === 'collaborative' ? 'btn-primary' : 'btn-secondary'}
+                  onClick={() => setCurrentView('collaborative')}
+                >
+                  Collaborative Learning
                 </button>
               </div>
+            </div>
+
+            {currentView === 'collaborative' ? (
+              <CollaborativeSession />
+            ) : (
+              <div className="children-section">
+                <div className="section-header">
+                  <h2>Your Children ({children.length}/5)</h2>
+                  <button 
+                    className="add-child-btn"
+                    onClick={() => setShowAddChild(true)}
+                    disabled={children.length >= 5}
+                  >
+                    + Add Child
+                  </button>
+                </div>
 
               {error && <div className="error-message">{error}</div>}
               {success && <div className="success-message">{success}</div>}
@@ -197,7 +220,8 @@ export default function ParentDashboard() {
                   </div>
                 </div>
               )}
-            </div>
+              </div>
+            )}
           </div>
         </main>
         

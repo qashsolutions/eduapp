@@ -1,7 +1,7 @@
 {
   "name": "eduapp",
   "version": "1.0.0",
-  "description": "Adaptive learning platform powered by AI",
+  "description": "Adaptive learning platform with pre-generated questions",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -14,13 +14,11 @@
     "gemini-comprehensive": "node scripts/gemini-comprehension-generator.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.56.0",
     "@stripe/stripe-js": "^2.1.0",
     "@supabase/supabase-js": "^2.38.0",
     "bcryptjs": "^2.4.3",
     "micro": "^10.0.1",
     "next": "^14.0.0",
-    "openai": "^4.20.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "stripe": "^14.0.0"

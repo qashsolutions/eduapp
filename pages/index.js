@@ -105,25 +105,25 @@ export default function Landing() {
   return (
     <>
       <Head>
-        <title>Socratic Learning - AI Tutoring for Students | Personalized English & Math</title>
-        <meta name="description" content="AI-powered Socratic tutoring for students. Personalized learning in English & Math with unlimited practice questions. 14-day trial for $1." />
-        <meta name="keywords" content="AI tutor, Socratic method, personalized learning, English tutoring, Math tutoring, adaptive learning, student education" />
+        <title>Socratic Learning - Smart English Tutoring for Grades 5-9 | AI-Powered Learning</title>
+        <meta name="description" content="Smart English tutoring that adapts to your child's learning style. AI-powered Socratic method for grades 5-9. Built by teachers, loved by students. Just $6/month." />
+        <meta name="keywords" content="English tutoring grades 5-9, AI English tutor, Socratic method learning, middle school English help, personalized English learning, adaptive English tutoring, online English tutor" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://socraticlearning.com/" />
+        <link rel="canonical" href="https://socratic-thinking.com/" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="Socratic Learning - AI Tutoring for Students" />
-        <meta property="og:description" content="Personalized AI tutoring using the Socratic method. Help your child excel in English & Math with adaptive learning." />
+        <meta property="og:title" content="Socratic Learning - Smart English Tutoring That Actually Works" />
+        <meta property="og:description" content="AI-powered English tutoring for grades 5-9. Personalized learning that adapts to every student. Built by real teachers. Start today for $6/month." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://socraticlearning.com/" />
-        <meta property="og:image" content="https://socraticlearning.com/og-image.png" />
+        <meta property="og:url" content="https://socratic-thinking.com/" />
+        <meta property="og:image" content="https://socratic-thinking.com/og-image.png" />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Socratic Learning - AI Tutoring for Students" />
-        <meta name="twitter:description" content="Personalized AI tutoring using the Socratic method. Excel in English & Math." />
-        <meta name="twitter:image" content="https://socraticlearning.com/twitter-image.png" />
+        <meta name="twitter:title" content="Smart English Tutoring for Grades 5-9 | Socratic Learning" />
+        <meta name="twitter:description" content="AI meets Socratic method. Personalized English tutoring that adapts to your child. Built by teachers. $6/month." />
+        <meta name="twitter:image" content="https://socratic-thinking.com/twitter-image.png" />
         
         {/* Schema.org */}
         <script
@@ -133,13 +133,15 @@ export default function Landing() {
               "@context": "https://schema.org",
               "@type": "EducationalApplication",
               "name": "Socratic Learning",
-              "description": "AI-powered tutoring platform using the Socratic method",
+              "description": "Smart English tutoring platform for grades 5-9 using AI and Socratic method",
               "applicationCategory": "EducationalApplication",
+              "educationalLevel": "Middle School (Grades 5-9)",
+              "teaches": "English Language Arts",
               "offers": {
                 "@type": "Offer",
-                "price": "1.00",
+                "price": "6.00",
                 "priceCurrency": "USD",
-                "description": "14-day trial"
+                "description": "Monthly subscription"
               }
             })
           }}
@@ -158,43 +160,30 @@ export default function Landing() {
             <>
               {/* Hero Section */}
               <section className="hero-section">
-                <div className="content-grid">
-                  <div className="content-section glass">
-                    <h1 className="hero-title">Personalized Learning Revolution</h1>
-                    <div className="hero-text">
-                      {sections.intro.map((paragraph, index) => (
-                        <p key={index} className="hero-paragraph">{paragraph}</p>
-                      ))}
-                    </div>
+                <div className="hero-grid">
+                  <div className="hero-content">
+                    <h1 className="hero-title">
+                      <span className="gradient-text">Smart English Tutoring</span>
+                      <br />
+                      That Actually Works
+                    </h1>
+                    <p className="hero-subtitle">
+                      AI meets Socratic method to help grades 5-9 students master English.
+                      Personalized learning that adapts to every child.
+                    </p>
+                    <button 
+                      className="hero-cta"
+                      onClick={() => router.push('/signup')}
+                    >
+                      Get Started Today
+                    </button>
                   </div>
                   
-                  <div className="feature-cards-container">
-                    <div className="feature-card glass">
-                      <div className="feature-content">
-                        <div className="card-icon">
-                          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z" fill="currentColor"/>
-                          </svg>
-                        </div>
-                        <div className="feature-text">
-                          <h3>Socratic Method</h3>
-                          <p>We don't lecture at students - we guide them to discover answers themselves, building confidence and critical thinking.</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="feature-card glass">
-                      <div className="feature-content">
-                        <div className="card-icon">
-                          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2L2 7V10C2 16 6 20.5 12 22C18 20.5 22 16 22 10V7L12 2M12 4.14L20 8.35V10C20 15.26 16.67 19.1 12 20C7.33 19.1 4 15.26 4 10V8.35L12 4.14Z" fill="currentColor"/>
-                          </svg>
-                        </div>
-                        <div className="feature-text">
-                          <h3>Adaptive Content</h3>
-                          <p>77 million unique combinations ensure your child never sees the same content twice. Every session feels fresh and purposeful.</p>
-                        </div>
-                      </div>
+                  <div className="hero-visual">
+                    <div className="visual-container">
+                      <div className="floating-element element-1">Personalized</div>
+                      <div className="floating-element element-2">Smart AI</div>
+                      <div className="floating-element element-3">Results</div>
                     </div>
                   </div>
                 </div>
@@ -227,8 +216,8 @@ export default function Landing() {
                             </svg>
                           </div>
                           <div className="feature-text">
-                            <h3>Learning tailored to your mood & interests</h3>
-                            <p>Personalized education that adapts to how you feel and what excites you.</p>
+                            <h3>Learning tailored to your progress</h3>
+                            <p>Personalized education that adapts to your proficiency level and learning needs.</p>
                           </div>
                         </div>
                       </div>
@@ -328,53 +317,24 @@ export default function Landing() {
 
       <style jsx>{`
         :root {
-          /* Sandy white colors with better contrast */
-          --bg-primary: #fdfcfa;
-          --bg-secondary: #f9f7f4;
+          /* Off-white background with accent colors */
+          --bg-primary: #fafafa;
+          --bg-secondary: #f5f5f5;
           --accent-primary: #667eea;
           --accent-secondary: #764ba2;
           --text-primary: #1a1a1a;
-          --text-secondary: #333333;
-          --glass-bg: rgba(255, 255, 255, 0.7);
-          --glass-border: rgba(0, 0, 0, 0.1);
+          --text-secondary: #4a4a4a;
+          --glass-bg: rgba(255, 255, 255, 0.25);
+          --glass-border: rgba(255, 255, 255, 0.3);
         }
 
         .page-wrapper {
           min-height: 100vh;
-          background: 
-            radial-gradient(circle at 20% 50%, rgba(120, 119, 116, 0.02) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(120, 119, 116, 0.02) 0%, transparent 50%),
-            radial-gradient(circle at 40% 80%, rgba(120, 119, 116, 0.01) 0%, transparent 50%),
-            linear-gradient(135deg, #fdfcfa 0%, #f9f7f4 100%);
+          background: #fafafa;
           position: relative;
         }
         
-        .page-wrapper::before {
-          content: '';
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-image: 
-            repeating-linear-gradient(
-              0deg,
-              transparent,
-              transparent 1px,
-              rgba(0, 0, 0, 0.03) 1px,
-              rgba(0, 0, 0, 0.03) 2px
-            ),
-            repeating-linear-gradient(
-              90deg,
-              transparent,
-              transparent 1px,
-              rgba(0, 0, 0, 0.02) 1px,
-              rgba(0, 0, 0, 0.02) 2px
-            );
-          pointer-events: none;
-          z-index: 1;
-          opacity: 0.4;
-        }
+        /* Removed page wrapper pattern for cleaner design */
 
         .landing-container {
           overflow-x: hidden;
@@ -396,269 +356,305 @@ export default function Landing() {
           font-weight: 500;
         }
 
-        /* Glass morphism effect - off-white version */
+        /* Glass morphism effect */
         .glass {
-          background: rgba(255, 255, 255, 0.85);
+          background: rgba(255, 255, 255, 0.25);
           backdrop-filter: blur(10px);
-          border: 1px solid rgba(0, 0, 0, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.3);
           border-radius: 20px;
-          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
         /* Removed floating shapes and particles for cleaner light design */
 
         /* Hero Section */
         .hero-section {
-          padding: 60px 5%;
+          padding: 80px 5%;
           width: 100%;
         }
 
-        .content-grid {
+        .hero-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 3rem;
-          align-items: start;
-          width: 100%;
+          gap: 4rem;
+          align-items: center;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        .hero-content {
+          padding-right: 2rem;
         }
 
         .hero-title {
-          font-size: 3rem;
+          font-size: 3.5rem;
           font-weight: 700;
           color: #1a1a1a;
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
           line-height: 1.2;
         }
 
-        .hero-text {
-          margin-bottom: 32px;
+        .gradient-text {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
 
-        .hero-paragraph {
-          font-size: 3.2rem;
-          line-height: 1.8;
-          color: #1a1a1a !important;
-          margin-bottom: 2rem;
-          text-align: left;
-          font-weight: 400;
-        }
-
-
-        .feature-cards-container {
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
-        }
-
-        .feature-card {
-          padding: 2rem;
-          transition: all 0.3s ease;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .feature-card::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
-        }
-
-        .feature-card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-        }
-        
-        .feature-content {
-          display: flex;
-          align-items: flex-start;
-          gap: 1.5rem;
-        }
-        
-        .feature-text {
-          flex: 1;
-        }
-
-        .card-icon {
-          width: 60px;
-          height: 60px;
-          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-          border-radius: 15px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-          animation: glow 2s ease-in-out infinite alternate;
-          flex-shrink: 0;
-          color: white;
-        }
-        
-        @keyframes glow {
-          from { box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4); }
-          to { box-shadow: 0 4px 30px rgba(102, 126, 234, 0.6), 0 0 40px rgba(102, 126, 234, 0.3); }
-        }
-
-        .feature-card h3 {
-          font-size: 3.6rem;
-          font-weight: 700;
-          color: #1a1a1a !important;
-          margin-bottom: 1.5rem;
-        }
-
-        .feature-card p {
-          font-size: 2.8rem;
-          line-height: 1.7;
-          color: #1a1a1a !important;
-        }
-
-        /* Content Section */
-        .content-section {
-          background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(0, 0, 0, 0.06);
-          border-radius: 25px;
-          padding: 3rem;
-          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
-        }
-        
-        /* Problem Section */
-        .problem-section {
-          padding: 60px 5%;
-        }
-
-        .content-wrapper {
-          width: 100%;
-          padding: 0;
-        }
-
-        .problem-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 3rem;
-          align-items: start;
-          width: 100%;
-        }
-
-        .problem-cards-stack {
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
-        }
-
-        .problem-card {
-          padding: 2rem;
-          height: fit-content;
-        }
-
-        .problem-card h3 {
-          font-size: 3.6rem;
-          font-weight: 700;
-          color: #1a1a1a !important;
-          margin-bottom: 1.5rem;
-        }
-
-        .problem-card p {
-          font-size: 2.8rem;
-          line-height: 1.7;
-          color: #1a1a1a !important;
-        }
-
-        .section-content {
-          padding: 3rem;
-        }
-
-        .content-paragraph {
-          font-size: 3.2rem;
-          line-height: 1.8;
-          color: #1a1a1a !important;
+        .hero-subtitle {
+          font-size: 1.25rem;
+          line-height: 1.6;
+          color: #4a4a4a;
           margin-bottom: 2rem;
         }
 
-        .content-paragraph:last-child {
-          margin-bottom: 0;
-        }
-
-        /* Solution Section */
-        .solution-section {
-          padding: 60px 5%;
-          width: 100%;
-        }
-
-        .content-grid.reverse {
-          grid-template-columns: 1fr 1fr;
-        }
-
-        .section-title {
-          font-size: 3rem;
-          font-weight: 700;
-          color: #1a1a1a;
-          margin-bottom: 2rem;
-          line-height: 1.2;
-        }
-
-        .solution-text {
-          margin-bottom: 32px;
-        }
-
-        /* Benefits Section */
-        .benefits-section {
-          padding: 60px 5%;
-        }
-
-        .benefits-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 3rem;
-          margin-bottom: 48px;
-          width: 100%;
-        }
-
-        .benefit-card {
-          padding: 2rem;
-          height: fit-content;
-        }
-
-        .benefits-content {
-          padding: 0;
-        }
-
-        /* CTA */
-        .cta-container {
-          text-align: center;
-          margin-top: 3rem;
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(15px);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 25px;
-          padding: 3rem;
-        }
-
-        .cta-button {
-          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        .hero-cta {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: white;
           padding: 1rem 2.5rem;
           border: none;
-          border-radius: 25px;
-          font-size: 1.2rem;
+          border-radius: 30px;
+          font-size: 1.1rem;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
-          text-decoration: none;
-          display: inline-block;
           box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
         }
 
-        .cta-button:hover {
+        .hero-cta:hover {
           transform: translateY(-3px);
-          box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+          box-shadow: 0 6px 30px rgba(102, 126, 234, 0.6);
         }
 
-        .cta-subtitle {
-          margin-top: 1rem;
-          color: var(--text-secondary);
+        .hero-visual {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+        }
+
+        .visual-container {
+          width: 300px;
+          height: 300px;
+          position: relative;
+        }
+
+        .floating-element {
+          position: absolute;
+          padding: 1rem 1.5rem;
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 20px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          font-weight: 600;
+          color: #667eea;
+        }
+
+        .element-1 {
+          top: 20%;
+          left: 10%;
+          animation: float 3s ease-in-out infinite;
+        }
+
+        .element-2 {
+          top: 50%;
+          right: 10%;
+          animation: float 3s ease-in-out infinite 1s;
+        }
+
+        .element-3 {
+          bottom: 20%;
+          left: 30%;
+          animation: float 3s ease-in-out infinite 2s;
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-20px); }
+        }
+
+
+        /* Removed old feature card styles as they're not used in new design */
+        
+        /* Problem Section */
+        .problem-section {
+          padding: 80px 5%;
+          background: #fef3c7;
+        }
+
+        .problem-container {
+          max-width: 800px;
+          margin: 0 auto;
+          text-align: center;
+        }
+
+        .educator-quote {
+          font-size: 1.5rem;
+          line-height: 1.8;
+          font-style: italic;
+          color: #1a1a1a;
+          margin-bottom: 1.5rem;
+        }
+
+        .quote-author {
           font-size: 1rem;
+          color: #4a4a4a;
+          font-style: normal;
+        }
+
+        /* Removed old content paragraph styles */
+
+        /* Solution Section */
+        .solution-section {
+          padding: 80px 5%;
+        }
+
+        .solution-container {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        .solution-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 2rem;
+        }
+
+        .solution-card {
+          padding: 2rem;
+          text-align: center;
+          transition: all 0.3s ease;
+        }
+
+        .solution-card:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .solution-icon {
+          width: 80px;
+          height: 80px;
+          margin: 0 auto 1.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 20px;
+          color: white;
+        }
+
+        .solution-card h3 {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: #1a1a1a;
+          margin-bottom: 0.75rem;
+        }
+
+        .solution-card p {
+          font-size: 0.95rem;
+          line-height: 1.6;
+          color: #4a4a4a;
+        }
+
+        /* Testimonial Section */
+        .testimonial-section {
+          padding: 80px 5%;
+          background: #f5f5f5;
+        }
+
+        .testimonial-container {
+          max-width: 900px;
+          margin: 0 auto;
+        }
+
+        .testimonial-card {
+          padding: 3rem;
+        }
+
+        .testimonial-content blockquote {
+          font-size: 1.3rem;
+          line-height: 1.8;
+          color: #1a1a1a;
+          margin-bottom: 2rem;
+          font-style: italic;
+        }
+
+        .testimonial-author {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .author-avatar {
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: 700;
+          font-size: 1.2rem;
+        }
+
+        .author-info {
+          text-align: left;
+        }
+
+        .author-name {
+          font-weight: 700;
+          color: #1a1a1a;
+          margin-bottom: 0.25rem;
+        }
+
+        .author-title {
+          font-size: 0.9rem;
+          color: #4a4a4a;
+        }
+
+        /* CTA Section */
+        .cta-section {
+          padding: 80px 5%;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          text-align: center;
+        }
+
+        .cta-content {
+          max-width: 600px;
+          margin: 0 auto;
+        }
+
+        .cta-content h2 {
+          font-size: 2.5rem;
+          font-weight: 700;
+          color: white;
+          margin-bottom: 1rem;
+        }
+
+        .cta-content p {
+          font-size: 1.2rem;
+          color: rgba(255, 255, 255, 0.9);
+          margin-bottom: 2rem;
+        }
+
+        .cta-button-final {
+          background: white;
+          color: #667eea;
+          padding: 1rem 2.5rem;
+          border: none;
+          border-radius: 30px;
+          font-size: 1.1rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-button-final:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
         }
 
         /* Responsive */
@@ -666,30 +662,28 @@ export default function Landing() {
           .hero-section,
           .problem-section,
           .solution-section,
-          .benefits-section {
+          .testimonial-section,
+          .cta-section {
             padding: 60px 4%;
           }
         }
         
         @media (max-width: 1024px) {
-          .content-grid,
-          .content-grid.reverse,
-          .problem-grid {
+          .hero-grid {
             grid-template-columns: 1fr;
             gap: 30px;
           }
 
-          .benefits-grid {
-            grid-template-columns: 1fr;
-            gap: 30px;
+          .hero-visual {
+            display: none;
           }
 
           .hero-title {
             font-size: 2.5rem;
           }
 
-          .section-title {
-            font-size: 2.5rem;
+          .cta-content h2 {
+            font-size: 2rem;
           }
         }
 
@@ -697,51 +691,41 @@ export default function Landing() {
           .hero-section,
           .problem-section,
           .solution-section,
-          .benefits-section {
+          .testimonial-section,
+          .cta-section {
             padding: 40px 20px;
-          }
-          
-          .content-wrapper {
-            padding: 0 20px;
-          }
-
-          .content-section,
-          .section-content {
-            padding: 2rem;
           }
 
           .hero-title {
-            font-size: 2.2rem;
+            font-size: 2rem;
           }
 
-          .section-title {
-            font-size: 2.2rem;
+          .hero-subtitle {
+            font-size: 1.1rem;
           }
 
-          .hero-paragraph,
-          .content-paragraph {
-            font-size: 2.6rem;
+          .solution-grid {
+            grid-template-columns: 1fr;
           }
 
-          .feature-card,
-          .problem-card,
-          .benefit-card {
+          .solution-card {
             padding: 1.5rem;
           }
-          
-          .feature-card h3,
-          .problem-card h3 {
-            font-size: 3rem;
-          }
-          
-          .feature-card p,
-          .problem-card p {
-            font-size: 2.4rem;
+
+          .educator-quote {
+            font-size: 1.2rem;
           }
 
-          .cta-button {
-            padding: 16px 32px;
+          .testimonial-content blockquote {
             font-size: 1.1rem;
+          }
+
+          .cta-content h2 {
+            font-size: 1.8rem;
+          }
+
+          .cta-content p {
+            font-size: 1rem;
           }
         }
       `}</style>

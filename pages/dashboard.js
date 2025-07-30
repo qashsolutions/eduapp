@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ProgressBar from '../components/ProgressBar';
 import QuestionCard from '../components/QuestionCard';
+import CollaborativeSession from '../components/CollaborativeSession';
 import { useAuth } from '../lib/AuthContext';
 import { getUser, getSessionStats } from '../lib/db';
 import { formatTopicName, getCachedProficiency, setCachedProficiency, mapProficiencyToDifficulty } from '../lib/utils';
@@ -49,6 +50,7 @@ export default function Dashboard() {
   const [currentHintsUsed, setCurrentHintsUsed] = useState(0);
   const [topicQuestionCount, setTopicQuestionCount] = useState(0);
   const [showWelcome, setShowWelcome] = useState(true); // Show welcome screen by default
+  const [currentView, setCurrentView] = useState('dashboard'); // dashboard, collaborative
   
   // NEW: Track learning flow state
   const [comprehensionPassagesCompleted, setComprehensionPassagesCompleted] = useState(0);
@@ -1069,8 +1071,14 @@ export default function Dashboard() {
             }
           })}
           
-          {/* Welcome Screen for First Time and Returning Students */}
-          {showWelcome && !selectedTopic ? (
+          {/* Collaborative Session View */}
+          {currentView === 'collaborative' && !selectedTopic ? (
+            <CollaborativeSession onBack={() => {
+              setCurrentView('dashboard');
+              setShowWelcome(true);
+            }} />
+          ) : /* Welcome Screen for First Time and Returning Students */
+          showWelcome && !selectedTopic ? (
             <div className="flex justify-center items-center min-h-500 p-xl">
               <div className="glass card text-center max-w-600">
                 <h1 className="mb-xl">Welcome back, {user?.first_name || 'Student'}!</h1>
@@ -1107,17 +1115,28 @@ export default function Dashboard() {
                   </div>
                 )}
                 
-                <button 
-                  className="btn-primary"
-                  onClick={() => {
-                    setShowWelcome(false);
-                    setSelectedTopic('mixed_session');
-                    handleTopicSelect('mixed_session');
-                  }}
-                  className="btn-primary text-lg px-xl py-lg"
-                >
-                  Start Practice Session
-                </button>
+                <div className="flex flex-col gap-md">
+                  <button 
+                    className="btn-primary text-lg px-xl py-lg"
+                    onClick={() => {
+                      setShowWelcome(false);
+                      setSelectedTopic('mixed_session');
+                      handleTopicSelect('mixed_session');
+                    }}
+                  >
+                    Start Practice Session
+                  </button>
+                  
+                  <button 
+                    className="btn-secondary text-lg px-xl py-lg"
+                    onClick={() => {
+                      setShowWelcome(false);
+                      setCurrentView('collaborative');
+                    }}
+                  >
+                    Join Collaborative Session
+                  </button>
+                </div>
               </div>
             </div>
           ) : selectedTopic === 'mixed_session' && !currentQuestion && !generating ? (

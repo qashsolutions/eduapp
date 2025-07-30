@@ -1,3 +1,269 @@
+##################
+**JULY 17,2025- COLLABORATIVE SESSION: STUDENT WITH TUTOR/PARENT**
+Detailed Implementation Prompt
+Context:
+You're building a collaborative learning feature for an existing educational webapp. Current stack: React frontend, Supabase database, Vercel hosting, Cloudflare CDN.
+Existing System:
+
+Student dashboard with 30-minute practice sessions
+Question delivery system already implemented
+User authentication via Supabase Auth
+Database schema includes: users, questions, student_sessions, user_responses
+
+Feature Requirements:
+Build a real-time collaborative session where tutor/parent observes student solving questions.
+Technical Specifications:
+Database Schema (Supabase):
+sql-- Add these tables to existing schema
+collaborative_sessions (
+  id, parent_id, student_id, question_id, 
+  session_code, status, created_at, ended_at
+)
+
+session_events (
+  id, session_id, event_type, event_data, 
+  user_id, timestamp
+)
+API Endpoints (Vercel):
+
+POST /api/sessions/create - Parent creates session
+POST /api/sessions/join - Student joins via code
+GET /api/sessions/[id] - Get session details
+POST /api/sessions/[id]/end - End session
+
+Frontend Components:
+
+SessionCreator - Parent initiates session
+SessionJoiner - Student joins via code/link
+CollaborativeQuestion - Shared question display
+ObserverView - Parent's real-time observation panel
+StudentView - Student's interactive interface
+
+Real-time Requirements:
+
+Use Supabase Realtime channels for live sync
+Parent sees student's answer selections in real-time
+Both see identical question simultaneously
+Session events logged for analytics
+
+User Flow:
+
+Parent clicks "Practice with Student" button
+System generates 6-digit session code
+Parent shares code with student
+Student enters code, joins session
+Question loads for both users
+Parent observes student's selections live
+Session ends when question completed
+
+UI/UX Specifications:
+
+Parent dashboard: "Start Collaborative Session" button
+Student dashboard: "Join Session" input field
+During session: Split view showing question + real-time activity
+Mobile responsive design
+Loading states for session creation/joining
+
+Security:
+
+RLS policies ensure only session participants access data
+Session codes expire after 1 hour
+Validate user permissions before session actions
+
+Current File Structure to Modify:
+
+/pages/api/sessions/ - New API routes
+/components/collaborative/ - New components
+/hooks/useCollaborativeSession.js - Custom hook
+/utils/supabase.js - Add realtime subscriptions
+
+Expected Deliverables:
+
+Complete feature working end-to-end
+Database migrations
+API endpoints with error handling
+React components with real-time sync
+Basic styling (can be minimal)
+Session cleanup on disconnect
+
+Success Criteria:
+
+Parent can create session and get shareable code
+Student can join via code
+Both see same question simultaneously
+Parent observes student selections in real-time
+Session data persists in database
+
+Constraints:
+
+Must use existing auth system
+Must integrate with current question delivery
+Use Supabase Realtime (no external WebSocket services)
+Deploy to existing Vercel project
+###
+**SQL USED FOR THE FEATURES**
+-- Add collaboration fields to existing study_sessions table
+  ALTER TABLE public.study_sessions
+  ADD COLUMN is_collaborative boolean DEFAULT false,
+  ADD COLUMN initiator_id text NULL,
+  ADD COLUMN participant_id text NULL,
+  ADD COLUMN session_code text NULL,
+  ADD COLUMN current_question_index integer DEFAULT 0,
+  ADD COLUMN current_question_hash text NULL,
+  ADD COLUMN question_started_at timestamp with time zone NULL,
+  ADD COLUMN participant_joined_at timestamp with time zone NULL,
+  ADD COLUMN collaboration_status text DEFAULT 'waiting'::text;
+
+  -- Add foreign key constraints
+  ALTER TABLE public.study_sessions
+  ADD CONSTRAINT study_sessions_initiator_id_fkey
+  FOREIGN KEY (initiator_id) REFERENCES users (id) ON DELETE CASCADE;
+
+  ALTER TABLE public.study_sessions
+  ADD CONSTRAINT study_sessions_participant_id_fkey
+  FOREIGN KEY (participant_id) REFERENCES users (id) ON DELETE CASCADE;
+
+  -- Add check constraint for collaboration status
+  ALTER TABLE public.study_sessions
+  ADD CONSTRAINT check_collaboration_status
+  CHECK (collaboration_status = ANY (ARRAY[
+    'waiting'::text,
+    'active'::text,
+    'paused'::text,
+    'completed'::text,
+    'cancelled'::text
+  ]));
+
+  -- Add unique constraint on session_code
+  ALTER TABLE public.study_sessions
+  ADD CONSTRAINT study_sessions_session_code_key
+  UNIQUE (session_code);
+
+  2. Create collaborative_actions table for real-time tracking
+
+  -- Track real-time actions during collaborative sessions
+  CREATE TABLE public.collaborative_actions (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    session_id uuid NOT NULL,
+    user_id text NOT NULL,
+    action_type text NOT NULL,
+    action_data jsonb DEFAULT '{}'::jsonb,
+    question_hash text NULL,
+    created_at timestamp with time zone DEFAULT now(),
+
+    CONSTRAINT collaborative_actions_pkey PRIMARY KEY (id),
+    CONSTRAINT collaborative_actions_session_id_fkey
+      FOREIGN KEY (session_id) REFERENCES study_sessions (id) ON DELETE
+  CASCADE,
+    CONSTRAINT collaborative_actions_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT check_action_type CHECK (action_type = ANY (ARRAY[
+      'question_start'::text,
+      'answer_select'::text,
+      'answer_submit'::text,
+      'hint_request'::text,
+      'session_join'::text,
+      'session_leave'::text,
+      'question_next'::text
+    ]))
+  ) TABLESPACE pg_default;
+
+  3. Add indexes for performance
+
+  -- Indexes for collaborative sessions
+  CREATE INDEX IF NOT EXISTS idx_study_sessions_collaborative
+  ON public.study_sessions (is_collaborative, collaboration_status)
+  WHERE is_collaborative = true;
+
+  CREATE INDEX IF NOT EXISTS idx_study_sessions_session_code
+  ON public.study_sessions (session_code)
+  WHERE session_code IS NOT NULL;
+
+  CREATE INDEX IF NOT EXISTS idx_study_sessions_initiator
+  ON public.study_sessions (initiator_id, created_at DESC)
+  WHERE is_collaborative = true;
+
+  CREATE INDEX IF NOT EXISTS idx_study_sessions_participant
+  ON public.study_sessions (participant_id, created_at DESC)
+  WHERE is_collaborative = true;
+
+  -- Indexes for collaborative actions
+  CREATE INDEX IF NOT EXISTS idx_collaborative_actions_session
+  ON public.collaborative_actions (session_id, created_at DESC);
+
+  CREATE INDEX IF NOT EXISTS idx_collaborative_actions_user
+  ON public.collaborative_actions (user_id, created_at DESC);
+
+  CREATE INDEX IF NOT EXISTS idx_collaborative_actions_question
+  ON public.collaborative_actions (question_hash, created_at DESC)
+  WHERE question_hash IS NOT NULL;
+
+  4. Create view for collaborative session analytics
+
+  -- View for collaborative session analytics
+  CREATE VIEW v_collaborative_session_analytics AS
+  SELECT
+    s.id as session_id,
+    s.session_code,
+    s.collaboration_status,
+    s.session_start,
+    s.session_end,
+    s.participant_joined_at,
+    initiator.first_name as initiator_name,
+    initiator.role as initiator_role,
+    participant.first_name as participant_name,
+    participant.grade as participant_grade,
+    s.total_questions,
+    s.correct_answers,
+    s.total_time_seconds,
+    CASE
+      WHEN s.total_questions > 0 THEN
+        ROUND((s.correct_answers::numeric / s.total_questions::numeric) *
+  100, 1)
+      ELSE 0
+    END as accuracy_percentage,
+    (SELECT COUNT(*) FROM collaborative_actions ca
+     WHERE ca.session_id = s.id AND ca.action_type = 'hint_request') as
+  hints_used,
+    (SELECT COUNT(*) FROM collaborative_actions ca
+     WHERE ca.session_id = s.id AND ca.action_type = 'answer_submit') as
+  questions_attempted
+  FROM study_sessions s
+  JOIN users initiator ON s.initiator_id = initiator.id
+  JOIN users participant ON s.participant_id = participant.id
+  WHERE s.is_collaborative = true;
+
+  5. Add cleanup function for expired sessions
+
+  -- Function to clean up abandoned collaborative sessions
+  CREATE OR REPLACE FUNCTION cleanup_abandoned_collaborative_sessions()
+  RETURNS void AS $$
+  BEGIN
+    -- Cancel sessions that have been waiting for more than 30 minutes
+    UPDATE study_sessions
+    SET collaboration_status = 'cancelled',
+        session_end = NOW()
+    WHERE is_collaborative = true
+      AND collaboration_status = 'waiting'
+      AND created_at < NOW() - INTERVAL '30 minutes';
+
+    -- Cancel active sessions that have been inactive for more than 2 hours
+    UPDATE study_sessions
+    SET collaboration_status = 'cancelled',
+        session_end = NOW()
+    WHERE is_collaborative = true
+      AND collaboration_status = 'active'
+      AND question_started_at < NOW() - INTERVAL '2 hours';
+  END;
+  $$ LANGUAGE plpgsql;
+
+
+###
+##############################################################
+
+
+
+
 ###**UPDATES JULY 16,2025**###
 MIXED_SESSION_UPDATE.md that details every aspect of this major
   update. The document covers:
