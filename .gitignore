@@ -81,3 +81,4 @@ test_*.py
 *bkup*.py
 *_ignore_*.py
 urls*.txt
+isee_synonym_old.py
